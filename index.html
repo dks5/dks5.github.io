@@ -77,17 +77,36 @@
             position: relative;
             padding-bottom: 20px;
         }
+
+        /* Responsive font and icon sizes for root folder */
         .root-folder-item .icon {
-            font-size: 3rem;
+            font-size: 2rem; /* Reduced size for mobile */
         }
         .root-folder-item .label {
-            font-size: 3.25rem;
+            font-size: 1.25rem; /* Reduced size for mobile */
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            .root-folder-item .icon {
+                font-size: 2.5rem;
+            }
+            .root-folder-item .label {
+                font-size: 1.5rem;
+            }
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .root-folder-item .icon {
+                font-size: 3rem;
+            }
+            .root-folder-item .label {
+                font-size: 2rem;
+            }
         }
 
         .root-folder-branches {
             display: flex;
             justify-content: center;
-            gap: 4rem;
+            gap: 1.5rem; /* Reduced gap for mobile */
             position: relative;
             padding-top: 10px;
             width: 100%;
@@ -108,41 +127,52 @@
             align-items: center;
         }
         
+        /* Responsive folder and file icon/text sizes */
+        .tree-item.folder .folder-icon, .tree-item.file .file-icon {
+            font-size: 2rem; /* Reduced size for mobile */
+        }
+        
+        .tree-item span, .tree-item a {
+            font-size: 1rem; /* Reduced font size for mobile */
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            .tree-item.folder .folder-icon, .tree-item.file .file-icon {
+                font-size: 2.5rem;
+            }
+            .tree-item span, .tree-item a {
+                font-size: 1.125rem;
+            }
+        }
+        
         .tree-item.folder .folder-icon {
-            font-size: 4.5rem; /* Larger folder icon */
+            color: #ffc107;
             position: relative;
             cursor: pointer;
         }
         .tree-item.file .file-icon {
-            font-size: 4.5rem; /* Larger file icon */
-            margin-right: 5px;
             color: #9e9e9e;
-        }
-
-        .tree-item.folder .folder-icon {
-            color: #ffc107;
         }
 
         .dark .tree-item.folder .folder-icon {
             color: #ffeb3b;
         }
-
         .dark .tree-item.file .file-icon {
             color: #a78bfa;
         }
 
         .toggle-icon {
             position: absolute;
-            left: 40%;
-            top: 55%;
-            transform: translateY(-50%);
-            color: white; /* White color for contrast */
-            font-size: 1rem;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* Centered toggle icon */
+            color: #333; /* Darker color for contrast on light folder icon */
+            font-size: 0.75rem;
             font-weight: bold;
         }
         
         .dark .toggle-icon {
-            color: #333;
+            color: #eee;
         }
 
         .folder-content {
@@ -161,19 +191,23 @@
         
         .tree-item.file {
             margin-left: 20px;
+            width: 100%; /* Ensure file item takes full width of its parent */
         }
         
-        .tree-item span, .tree-item a {
-            font-size: 2.5rem; /* Larger font size */
+        /* Added styles to handle long file names */
+        .file-name-container {
+            flex: 1; /* Allow container to grow and shrink */
+            overflow: hidden; /* Hide overflow */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-overflow: ellipsis; /* Add ellipsis for truncated text */
+            padding-right: 5px;
         }
-
+        
         @media (max-width: 768px) {
             .root-folder-branches {
                 flex-direction: column;
                 align-items: center;
-            }
-            .root-folder-branches::after {
-                content: none;
+                gap: 0; /* Remove gap in column layout */
             }
         }
     </style>
@@ -285,17 +319,19 @@
                     const folderDiv = document.createElement('div');
                     folderDiv.classList.add('tree-item', 'folder');
                     folderDiv.innerHTML = `<span class="folder-icon">
-                                            <span class="toggle-icon">+</span>
-                                            📁
-                                        </span>
-                                        <span>[${folder.name}]</span>`;
+                                                <span class="toggle-icon">+</span>
+                                                📁
+                                            </span>
+                                            <div class="file-name-container">
+                                                <span>[${folder.name}]</span>
+                                            </div>`;
                     
                     const contentDiv = document.createElement('div');
                     contentDiv.classList.add('folder-content');
                     folder.files.forEach(file => {
                         const fileDiv = document.createElement('div');
                         fileDiv.classList.add('tree-item', 'file');
-                        fileDiv.innerHTML = `<span class="file-icon">📄</span><a href="https://dks5.github.io/${folder.name}/${file.name}">${file.name}</a>`;
+                        fileDiv.innerHTML = `<span class="file-icon">📄</span><a href="https://dks5.github.io/${folder.name}/${file.href}" class="file-name-container" title="${file.name}">${file.name}</a>`;
                         contentDiv.appendChild(fileDiv);
                     });
                     
