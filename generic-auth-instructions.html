@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Универсальная Инструкция по Защите</title>
+    <!-- Подключение Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключение Ionicons для иконок -->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .neo-glow-box {
+            background-color: #2a2a4e;
+            border-radius: 1.5rem; /* 24px */
+            border: 1px solid #4a4a8a;
+            box-shadow: 0 0 25px rgba(173, 114, 239, 0.3), /* Фиолетовое свечение */
+                        0 0 10px rgba(173, 114, 239, 0.2) inset; /* Внутреннее свечение */
+        }
+        
+        /* Стили для кода */
+        pre {
+            background-color: #1e1e3f;
+            border: 1px solid #4a4a8a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto; /* Для прокрутки на мобильных */
+            color: #c0c0ff;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #3a3a5e;
+            color: #f0f0ff;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+        
+        /* Заголовки разделов */
+        h2 {
+            font-size: 1.75rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            color: #c4b5fd; /* text-violet-300 */
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #4a4a8a;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* space-x-3 */
+        }
+        
+        h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            color: #a78bfa; /* text-violet-400 */
+            margin-top: 1.5rem; /* mt-6 */
+        }
+        
+        li {
+            margin-top: 0.5rem; /* mt-2 */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Заголовок страницы -->
+    <header class="text-center w-full max-w-6xl mx-auto mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-violet-300 mb-2">Универсальная Инструкция по Защите</h1>
+        <p class="text-lg md:text-xl text-gray-400 mb-6">Как добавить GitHub (Админ) аутентификацию на любую HTML-страницу</p>
+        
+        <!-- Кнопки входа/выхода -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <button id="signin-button" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg transition-all flex items-center space-x-2">
+                <ion-icon name="logo-github"></ion-icon>
+                <span>Войти (Админ)</span>
+            </button>
+            <button id="signout-button" class="hidden bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg transition-all flex items-center space-x-2">
+                <ion-icon name="log-out-outline"></ion-icon>
+                <span>Выйти</span>
+            </button>
+        </div>
+        
+        <!-- Индикатор пользователя -->
+        <p id="user-display" class="hidden text-green-400 mb-6"></p>
+
+        <!-- Индикатор Загрузки / Ошибки Доступа -->
+        <div id="loading-indicator" class="text-center text-lg text-yellow-400 p-10">
+            <p>Пожалуйста, войдите как Администратор.</p>
+        </div>
+    </header>
+
+    <!-- Контент Инструкции (скрыт по умолчанию) -->
+    <main id="main-content" class="w-full max-w-6xl mx-auto p-6 md:p-8 neo-glow-box space-y-6" style="display: none;">
+
+        <section>
+            <h2>
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+                Обзор
+            </h2>
+            <p class="mt-4">Эта инструкция поможет вам добавить на любую HTML-страницу систему аутентификации, которая будет показывать содержимое страницы **только вам** (после входа через GitHub) и скрывать его от всех остальных.</p>
+            <p class="mt-2">Мы будем использовать тот же проект Firebase <code>archive-89fc1</code>.</p>
+        </section>
+
+        <section class="mt-8">
+            <h2>
+                <ion-icon name="construct-outline"></ion-icon>
+                Шаг 1: Настройка Firebase (Выполняется 1 раз)
+            </h2>
+            <p class="mt-4">Перед тем как защищать новые страницы, убедитесь, что ваш проект Firebase настроен. (Вы уже сделали это для <code>youtube-archive.html</code>, так что этот шаг — просто проверка).</p>
+            <ul class="list-disc list-inside mt-4 space-y-2">
+                <li>
+                    <strong>Провайдер GitHub включен:</strong>
+                    <br>
+                    <span class="text-sm text-gray-400 pl-6">Убедитесь, что в <code>Authentication</code> &rarr; <code>Sign-in method</code> **GitHub** находится в списке и включен.</span>
+                </li>
+                <li>
+                    <strong>Домен авторизован:</strong>
+                    <br>
+                    <span class="text-sm text-gray-400 pl-6">Убедитесь, что домен, на котором будет размещен ваш новый HTML-файл (например, <code>dks5.github.io</code>), добавлен в список в <code>Authentication</code> &rarr; <code>Settings</code> &rarr; <code>Authorized domains</code>.</span>
+                </li>
+            </ul>
+        </section>
+
+        <section class="mt-8">
+            <h2>
+                <ion-icon name="code-slash-outline"></ion-icon>
+                Шаг 2: Модификация вашего HTML-файла
+            </h2>
+            <p class="mt-4">Вам нужно будет внести три изменения в ваш HTML-файл, который вы хотите защитить.</p>
+            
+            <h3 class="mt-4">1. Добавьте скрипты в <code>&lt;head&gt;</code></h3>
+            <p>Скопируйте и вставьте этот код внутрь тега <code>&lt;head&gt;</code> вашей HTML-страницы. Он подключает Tailwind (для стилей) и Ionicons (для иконок). Если вы не хотите их использовать, вы можете пропустить этот шаг, но код кнопок ниже может выглядеть иначе.</p>
+<pre><code>&lt;!-- Подключение Tailwind CSS --&gt;
+&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+&lt;!-- Подключение Ionicons для иконок --&gt;
+&lt;script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"&gt;&lt;/script&gt;
+&lt;script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"&gt;&lt;/script&gt;</code></pre>
+
+            <h3 class="mt-6">2. Добавьте UI для входа в <code>&lt;body&gt;</code></h3>
+            <p>Вставьте этот блок в начало вашего <code>&lt;body&gt;</code>. Он содержит кнопки входа/выхода и индикатор загрузки.</p>
+<pre><code>&lt;!-- Блок Аутентификации (вставьте в начало &lt;body&gt;) --&gt;
+&lt;header class="text-center w-full max-w-6xl mx-auto my-8 px-4"&gt;
+    &lt;h1 class="text-4xl md:text-5xl font-bold text-violet-300 mb-2"&gt;Название Вашей Страницы&lt;/h1&gt;
+    
+    &lt;!-- Кнопки входа/выхода --&gt;
+    &lt;div class="flex justify-center space-x-4 mb-6"&gt;
+        &lt;button id="signin-button" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg transition-all flex items-center space-x-2"&gt;
+            &lt;ion-icon name="logo-github"&gt;&lt;/ion-icon&gt;
+            &lt;span&gt;Войти (Админ)&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;button id="signout-button" class="hidden bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg transition-all flex items-center space-x-2"&gt;
+            &lt;ion-icon name="log-out-outline"&gt;&lt;/ion-icon&gt;
+            &lt;span&gt;Выйти&lt;/span&gt;
+        &lt;/button&gt;
+    &lt;/div&gt;
+    
+    &lt;!-- Индикатор пользователя --&gt;
+    &lt;p id="user-display" class="hidden text-green-400 mb-6"&gt;&lt;/p&gt;
+
+    &lt;!-- Индикатор Загрузки / Ошибки Доступа --&gt;
+    &lt;div id="loading-indicator" class="text-center text-lg text-yellow-400 p-10"&gt;
+        &lt;p&gt;Пожалуйста, войдите как Администратор.&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/header&gt;</code></pre>
+
+            <h3 class="mt-6">3. Оберните ваш контент и добавьте скрипт</h3>
+            <p><strong>А. Оберните контент:</strong> Найдите *весь* основной контент вашей страницы и оберните его в тег <code>&lt;main&gt;</code>, как показано ниже. Это скроет его по умолчанию.</p>
+<pre><code>&lt;!-- Ваш защищенный контент --&gt;
+&lt;main id="main-content" class="w-full max-w-6xl mx-auto" style="display: none;"&gt;
+
+    &lt;!-- 
+      ЗДЕСЬ НАХОДИТСЯ ВЕСЬ ОРИГИНАЛЬНЫЙ КОНТЕНТ 
+      ВАШЕЙ HTML-СТРАНИЦЫ
+    --&gt;
+
+&lt;/main&gt;</code></pre>
+
+            <p class="mt-4"><strong>Б. Добавьте скрипт:</strong> Скопируйте и вставьте весь этот JavaScript-блок в самый конец вашего <code>&lt;body&gt;</code>, прямо перед закрывающим тегом <code>&lt;/body&gt;</code>.</p>
+<pre><code>&lt;!-- ====================================================== --&gt;
+&lt;!-- Скрипт Firebase и логика аутентификации --&gt;
+&lt;!-- ====================================================== --&gt;
+&lt;script type="module"&gt;
+    // Импорт необходимых функций Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        GithubAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // --- Глобальные переменные ---
+    
+    // =======================================================================
+    // 1. НАСТРОЙКА ДЛЯ GITHUB PAGES
+    // (Используйте ту же конфигурацию, что и для youtube-archive)
+    // =======================================================================
+    const MANUAL_FIREBASE_CONFIG = {
+        "apiKey": "AIzaSyAI2eGIMAHw3LWpRTATXBd2di6d2nJoj2w",
+        "authDomain": "archive-89fc1.firebaseapp.com",
+        "projectId": "archive-89fc1",
+        "storageBucket": "archive-89fc1.firebasestorage.app",
+        "messagingSenderId": "1023136270041",
+        "appId": "1:102313j0a:web:02af4902a9d9f53c4920c8"
+    };
+    
+    // 2. ВАЖНО! UID Администратора
+    // (Это ваш UID от GitHub)
+    const ADMIN_UID = "56vTQLliI7gcBuvOgKdFzBDl90y1";
+    // =======================================================================
+    
+    let auth; 
+
+    // Элементы UI
+    const mainContent = document.getElementById('main-content');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const signinButton = document.getElementById('signin-button');
+    const signoutButton = document.getElementById('signout-button');
+    const userDisplay = document.getElementById('user-display');
+
+    
+    // --- Инициализация Firebase ---
+    
+    async function initFirebase() {
+        try {
+            let firebaseConfig;
+            
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+            } 
+            else if (MANUAL_FIREBASE_CONFIG) {
+                firebaseConfig = MANUAL_FIREBASE_CONFIG;
+            } 
+            else {
+                throw new Error("Firebase config not found.");
+            }
+            
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // Пользователь вошел
+                    console.log("User is authenticated:", user.uid);
+                    const isAdmin = user.uid === ADMIN_UID;
+                    setupInterface(user, isAdmin);
+                } else {
+                    // Пользователя нет (вышел или не входил)
+                    console.log("User is not authenticated.");
+                    setupInterface(null, false);
+                }
+            });
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            loadingIndicator.textContent = \`Ошибка инициализации Firebase: \${error.message}\`;
+        }
+    }
+    
+    // --- Настройка UI ---
+    
+    function setupInterface(user, isAdmin) {
+        
+        if (!user) {
+            // --- Состояние: Пользователь не вошел ---
+            mainContent.style.display = 'none'; // Скрываем контент
+            signinButton.style.display = 'flex';
+            signoutButton.style.display = 'none';
+            userDisplay.classList.add('hidden');
+            loadingIndicator.textContent = "Пожалуйста, войдите как Администратор.";
+            
+        } else if (user && isAdmin) {
+            // --- Состояние: Пользователь = Админ ---
+            mainContent.style.display = 'block'; // Показываем контент
+            signinButton.style.display = 'none';
+            signoutButton.style.display = 'flex';
+            userDisplay.textContent = \`Вы вошли как: \${user.displayName || 'Администратор'} (Админ)\`;
+            userDisplay.classList.remove('text-red-400', 'hidden');
+            userDisplay.classList.add('text-green-400');
+            loadingIndicator.style.display = 'none'; // Скрываем индикатор
+        
+        } else if (user && !isAdmin) {
+            // --- Состояние: Пользователь = НЕ Админ ---
+            mainContent.style.display = 'none'; // Скрываем контент
+            signinButton.style.display = 'none'; // Скрываем кнопку входа
+            signoutButton.style.display = 'flex'; // Показываем выход
+            userDisplay.textContent = \`Доступ запрещен для: \${user.displayName || 'Неизвестный'}\`;
+            userDisplay.classList.remove('text-green-400', 'hidden');
+            userDisplay.classList.add('text-red-400');
+            loadingIndicator.textContent = "У вас нет прав для просмотра этой страницы.";
+            loadingIndicator.style.display = 'block';
+        }
+    }
+
+
+    // --- Аутентификация ---
+    
+    // Вход через GitHub
+    async function signInWithGitHub() {
+        const provider = new GithubAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error("GitHub sign-in error:", error);
+            loadingIndicator.textContent = \`Ошибка входа: \${error.message}\`;
+        }
+    }
+
+    // Выход
+    async function signOutUser() {
+        try {
+            await signOut(auth);
+            console.log("User signed out.");
+        } catch (error) {
+            console.error("Sign-out error:", error);
+        }
+    }
+    
+    // Назначаем обработчики на кнопки
+    signinButton.addEventListener('click', signInWithGitHub);
+    signoutButton.addEventListener('click', signOutUser);
+
+    // --- Запуск приложения ---
+    document.addEventListener('DOMContentLoaded', () => {
+        initFirebase();
+    });
+&lt;/script&gt;</code></pre>
+        </section>
+        
+    </main>
+
+
+    <!-- ====================================================== -->
+    <!-- Скрипт Firebase и логика аутентификации ЭТОЙ СТРАНИЦЫ -->
+    <!-- ====================================================== -->
+    <script type="module">
+        // Этот скрипт нужен только для защиты САМОЙ ИНСТРУКЦИИ
+        // (Он идентичен тому, что вы скопировали выше в Шаге 3)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            GithubAuthProvider,
+            signInWithPopup,
+            signOut,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const MANUAL_FIREBASE_CONFIG = {
+            "apiKey": "AIzaSyAI2eGIMAHw3LWpRTATXBd2di6d2nJoj2w",
+            "authDomain": "archive-89fc1.firebaseapp.com",
+            "projectId": "archive-89fc1",
+            "storageBucket": "archive-89fc1.firebasestorage.app",
+            "messagingSenderId": "1023136270041",
+            "appId": "1:102313j0a:web:02af4902a9d9f53c4920c8"
+        };
+        const ADMIN_UID = "56vTQLliI7gcBuvOgKdFzBDl90y1";
+        
+        let auth; 
+        const mainContent = document.getElementById('main-content');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const signinButton = document.getElementById('signin-button');
+        const signoutButton = document.getElementById('signout-button');
+        const userDisplay = document.getElementById('user-display');
+
+        async function initFirebase() {
+            try {
+                let firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : MANUAL_FIREBASE_CONFIG;
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                
+                onAuthStateChanged(auth, (user) => {
+                    const isAdmin = user && user.uid === ADMIN_UID;
+                    setupInterface(user, isAdmin);
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                loadingIndicator.textContent = `Ошибка инициализации Firebase: ${error.message}`;
+            }
+        }
+        
+        function setupInterface(user, isAdmin) {
+            if (!user) {
+                mainContent.style.display = 'none';
+                signinButton.style.display = 'flex';
+                signoutButton.style.display = 'none';
+                userDisplay.classList.add('hidden');
+                loadingIndicator.textContent = "Пожалуйста, войдите как Администратор.";
+                loadingIndicator.style.display = 'block';
+            } else if (isAdmin) {
+                mainContent.style.display = 'block';
+                signinButton.style.display = 'none';
+                signoutButton.style.display = 'flex';
+                userDisplay.textContent = `Вы вошли как: ${user.displayName || 'Администратор'} (Админ)`;
+                userDisplay.classList.remove('text-red-400', 'hidden');
+                userDisplay.classList.add('text-green-400');
+                loadingIndicator.style.display = 'none';
+            } else {
+                mainContent.style.display = 'none';
+                signinButton.style.display = 'none';
+                signoutButton.style.display = 'flex';
+                userDisplay.textContent = `Доступ запрещен для: ${user.displayName || 'Неизвестный'}`;
+                userDisplay.classList.remove('text-green-400', 'hidden');
+                userDisplay.classList.add('text-red-400');
+                loadingIndicator.textContent = "У вас нет прав для просмотра этой страницы.";
+                loadingIndicator.style.display = 'block';
+            }
+        }
+
+        async function signInWithGitHub() {
+            const provider = new GithubAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("GitHub sign-in error:", error);
+                loadingIndicator.textContent = `Ошибка входа: ${error.message}`;
+            }
+        }
+
+        async function signOutUser() {
+            try {
+                await signOut(auth);
+                console.log("User signed out.");
+            } catch (error) {
+                console.error("Sign-out error:", error);
+            }
+        }
+        
+        signinButton.addEventListener('click', signInWithGitHub);
+        signoutButton.addEventListener('click', signOutUser);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+        });
+    </script>
+</body>
+</html>
