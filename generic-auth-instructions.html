@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Универсальная Инструкция по Защите</title>
+    <title>Универсальная Инструкция по Защите v2</title>
     <!-- Подключение Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Подключение Ionicons для иконок -->
@@ -82,7 +82,7 @@
 
     <!-- Заголовок страницы -->
     <header class="text-center w-full max-w-6xl mx-auto mb-8">
-        <h1 class="text-4xl md:text-5xl font-bold text-violet-300 mb-2">Универсальная Инструкция по Защите</h1>
+        <h1 class="text-4xl md:text-5xl font-bold text-violet-300 mb-2">Универсальная Инструкция по Защите v2</h1>
         <p class="text-lg md:text-xl text-gray-400 mb-6">Как добавить GitHub (Админ) аутентификацию на любую HTML-страницу</p>
         
         <!-- Кнопки входа/выхода -->
@@ -114,7 +114,7 @@
                 <ion-icon name="shield-checkmark-outline"></ion-icon>
                 Обзор
             </h2>
-            <p class="mt-4">Эта инструкция поможет вам добавить на любую HTML-страницу систему аутентификации, которая будет показывать содержимое страницы **только вам** (после входа через GitHub) и скрывать его от всех остальных.</p>
+            <p class="mt-4">Эта инструкция поможет вам добавить на любую HTML-страницу систему аутентификации, которая будет показывать содержимое страницы <strong>только вам</strong> (после входа через GitHub) и скрывать его от всех остальных.</p>
             <p class="mt-2">Мы будем использовать тот же проект Firebase <code>archive-89fc1</code>.</p>
         </section>
 
@@ -128,7 +128,7 @@
                 <li>
                     <strong>Провайдер GitHub включен:</strong>
                     <br>
-                    <span class="text-sm text-gray-400 pl-6">Убедитесь, что в <code>Authentication</code> &rarr; <code>Sign-in method</code> **GitHub** находится в списке и включен.</span>
+                    <span class="text-sm text-gray-400 pl-6">Убедитесь, что в <code>Authentication</code> &rarr; <code>Sign-in method</code> <strong>GitHub</strong> находится в списке и включен.</span>
                 </li>
                 <li>
                     <strong>Домен авторизован:</strong>
@@ -191,6 +191,28 @@
     --&gt;
 
 &lt;/main&gt;</code></pre>
+
+            <!-- ### НАЧАЛО ВСТАВКИ ### -->
+            <div class="mt-4 p-4 bg-gray-900 border border-violet-400 rounded-lg">
+                <h4 class="font-semibold text-lg text-violet-300">Что именно помещать внутрь &lt;main&gt;?</h4>
+                <ul class="list-disc list-outside space-y-2 mt-2 pl-5 text-gray-300">
+                    <li>
+                        <strong>ПОМЕСТИТЕ ВНУТРЬ:</strong> Весь <strong>видимый контент</strong> вашего оригинального <code>&lt;body&gt;</code>.
+                        <br>
+                        <span class="text-sm text-gray-400 pl-4">(Например: ваши <code>&lt;div&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;h1&gt;</code>, <code>&lt;canvas&gt;</code>, кнопки самого приложения, изображения <code>&lt;img&gt;</code> и т.д.)</span>
+                    </li>
+                    <li>
+                        <strong>ОСТАВЬТЕ В &lt;head&gt;:</strong> Все теги <code>&lt;style&gt;</code> и скрипты-библиотеки (например, <code>three.js</code>). Они должны загружаться до входа пользователя.
+                    </li>
+                    <li>
+                        <strong>ОСТАВЬТЕ В &lt;body&gt; (СНАРУЖИ &lt;main&gt;):</strong> Скрипт аутентификации (из Шага 2.3.Б) должен быть в конце <code>&lt;body&gt;</code>, <strong>после</strong> закрывающего <code>&lt;/main&gt;</code>.
+                    </li>
+                     <li>
+                        <strong>МОЖНО ПОМЕСТИТЬ ВНУТРЬ (по желанию):</strong> Скрипты, которые должны запускаться <strong>только после</strong> успешного входа (например, <code>my_game_logic.js</code>).
+                    </li>
+                </ul>
+            </div>
+            <!-- ### КОНЕЦ ВСТАВКИ ### -->
 
             <p class="mt-4"><strong>Б. Добавьте скрипт:</strong> Скопируйте и вставьте весь этот JavaScript-блок в самый конец вашего <code>&lt;body&gt;</code>, прямо перед закрывающим тегом <code>&lt;/body&gt;</code>.</p>
 <pre><code>&lt;!-- ====================================================== --&gt;
