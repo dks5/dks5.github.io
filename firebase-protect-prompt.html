@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- Гарантирует правильное отображение и масштабирование на мобильных устройствах -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Промт для Защиты HTML</title>
+    <!-- Подключение Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключение Ionicons для иконок -->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        /* Базовые стили для темного режима и шрифта */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* Стиль "неонового" блока */
+        .neo-glow-box {
+            background-color: #2a2a4e;
+            border-radius: 1.5rem; /* 24px */
+            border: 1px solid #4a4a8a;
+            box-shadow: 0 0 25px rgba(173, 114, 239, 0.3), /* Фиолетовое свечение */
+                        0 0 10px rgba(173, 114, 239, 0.2) inset; /* Внутреннее свечение */
+        }
+        
+        /* Стили для блока с кодом */
+        pre {
+            background-color: #1e1e3f;
+            border: 1px solid #4a4a8a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            padding-top: 3.5rem; /* Добавляем место сверху для кнопки */
+            overflow-x: auto; /* Горизонтальная прокрутка на мобильных */
+            color: #c0c0ff;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap; /* Перенос строк */
+            word-wrap: break-word; /* Перенос длинных слов */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <main class="w-full max-w-4xl mx-auto">
+        
+        <!-- Заголовок -->
+        <header class="text-center w-full mx-auto mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-violet-300 mb-2">Промт для Защиты HTML</h1>
+            <p class="text-lg md:text-xl text-gray-400">Скопируйте этот текст, чтобы дать ИИ задачу по защите HTML-файла</p>
+        </header>
+
+        <!-- Контейнер для блока с кодом (относительный) -->
+        <div class="neo-glow-box p-4 md:p-6 relative">
+            
+            <!-- Кнопка "Копировать" (абсолютная) -->
+            <button id="copy-button" class="absolute top-10 right-10 bg-gray-700 hover:bg-violet-600 text-white p-2 rounded-lg transition-all focus:outline-none" title="Скопировать в буфер обмена">
+                <ion-icon id="copy-icon" name="copy-outline" class="text-2xl"></ion-icon>
+            </button>
+            
+            <!-- Блок с кодом/промтом -->
+            <pre><code id="prompt-content">&lt;!-- Здесь будет текст промта --&gt;</code></pre>
+
+        </div>
+
+    </main>
+
+    <script>
+        // --- 1. ТЕКСТ ПРОМТА ---
+        // Весь текст промта (взят из ai_prompt_for_auth.md) 
+        // хранится здесь в "чистом" виде для копирования.
+        const promptText = `## Задача: Защитить HTML-файл с помощью Firebase Authentication
+
+Возьми HTML-файл, который я предоставлю [здесь], и модифицируй его, чтобы добавить систему аутентификации.
+
+**Требования к безопасности:**
+
+1.  **Только Админ:** Доступ к содержимому страницы должен быть **только** у Администратора (вход через GitHub) с UID: \`56vTQLliI7gcBuvOgKdFzBDl90y1\`.
+2.  **Заблокировать всех:** Анонимный вход должен быть отключен. Любой другой аутентифицированный пользователь (включая другие аккаунты Google или GitHub) должен видеть сообщение "Доступ запрещен".
+3.  **Скрыть контент:** Оригинальное содержимое HTML-файла должно быть полностью скрыто до успешного входа Админа.
+
+**Техническое задание:**
+Пожалуйста, в точности следуй "Универсальной Инструкции по Защите" (доступной по ссылке https://dks5.github.io/generic-auth-instructions.html) для модификации кода.
+
+**План действий:**
+
+1.  **Шаг 1: Добавить в \`<head>\`**
+    * Добавь в \`<head>\` оригинального HTML-файла скрипты для \`Tailwind CSS\` и \`Ionicons\`.
+
+2.  **Шаг 2: Добавить в \`<body>\` (в начало)**
+    * Вставь в самое начало \`<body>\` блок \`<header>\` для аутентификации. Этот \`<header>\` должен содержать:
+        * Кнопку "Войти (Админ)" (GitHub).
+        * Кнопку "Выйти".
+        * Индикатор пользователя (\`#user-display\`).
+        * Индикатор загрузки/ошибки (\`#loading-indicator\`).
+    * (Кнопку "Войти (Google)" добавлять не нужно).
+
+3.  **Шаг 3: Обернуть контент**
+    * Найди *весь* оригинальный видимый контент, который был в \`<body>\`, и оберни его в тег \`<main id="main-content" style="display: none;">\`.
+    * (Следуй пояснению из "Универсальной Инструкции" о том, что \`style\` и \`script\`-библиотеки остаются в \`<head>\`, а сам контент приложения помещается внутрь \`<main>\`).
+
+4.  **Шаг 4: Добавить в \`<body>\` (в конец)**
+    * Вставь в самый конец \`<body>\`, *после* закрывающего \`</main>\`, полный JavaScript-блок \`<script type="module">\` для аутентификации.
+    * Этот скрипт должен использовать конфигурацию Firebase для \`archive-89fc1\`.
+    * Константа \`ADMIN_UID\` должна быть \`"56vTQLliI7gcBuvOgKdFzBDl90y1"\`.
+    * Логика \`setupInterface\` должна показывать \`#main-content\` **только** если \`isAdmin == true\`.
+
+Пожалуйста, предоставь мне полный, обновленный код HTML-файла, готовый к развертыванию.`;
+
+        
+        // --- 2. ЛОГИКА ОТОБРАЖЕНИЯ ---
+        // Экранируем HTML-символы для безопасного отображения в <pre>
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+        
+        // Находим элемент <code> и вставляем в него экранированный текст
+        const contentElement = document.getElementById('prompt-content');
+        contentElement.innerHTML = escapeHTML(promptText);
+
+
+        // --- 3. ЛОГИКА КОПИРОВАНИЯ ---
+        const copyButton = document.getElementById('copy-button');
+        const copyIcon = document.getElementById('copy-icon');
+
+        copyButton.addEventListener('click', () => {
+            // Создаем временный textarea, чтобы скопировать из него
+            // Это самый надежный метод для всех браузеров и мобильных устройств
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = promptText; // Копируем "чистый" текст
+            
+            // Скрываем его
+            tempTextArea.style.position = 'absolute';
+            tempTextArea.style.left = '-9999px';
+            
+            document.body.appendChild(tempTextArea);
+            
+            // Выделяем и копируем
+            tempTextArea.select();
+            tempTextArea.setSelectionRange(0, 99999); // Для мобильных
+            
+            try {
+                document.execCommand('copy');
+                
+                // Обратная связь: меняем иконку на "галочку"
+                copyIcon.setAttribute('name', 'checkmark-outline');
+                copyButton.classList.add('bg-green-600');
+                
+                // Возвращаем иконку обратно через 2 секунды
+                setTimeout(() => {
+                    copyIcon.setAttribute('name', 'copy-outline');
+                    copyButton.classList.remove('bg-green-600');
+                }, 2000);
+
+            } catch (err) {
+                console.error('Ошибка при копировании: ', err);
+                // Можно добавить обратную связь об ошибке
+                copyIcon.setAttribute('name', 'alert-circle-outline');
+                copyButton.classList.add('bg-red-600');
+                
+                setTimeout(() => {
+                    copyIcon.setAttribute('name', 'copy-outline');
+                    copyButton.classList.remove('bg-red-600');
+                }, 2000);
+            }
+            
+            // Удаляем временный элемент
+            document.body.removeChild(tempTextArea);
+        });
+
+    </script>
+</body>
+</html>
