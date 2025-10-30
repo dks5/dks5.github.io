@@ -2,12 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- Гарантирует правильное отображение и масштабирование на мобильных устройствах -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Промт для Защиты HTML</title>
+    <title>Промт для Защиты HTML (Admin)</title>
     <!-- Подключение Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Подключение Ionicons для иконок -->
+    <!-- Подключение Ionicons для иконок (ДОБАВЛЕНО ДЛЯ АУТЕНТИФИКАЦИИ) -->
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
@@ -48,33 +47,72 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <main class="w-full max-w-4xl mx-auto">
+    <!-- ====================================================== -->
+    <!-- ШАГ 2: ДОБАВЛЕНИЕ HEADER АУТЕНТИФИКАЦИИ -->
+    <!-- ====================================================== -->
+    <header class="text-center w-full max-w-6xl mx-auto mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-violet-300 mb-2">Защищенный Промт</h1>
         
-        <!-- Заголовок -->
+        <!-- Кнопки входа/выхода -->
+        <div class="flex justify-center space-x-4 my-6">
+            <button id="signin-button" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg transition-all flex items-center space-x-2">
+                <ion-icon name="logo-github"></ion-icon>
+                <span>Войти (Админ)</span>
+            </button>
+            <button id="signout-button" class="hidden bg-gray-700 hover:bg-gray-600 text-white py-2 px-5 rounded-lg transition-all flex items-center space-x-2">
+                <ion-icon name="log-out-outline"></ion-icon>
+                <span>Выйти</span>
+            </button>
+        </div>
+        
+        <!-- Индикатор пользователя -->
+        <p id="user-display" class="hidden text-green-400 mb-4"></p>
+
+        <!-- Индикатор загрузки/ошибки -->
+        <div id="loading-indicator" class="text-center text-lg text-gray-400 p-10">
+            <p>Загрузка...</p>
+            <p id="error-message" class="text-red-400 font-bold mt-4"></p>
+        </div>
+    </header>
+
+    <!-- ====================================================== -->
+    <!-- ШАГ 3: ОБЕРТКА ОРИГИНАЛЬНОГО КОНТЕНТА -->
+    <!-- ====================================================== -->
+    <!-- 'display: none' скроет этот блок до входа Админа -->
+    <main id="main-content" class="w-full max-w-4xl mx-auto" style="display: none;">
+        
+        <!-- Заголовок (оригинальный) -->
         <header class="text-center w-full mx-auto mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-violet-300 mb-2">Промт для Защиты HTML</h1>
             <p class="text-lg md:text-xl text-gray-400">Скопируйте этот текст, чтобы дать ИИ задачу по защите HTML-файла</p>
         </header>
 
-        <!-- Контейнер для блока с кодом (относительный) -->
+        <!-- Контейнер для блока с кодом (оригинальный) -->
         <div class="neo-glow-box p-4 md:p-6 relative">
             
-            <!-- Кнопка "Копировать" (абсолютная) -->
+            <!-- Кнопка "Копировать" (оригинальная) -->
+            <!-- 
+                (Вы изменили top-4/right-4 на top-10/right-10, 
+                я сохраняю ваше последнее изменение) 
+            -->
             <button id="copy-button" class="absolute top-10 right-10 bg-gray-700 hover:bg-violet-600 text-white p-2 rounded-lg transition-all focus:outline-none" title="Скопировать в буфер обмена">
                 <ion-icon id="copy-icon" name="copy-outline" class="text-2xl"></ion-icon>
             </button>
             
-            <!-- Блок с кодом/промтом -->
+            <!-- Блок с кодом/промтом (оригинальный) -->
             <pre><code id="prompt-content">&lt;!-- Здесь будет текст промта --&gt;</code></pre>
 
         </div>
 
     </main>
 
+    <!-- 
+      ОРИГИНАЛЬНЫЙ СКРИПТ (для копирования) 
+      Он остается здесь, так как он относится к 
+      контенту внутри <main>
+    -->
     <script>
         // --- 1. ТЕКСТ ПРОМТА ---
-        // Весь текст промта (взят из ai_prompt_for_auth.md) 
-        // хранится здесь в "чистом" виде для копирования.
         const promptText = `## Задача: Защитить HTML-файл с помощью Firebase Authentication
 
 Возьми HTML-файл, который я предоставлю [здесь], и модифицируй его, чтобы добавить систему аутентификации.
@@ -115,7 +153,6 @@
 
         
         // --- 2. ЛОГИКА ОТОБРАЖЕНИЯ ---
-        // Экранируем HTML-символы для безопасного отображения в <pre>
         function escapeHTML(str) {
             return str.replace(/[&<>"']/g, function(m) {
                 return {
@@ -128,60 +165,181 @@
             });
         }
         
-        // Находим элемент <code> и вставляем в него экранированный текст
         const contentElement = document.getElementById('prompt-content');
-        contentElement.innerHTML = escapeHTML(promptText);
+        if (contentElement) {
+            contentElement.innerHTML = escapeHTML(promptText);
+        }
 
 
         // --- 3. ЛОГИКА КОПИРОВАНИЯ ---
         const copyButton = document.getElementById('copy-button');
         const copyIcon = document.getElementById('copy-icon');
 
-        copyButton.addEventListener('click', () => {
-            // Создаем временный textarea, чтобы скопировать из него
-            // Это самый надежный метод для всех браузеров и мобильных устройств
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = promptText; // Копируем "чистый" текст
-            
-            // Скрываем его
-            tempTextArea.style.position = 'absolute';
-            tempTextArea.style.left = '-9999px';
-            
-            document.body.appendChild(tempTextArea);
-            
-            // Выделяем и копируем
-            tempTextArea.select();
-            tempTextArea.setSelectionRange(0, 99999); // Для мобильных
-            
-            try {
-                document.execCommand('copy');
+        if (copyButton) {
+            copyButton.addEventListener('click', () => {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = promptText; 
+                tempTextArea.style.position = 'absolute';
+                tempTextArea.style.left = '-9999px';
+                document.body.appendChild(tempTextArea);
                 
-                // Обратная связь: меняем иконку на "галочку"
-                copyIcon.setAttribute('name', 'checkmark-outline');
-                copyButton.classList.add('bg-green-600');
+                tempTextArea.select();
+                tempTextArea.setSelectionRange(0, 99999); 
                 
-                // Возвращаем иконку обратно через 2 секунды
-                setTimeout(() => {
-                    copyIcon.setAttribute('name', 'copy-outline');
-                    copyButton.classList.remove('bg-green-600');
-                }, 2000);
+                try {
+                    document.execCommand('copy');
+                    
+                    copyIcon.setAttribute('name', 'checkmark-outline');
+                    copyButton.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        copyIcon.setAttribute('name', 'copy-outline');
+                        copyButton.classList.remove('bg-green-600');
+                    }, 2000);
 
-            } catch (err) {
-                console.error('Ошибка при копировании: ', err);
-                // Можно добавить обратную связь об ошибке
-                copyIcon.setAttribute('name', 'alert-circle-outline');
-                copyButton.classList.add('bg-red-600');
+                } catch (err) {
+                    console.error('Ошибка при копировании: ', err);
+                    copyIcon.setAttribute('name', 'alert-circle-outline');
+                    copyButton.classList.add('bg-red-600');
+                    
+                    setTimeout(() => {
+                        copyIcon.setAttribute('name', 'copy-outline');
+                        copyButton.classList.remove('bg-red-600');
+                    }, 2000);
+                }
                 
-                setTimeout(() => {
-                    copyIcon.setAttribute('name', 'copy-outline');
-                    copyButton.classList.remove('bg-red-600');
-                }, 2000);
-            }
+                document.body.removeChild(tempTextArea);
+            });
+        }
+    </script>
+
+
+    <!-- ====================================================== -->
+    <!-- ШАГ 4: ДОБАВЛЕНИЕ СКРИПТА АУТЕНТИФИКАЦИИ -->
+    <!-- ====================================================== -->
+    <script type="module">
+        // Импорт Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            GithubAuthProvider,
+            signInWithPopup,
+            signOut,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Конфигурация ---
+        const MANUAL_FIREBASE_CONFIG = {
+            "apiKey": "AIzaSyAI2eGIMAHw3LWpRTATXBd2di6d2nJoj2w",
+            "authDomain": "archive-89fc1.firebaseapp.com",
+            "projectId": "archive-89fc1",
+            "storageBucket": "archive-89fc1.firebasestorage.app",
+            "messagingSenderId": "1023136270041",
+            "appId": "1:1023136270041:web:02af4902a9d9f53c4920c8"
+        };
+        
+        // UID Администратора
+        const ADMIN_UID = "56vTQLliI7gcBuvOgKdFzBDl90y1";
+        
+        let auth;
+
+        // --- Элементы UI ---
+        const mainContent = document.getElementById('main-content');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const signinButton = document.getElementById('signin-button');
+        const signoutButton = document.getElementById('signout-button');
+        const userDisplay = document.getElementById('user-display');
+
+        // --- Инициализация ---
+        try {
+            const app = initializeApp(MANUAL_FIREBASE_CONFIG);
+            auth = getAuth(app);
             
-            // Удаляем временный элемент
-            document.body.removeChild(tempTextArea);
-        });
+            // Запуск слушателя аутентификации
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // Пользователь вошел
+                    console.log("User is authenticated:", user.uid);
+                    const isAdmin = user.uid === ADMIN_UID;
+                    setupInterface(user, isAdmin);
+                } else {
+                    // Пользователь не вошел
+                    console.log("User is not authenticated.");
+                    setupInterface(null, false);
+                }
+            });
+
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            loadingIndicator.textContent = "Ошибка инициализации Firebase.";
+            errorMessage.textContent = error.message;
+        }
+
+        // --- Управление UI ---
+        function setupInterface(user, isAdmin) {
+            if (!user) {
+                // --- Состояние: Пользователь не вошел ---
+                mainContent.style.display = 'none'; // Скрываем контент
+                signinButton.style.display = 'flex';
+                signoutButton.style.display = 'none';
+                userDisplay.classList.add('hidden');
+                
+                loadingIndicator.classList.remove('hidden');
+                loadingIndicator.textContent = "Пожалуйста, войдите для просмотра.";
+                errorMessage.textContent = '';
+                
+            } else {
+                // --- Состояние: Пользователь вошел ---
+                signinButton.style.display = 'none';
+                signoutButton.style.display = 'flex';
+                userDisplay.classList.remove('hidden');
+                loadingIndicator.classList.add('hidden');
+
+                if (isAdmin) {
+                    // --- Админ ---
+                    mainContent.style.display = 'block'; // Показываем контент
+                    userDisplay.textContent = `Вы вошли как: ${user.displayName || 'Администратор'}`;
+                    userDisplay.classList.remove('text-red-400');
+                    userDisplay.classList.add('text-green-400');
+                
+                } else {
+                    // --- Не Админ ---
+                    mainContent.style.display = 'none'; // Скрываем контент
+                    userDisplay.textContent = `Доступ запрещен для: ${user.displayName || user.email}`;
+                    userDisplay.classList.add('text-red-400');
+                    userDisplay.classList.remove('text-green-400');
+                    
+                    loadingIndicator.classList.remove('hidden');
+                    loadingIndicator.textContent = "У вас нет прав для просмотра этого ресурса.";
+                }
+            }
+        }
+
+        // --- Функции Входа/Выхода ---
+        async function signInWithGitHub() {
+            const provider = new GithubAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("GitHub sign-in error:", error);
+                errorMessage.textContent = `Ошибка входа: ${error.message}`;
+            }
+        }
+
+        async function signOutUser() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Sign-out error:", error);
+            }
+        }
+        
+        // --- Назначение обработчиков ---
+        signinButton.addEventListener('click', signInWithGitHub);
+        signoutButton.addEventListener('click', signOutUser);
 
     </script>
+
 </body>
 </html>
