@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React-To-Single-HTML</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Babel для JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Import Map -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+      }
+    }
+    </script>
+
+    <style>
+        body { background-color: #f8fafc; height: 100vh; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+        .code-editor { font-family: 'Menlo', 'Monaco', 'Courier New', monospace; line-height: 1.5; }
+        .drag-active { border: 2px dashed #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Folder, FileCode, FileJson, Settings, Trash2, 
+            Copy, Check, X, UploadCloud, Play, Info,
+            ChevronDown, ChevronRight, FileText, Terminal, AlertCircle, MapPin, CheckCircle, MousePointerClick, FolderOpen, Lock, Download
+        } from 'lucide-react';
+
+        // --- КОНФИГУРАЦИЯ ПО УМОЛЧАНИЮ ---
+        const SYSTEM_FILES = {
+            'package.json': JSON.stringify({
+                "name": "single-file-app",
+                "private": true,
+                "version": "0.0.0",
+                "type": "module",
+                "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview" },
+                "dependencies": { "react": "^18.2.0", "react-dom": "^18.2.0", "lucide-react": "^0.344.0" },
+                "devDependencies": { "@types/node": "^20.0.0", "@vitejs/plugin-react": "^4.2.1", "typescript": "^5.2.2", "vite": "^5.1.4", "vite-plugin-singlefile": "^2.0.1" }
+            }, null, 2),
+            'vite.config.ts': `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nimport { viteSingleFile } from 'vite-plugin-singlefile';\n\nexport default defineConfig({\n  plugins: [react(), viteSingleFile()],\n  build: {\n    target: 'esnext',\n    assetsInlineLimit: 100000000,\n    chunkSizeWarningLimit: 100000000,\n    cssCodeSplit: false,\n    brotliSize: false,\n    rollupOptions: {\n      inlineDynamicImports: true,\n    },\n  },\n});`,
+            'tsconfig.json': JSON.stringify({
+                "compilerOptions": { "target": "ES2020", "useDefineForClassFields": true, "lib": ["ES2020", "DOM", "DOM.Iterable"], "module": "ESNext", "skipLibCheck": true, "moduleResolution": "bundler", "allowImportingTsExtensions": true, "resolveJsonModule": true, "isolatedModules": true, "noEmit": true, "jsx": "react-jsx", "strict": true, "noUnusedLocals": true, "noUnusedParameters": true, "noFallthroughCasesInSwitch": true },
+                "include": ["src"], "references": [{ "path": "./tsconfig.node.json" }]
+            }, null, 2),
+            'tsconfig.node.json': JSON.stringify({
+                "compilerOptions": { "composite": true, "skipLibCheck": true, "module": "ESNext", "moduleResolution": "bundler", "allowSyntheticDefaultImports": true },
+                "include": ["vite.config.ts"]
+            }, null, 2),
+            'index.html': `<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="utf-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n    <title>Single File App</title>\n    <script src="https://cdn.tailwindcss.com"><\/script>\n  </head>\n  <body>\n    <div id="root"></div>\n    <script type="module" src="/src/index.tsx"><\/script>\n  </body>\n</html>`
+        };
+
+        const TARGET_DIRS = [
+            { label: 'Домашняя папка (~)', value: '~' },
+            { label: 'Рабочий стол (Desktop)', value: '~/Desktop' },
+            { label: 'Загрузки (Downloads)', value: '~/Downloads' },
+            { label: 'Документы (Documents)', value: '~/Documents' },
+        ];
+
+        // --- КОМПОНЕНТЫ ---
+
+        const Modal = ({ title, onClose, children }) => (
+            <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="flex justify-between items-center p-4 border-b bg-slate-50">
+                        <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <Terminal className="w-5 h-5 text-slate-500"/> {title}
+                        </h3>
+                        <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-full transition"><X className="w-5 h-5 text-slate-500"/></button>
+                    </div>
+                    <div className="p-0 overflow-hidden flex-1 relative flex flex-col">
+                        {children}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const CopyButton = ({ text, className }) => {
+            const [copied, setCopied] = useState(false);
+            const handleCopy = () => {
+                navigator.clipboard.writeText(text);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+            return (
+                <button 
+                    onClick={handleCopy} 
+                    className={`rounded-md transition-all flex items-center justify-center ${copied ? 'bg-green-500 text-white' : ''} ${className}`}
+                    title="Копировать"
+                >
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+            );
+        };
+
+        const FileIcon = ({ name, isSystem }) => {
+            if (isSystem) {
+                if (name === 'vite.config.ts') return <Settings className="w-4 h-4 text-slate-300" />;
+                return <FileText className="w-4 h-4 text-slate-300" />;
+            }
+            if (name.endsWith('.tsx') || name.endsWith('.ts')) return <FileCode className="w-4 h-4 text-blue-600" />;
+            if (name.endsWith('.json')) return <FileJson className="w-4 h-4 text-yellow-600" />;
+            return <FileText className="w-4 h-4 text-slate-400" />;
+        };
+
+        const App = () => {
+            const [projectName, setProjectName] = useState('React-To-Single-HTML');
+            const [targetDir, setTargetDir] = useState('~');
+            const [files, setFiles] = useState([]);
+            const [selectedPath, setSelectedPath] = useState(null);
+            const [isDragOver, setIsDragOver] = useState(false);
+            const [showOutput, setShowOutput] = useState(false);
+            const [generatedScript, setGeneratedScript] = useState('');
+            const [sourcePath, setSourcePath] = useState('/Users/ad-min/Downloads/ai-studio-code');
+            const [importReport, setImportReport] = useState(null);
+            
+            const fileInputRef = useRef(null);
+
+            useEffect(() => {
+                const initialFiles = Object.entries(SYSTEM_FILES).map(([path, content]) => ({
+                    path, content, isSystem: true
+                }));
+                setFiles(initialFiles);
+                setSelectedPath(null);
+            }, []);
+
+            // --- ОБРАБОТКА ВЫБОРА ПАПКИ (КЛИК) ---
+            const handleManualSelect = async (e) => {
+                const selectedFiles = e.target.files;
+                if (!selectedFiles || selectedFiles.length === 0) return;
+
+                const newFiles = [];
+                
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    const path = file.webkitRelativePath;
+                    
+                    if (!path.includes('node_modules') && !path.includes('.git') && !path.includes('dist')) {
+                        const content = await file.text();
+                        newFiles.push({ path: path, content, isSystem: false });
+                    }
+                }
+
+                if (newFiles.length > 0) {
+                    setFiles(prev => {
+                        const systemPaths = prev.filter(f => f.isSystem).map(f => f.path);
+                        const filteredNew = newFiles.filter(f => !systemPaths.includes(f.path));
+                        return [...prev, ...filteredNew];
+                    });
+                    setImportReport({
+                        count: newFiles.length,
+                        fileNames: newFiles.map(f => f.path)
+                    });
+                    setSelectedPath(null);
+                }
+                e.target.value = '';
+            };
+
+            // --- DRAG & DROP ---
+            const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
+            const handleDragLeave = () => setIsDragOver(false);
+            
+            const handleDrop = async (e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                
+                const items = e.dataTransfer.items;
+                const newFiles = [];
+
+                const traverseFileTree = async (item, path = '') => {
+                    if (item.isFile) {
+                        const file = await new Promise(resolve => item.file(resolve));
+                        const content = await file.text();
+                        if (!path.includes('node_modules') && !path.includes('.git') && !path.includes('dist')) {
+                            newFiles.push({ path: path + file.name, content, isSystem: false });
+                        }
+                    } else if (item.isDirectory) {
+                        const dirReader = item.createReader();
+                        const entries = await new Promise(resolve => dirReader.readEntries(resolve));
+                        for (let i = 0; i < entries.length; i++) {
+                            await traverseFileTree(entries[i], path + item.name + "/");
+                        }
+                    }
+                };
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i].webkitGetAsEntry();
+                    if (item) await traverseFileTree(item);
+                }
+
+                if (newFiles.length > 0) {
+                    setFiles(prev => {
+                        const systemPaths = prev.filter(f => f.isSystem).map(f => f.path);
+                        const filteredNew = newFiles.filter(f => !systemPaths.includes(f.path));
+                        return [...prev, ...filteredNew];
+                    });
+                    setImportReport({
+                        count: newFiles.length,
+                        fileNames: newFiles.map(f => f.path)
+                    });
+                    setSelectedPath(null);
+                }
+            };
+
+            // --- GENERATOR ---
+            const generateScript = () => {
+                const delimiter = 'EOF_BUNDLE';
+                let script = `#!/bin/bash\n\n`;
+                script += `# 1. Переход в целевую папку и создание проекта\n`;
+                script += `cd ${targetDir}\n`;
+                script += `mkdir -p ${projectName}\n`;
+                script += `cd ${projectName}\n\n`;
+                
+                script += `# 2. Создаем файлы\n`;
+                files.forEach(file => {
+                    const dir = file.path.includes('/') ? file.path.substring(0, file.path.lastIndexOf('/')) : '';
+                    if (dir) script += `mkdir -p "${dir}"\n`;
+                    
+                    // ВАЖНО: Используем конкатенацию строк вместо шаблонных строк для контента,
+                    // чтобы избежать ошибок синтаксиса, если в коде пользователя есть backticks.
+                    script += "cat << '" + delimiter + "' > \"" + file.path + "\"\n";
+                    script += file.content;
+                    script += "\n" + delimiter + "\n\n";
+                });
+
+                script += `# 3. Установка и сборка\n`;
+                script += `echo "🚀 Установка зависимостей..."\n`;
+                script += `npm install\n`;
+                script += `echo "🔨 Сборка проекта..."\n`;
+                script += `npm run build\n`;
+                script += `echo "✅ Готово! Файл находится в ${targetDir}/${projectName}/dist/index.html"\n`;
+                script += `open dist/index.html\n`;
+
+                setGeneratedScript(script);
+                setShowOutput(true);
+            };
+
+            const downloadScript = () => {
+                const blob = new Blob([generatedScript], { type: 'text/x-sh' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'install.sh';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const updateFileContent = (val) => {
+                setFiles(files.map(f => f.path === selectedPath ? { ...f, content: val } : f));
+            };
+
+            const deleteFile = (path) => {
+                if (confirm('Удалить файл?')) {
+                    setFiles(files.filter(f => f.path !== path));
+                    if (selectedPath === path) setSelectedPath(null);
+                }
+            };
+
+            // Tree Logic
+            const fileTree = files.reduce((acc, file) => {
+                const parts = file.path.split('/');
+                let current = acc;
+                parts.forEach((part, i) => {
+                    if (i === parts.length - 1) {
+                        current.push({ name: part, path: file.path, type: 'file', isSystem: file.isSystem });
+                    } else {
+                        let folder = current.find(x => x.name === part && x.type === 'folder');
+                        if (!folder) {
+                            folder = { name: part, type: 'folder', children: [] };
+                            current.push(folder);
+                        }
+                        current = folder.children;
+                    }
+                });
+                return acc;
+            }, []);
+
+            const renderTree = (nodes, depth = 0) => {
+                return nodes.sort((a,b) => (a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'folder' ? -1 : 1)).map((node) => (
+                    <div key={node.name + depth} className="select-none">
+                        {node.type === 'folder' ? (
+                            <div className="ml-2">
+                                <div className="flex items-center gap-1 text-slate-500 py-1 font-medium text-xs uppercase tracking-wider">
+                                    <ChevronDown className="w-3 h-3" /> <Folder className="w-3 h-3" /> {node.name}
+                                </div>
+                                <div className="border-l border-slate-200 ml-2 pl-1">
+                                    {renderTree(node.children, depth + 1)}
+                                </div>
+                            </div>
+                        ) : (
+                            <div 
+                                onClick={() => setSelectedPath(node.path)}
+                                className={`flex items-center justify-between group cursor-pointer py-1.5 px-2 rounded-md text-sm ml-2 mb-0.5 transition-colors ${selectedPath === node.path ? 'bg-blue-100 text-blue-800 font-medium' : 'text-slate-600 hover:bg-slate-100'}`}
+                                title={node.isSystem ? "Системный файл. Редактируйте только если знаете, что делаете." : ""}
+                            >
+                                <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                    <FileIcon name={node.name} isSystem={node.isSystem} />
+                                    <span className={`truncate ${node.isSystem ? 'text-slate-400' : 'text-slate-700'}`}>{node.name}</span>
+                                    {node.isSystem && (
+                                        <span className="text-[9px] leading-none bg-slate-50 text-slate-300 border border-slate-100 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold shrink-0">
+                                            System
+                                        </span>
+                                    )}
+                                </div>
+                                {!node.isSystem && (
+                                    <button onClick={(e) => { e.stopPropagation(); deleteFile(node.path); }} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500">
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                ));
+            };
+
+            const selectedFile = files.find(f => f.path === selectedPath);
+            const prepareCommand = `cd "${sourcePath}" && mkdir -p src && mv App.tsx index.tsx logic.ts types.ts constants.ts index.css src/ 2>/dev/null || true`;
+            const runFileCommand = `cd ~/Downloads && chmod +x install.sh && ./install.sh`;
+
+            return (
+                <div className="flex h-screen w-full" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+                    
+                    {/* СКРЫТЫЙ INPUT ДЛЯ ВЫБОРА ПАПКИ */}
+                    <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        webkitdirectory="" 
+                        directory="" 
+                        multiple 
+                        className="hidden" 
+                        onChange={handleManualSelect}
+                    />
+
+                    {/* 1. ЛЕВАЯ КОЛОНКА */}
+                    <div className="w-72 bg-white border-r border-slate-200 flex flex-col z-10">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50">
+                            <h1 className="font-bold text-blue-600 flex items-center gap-2 mb-4">
+                                <UploadCloud className="w-5 h-5 text-blue-600" />
+                                <span>React-To-Single-HTML</span>
+                            </h1>
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Имя папки проекта</label>
+                                    <input 
+                                        type="text" 
+                                        value={projectName} 
+                                        onChange={(e) => setProjectName(e.target.value)} 
+                                        className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono text-slate-400"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" /> Где создать?
+                                    </label>
+                                    <div className="relative">
+                                        <select 
+                                            value={targetDir} 
+                                            onChange={(e) => setTargetDir(e.target.value)}
+                                            className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-slate-600"
+                                        >
+                                            {TARGET_DIRS.map(dir => (
+                                                <option key={dir.value} value={dir.value}>{dir.label}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-2 top-2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 break-all px-1">
+                                        Будет создано в: <span className="font-mono">{targetDir}/{projectName}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ИНФОРМАЦИОННЫЙ БЛОК О СИСТЕМНЫХ ФАЙЛАХ */}
+                        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 text-xs text-slate-500 leading-snug">
+                            <div className="flex gap-2">
+                                <Info className="w-4 h-4 text-blue-400 shrink-0" />
+                                <span>
+                                    <span className="font-semibold text-slate-600">Системные файлы</span> (серые) уже настроены. Добавьте только свой код.
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-2 scrollbar-thin">
+                            {files.length === 0 ? (
+                                <div className="text-center text-slate-400 mt-10 text-sm px-4">
+                                    Перетащите папку src сюда
+                                </div>
+                            ) : renderTree(fileTree)}
+                        </div>
+                        <div className="p-2 border-t border-slate-100 bg-slate-50 text-[10px] text-slate-400 text-center">
+                            Всего файлов: {files.length}
+                        </div>
+                    </div>
+
+                    {/* 2. ЦЕНТРАЛЬНАЯ КОЛОНКА */}
+                    <div className="flex-1 flex flex-col bg-slate-50 relative min-w-0">
+                        {/* Drag Overlay */}
+                        {isDragOver && (
+                            <div className="absolute inset-0 bg-blue-500/10 border-4 border-blue-500 border-dashed z-50 flex items-center justify-center backdrop-blur-sm pointer-events-none">
+                                <div className="bg-white p-6 rounded-xl shadow-xl text-center">
+                                    <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-2" />
+                                    <h3 className="text-xl font-bold text-slate-700">Импорт файлов</h3>
+                                    <p className="text-slate-500">Отпустите, чтобы добавить в проект</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Toolbar */}
+                        <div className="h-12 bg-white border-b border-slate-200 flex items-center justify-between px-4 shadow-sm shrink-0">
+                            <div className="flex items-center gap-2 text-sm text-slate-500 overflow-hidden">
+                                {selectedPath ? (
+                                    <>
+                                        <span className="font-mono bg-slate-100 px-2 py-1 rounded text-slate-700 truncate">{selectedPath}</span>
+                                        {files.find(f => f.path === selectedPath)?.isSystem && <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full uppercase font-bold tracking-wide">Config</span>}
+                                    </>
+                                ) : <span>Выберите файл</span>}
+                            </div>
+                        </div>
+
+                        {/* Editor / Report / Placeholder */}
+                        <div className="flex-1 relative">
+                            {selectedPath ? (
+                                <textarea 
+                                    className="w-full h-full p-6 bg-white text-slate-800 font-mono text-sm outline-none resize-none code-editor"
+                                    value={selectedFile?.content || ''}
+                                    onChange={(e) => updateFileContent(e.target.value)}
+                                    spellCheck="false"
+                                />
+                            ) : importReport ? (
+                                <div className="flex flex-col items-center justify-center h-full p-8">
+                                    <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 max-w-md w-full text-center animate-in zoom-in duration-300">
+                                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <CheckCircle className="w-8 h-8 text-green-600" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-slate-800 mb-2">Успешно загружено</h3>
+                                        <p className="text-slate-500 mb-6">Добавлено файлов: <span className="font-bold text-slate-800">{importReport.count}</span></p>
+                                        
+                                        <div className="bg-slate-50 rounded-lg border border-slate-100 p-3 text-left max-h-48 overflow-y-auto scrollbar-thin mb-6">
+                                            <ul className="space-y-1">
+                                                {importReport.fileNames.map((name, i) => (
+                                                    <li key={i} className="text-xs text-slate-600 font-mono flex items-center gap-2">
+                                                        <FileCode className="w-3 h-3 text-blue-400" /> {name}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <p className="text-xs text-slate-400">Выберите файл в меню слева для редактирования</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                                    <div className="p-6 rounded-full bg-white shadow-sm mb-4">
+                                        <UploadCloud className="w-16 h-16 text-blue-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-600 mb-2">Импорт файлов</h3>
+                                    <p className="text-sm mb-6">Перетащите папку <code>src</code> сюда</p>
+                                    
+                                    <button 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-all active:scale-95 text-sm font-medium"
+                                    >
+                                        <FolderOpen className="w-4 h-4" /> Выбрать папку src
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 3. ПРАВАЯ КОЛОНКА */}
+                    <div className="w-80 bg-white border-l border-slate-200 flex flex-col z-10 shadow-sm">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50">
+                            <button 
+                                onClick={generateScript} 
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg shadow-blue-200 transition-all active:scale-95"
+                            >
+                                <Play className="w-5 h-5 fill-current" /> Сгенерировать Bash
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-5 scrollbar-thin">
+                            <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-4">
+                                <Info className="w-5 h-5 text-blue-500" /> Инструкция
+                            </h3>
+                            
+                            <div className="space-y-6 text-sm text-slate-600 leading-relaxed">
+                                <div className="relative pl-4 border-l-2 border-purple-300">
+                                    <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-purple-500"></div>
+                                    <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                                        1. Подготовка <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">AI Studio</span>
+                                    </h4>
+                                    <p className="mt-1 text-xs text-slate-600 mb-2">
+                                        Если файлы лежат "в куче", укажите путь к ним, чтобы собрать их в <code>src</code>:
+                                    </p>
+                                    <div className="mb-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Путь к файлам</label>
+                                        <textarea 
+                                            value={sourcePath} 
+                                            onChange={(e) => setSourcePath(e.target.value)} 
+                                            className="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none font-mono text-slate-500 resize-y min-h-[2.5rem]"
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <div className="mt-2 rounded-lg overflow-hidden border border-slate-600">
+                                        <div className="flex items-center justify-between bg-slate-700 px-3 py-1.5 border-b border-slate-600">
+                                            <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-wider">Terminal Command</span>
+                                            <CopyButton text={prepareCommand} className="p-1 hover:bg-white/10 text-slate-300" />
+                                        </div>
+                                        <pre className="bg-slate-800 text-green-400 p-3 text-[10px] font-mono overflow-x-auto whitespace-pre-wrap break-all m-0">
+                                            {prepareCommand}
+                                        </pre>
+                                    </div>
+                                </div>
+
+                                <div className="relative pl-4 border-l-2 border-blue-200">
+                                    <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <h4 className="font-bold text-slate-800">2. Импорт</h4>
+                                    <p className="mt-1">Перетащите подготовленную папку <code>src</code> в центральную область этого окна.</p>
+                                    <p className="mt-1 text-xs text-slate-500 italic">Если перетаскивание не работает, нажмите кнопку "Выбрать папку src".</p>
+                                </div>
+
+                                <div className="relative pl-4 border-l-2 border-blue-200">
+                                    <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <h4 className="font-bold text-slate-800">3. Настройка</h4>
+                                    <p className="mt-1">Укажите имя проекта и место создания в левом меню.</p>
+                                </div>
+
+                                <div className="relative pl-4 border-l-2 border-green-200">
+                                    <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-green-500"></div>
+                                    <h4 className="font-bold text-slate-800">4. Запуск</h4>
+                                    <p className="mt-1">Нажмите <strong>Сгенерировать</strong>. Скопируйте код, вставьте в Terminal и нажмите Enter.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="p-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-400 text-center">
+                            React • TypeScript • Vite • SingleFile
+                        </div>
+                    </div>
+
+                    {/* МОДАЛЬНОЕ ОКНО */}
+                    {showOutput && (
+                        <Modal title="Готовый Bash-скрипт" onClose={() => setShowOutput(false)}>
+                            <div className="flex-1 relative bg-[#1e1e1e] flex flex-col min-h-[500px]">
+                                <div className="absolute top-4 right-4 z-20 flex gap-2">
+                                    <button 
+                                        onClick={downloadScript}
+                                        className="p-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-md transition-all flex items-center justify-center"
+                                        title="Скачать .sh файл"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                    <CopyButton text={generatedScript} className="p-2 bg-white/10 hover:bg-white/20 text-white border border-white/20" />
+                                </div>
+                                <div className="flex-1 overflow-auto p-4 scrollbar-thin">
+                                    <pre className="font-mono text-xs text-green-400 whitespace-pre-wrap break-all">
+                                        {generatedScript}
+                                    </pre>
+                                </div>
+                                
+                                {/* ИНСТРУКЦИЯ ДЛЯ СКАЧАННОГО ФАЙЛА */}
+                                <div className="bg-[#252525] p-4 border-t border-white/10">
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-blue-500/20 rounded-lg">
+                                            <Terminal className="w-5 h-5 text-blue-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="text-sm font-bold text-slate-200 mb-1">Если вы скачали файл install.sh:</h4>
+                                            <p className="text-xs text-slate-400 mb-2">
+                                                Браузеры сохраняют файлы без права на выполнение. Чтобы запустить скрипт, выполните эту команду в терминале:
+                                            </p>
+                                            <div className="relative group">
+                                                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <CopyButton text={runFileCommand} className="p-1 bg-white/10 hover:bg-white/20 text-white" />
+                                                </div>
+                                                <pre className="bg-black/30 text-blue-300 p-2 rounded text-[10px] font-mono border border-white/5 overflow-x-auto">
+                                                    {runFileCommand}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
+
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
