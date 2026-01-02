@@ -1,11 +1,83 @@
+<!-- 
+  ╔══════════════════════════════════════════════════════════════════════════════════════════╗
+  ║   📘 РУКОВОДСТВО АДМИНИСТРАТОРА БАЗЫ ЗНАНИЙ (GITHUB PAGES)                               ║
+  ║   v3.1 [Актуальная структура + Навигация по секциям]                                     ║
+  ╠══════════════════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                                          ║
+  ║   1. ДЛЯ ЧЕГО ЭТОТ КОД?                                                                  ║
+  ║   Этот файл (index.html) — это "фасад" вашего репозитория.                               ║
+  ║   Он превращает обычный список файлов GitHub в интерактивный веб-сайт с папками,         ║
+  ║   поиском и поддержкой темной темы. Скрипт работает полностью в браузере (Client-Side).  ║
+  ║                                                                                          ║
+  ║   2. КАК ЭТО РАБОТАЕТ?                                                                   ║
+  ║   Вся структура сайта управляется через HTML-список.                                     ║
+  ║   Скрипт считывает этот список и рисует интерфейс.                                       ║
+  ║                                                                                          ║
+  ║   3. СТРУКТУРА ФАЙЛОВ НА GITHUB (КРИТИЧЕСКИ ВАЖНО!)                                      ║
+  ║   Структура внутри этого файла должна ЗЕРКАЛЬНО отражать реальное расположение файлов.   ║
+  ║                                                                                          ║
+  ║   [Пример вашей текущей структуры]:                                                      ║
+  ║   Ваш_Репозиторий/                                                                       ║
+  ║   ├── index.html            (Этот файл)                                                  ║
+  ║   ├── anotherfile.html      (Файл лежит в корне, рядом с index.html)                     ║
+  ║   └── GEMINI-PERPLEXITY/    (Папка с файлами)                                            ║
+  ║       ├── Setup-Gemini-CLI.html                                                          ║
+  ║       └── ...                                                                            ║
+  ║                                                                                          ║
+  ║   4. КАК РЕДАКТИРОВАТЬ СОДЕРЖИМОЕ (В КОДЕ)                                               ║
+  ║   Для редактирования списка файлов перейдите к:                                          ║
+  ║   👉 [ SECTION 3: DATA SOURCE ] (Секция данных)                                          ║
+  ║   Найдите внутри блок: <div id="folderData" class="hidden">                              ║
+  ║                                                                                          ║
+  ║   [А] ДОБАВИТЬ ПАПКУ:                                                                    ║
+  ║       <div data-folder="ИМЯ_ПАПКИ_НА_GITHUB">                                            ║
+  ║           ...файлы...                                                                    ║
+  ║       </div>                                                                             ║
+  ║       * Важно: Имя в data-folder должно точно совпадать с именем папки на диске.         ║
+  ║                                                                                          ║
+  ║   [Б] ДОБАВИТЬ ФАЙЛ:                                                                     ║
+  ║       <div data-file="real-name.html">Отображаемое Имя</div>                             ║
+  ║       * data-file: реальное имя файла (для ссылки).                                      ║
+  ║       * Текст внутри div: то, что увидит пользователь.                                   ║
+  ║                                                                                          ║
+  ║   [В] ФАЙЛЫ В КОРНЕ (РЯДОМ С INDEX.HTML):                                                ║
+  ║       Используйте специальное имя папки, содержащее ".github.io" или слово "root".       ║
+  ║       Пример: <div data-folder="dks5.github.io"> ... </div>                              ║
+  ║                                                                                          ║
+  ║   [Г] УДАЛЕНИЕ:                                                                          ║
+  ║       Просто удалите соответствующие строки <div> из кода.                               ║
+  ║                                                                                          ║
+  ║   5. ТЕХНИЧЕСКИЕ ОСОБЕННОСТИ:                                                            ║
+  ║   Логика работы находится в 👉 [ SECTION 4: JS LOGIC ].                                  ║
+  ║   - Universal Routing: Код сам понимает, где корень сайта. Работает на любом аккаунте.   ║
+  ║   - No-Backend: Не требует базы данных.                                                  ║
+  ║                                                                                          ║
+  ╚══════════════════════════════════════════════════════════════════════════════════════════╝
+-->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- 
+      =============================================================================
+      [ SECTION 1: CONFIG & STYLES ]
+      Мета-теги, подключение библиотек и стили оформления.
+      =============================================================================
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная страница dks5</title>
+    <title>Главная страница</title>
     
-    <!-- Подключение Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Фавиконки -->
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="shortcut icon" href="/favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+
+    <!-- Подключение Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         body {
@@ -287,18 +359,19 @@
         
     </style>
 </head>
-<head>
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
-<link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
-<link rel="shortcut icon" href="/favicon/favicon.ico">
-<link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
-<link rel="manifest" href="/favicon/site.webmanifest">
-</head>
-    
+
 <body class="flex flex-col items-center px-4 md:px-6">
 
-    <!-- Header --><header class="w-full text-center py-8">
-        <h1 class="text-4xl font-bold glowing-text">Главная страница dks5</h1>
+    <!-- 
+      =============================================================================
+      [ SECTION 2: UI LAYOUT ]
+      Визуальная часть: Header, Grid Container, Modal Window.
+      =============================================================================
+    -->
+
+    <!-- Header -->
+    <header class="w-full text-center py-8">
+        <h1 class="text-4xl font-bold glowing-text">Главная страница</h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2">Обзор всех файлов, сгруппированных по темам.</p>
         <div class="mt-4 flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
             
@@ -308,55 +381,76 @@
         </div>
     </header>
 
-    <!-- Content container --><div class="w-full max-w-5xl p-6 card">
+    <!-- Content container -->
+    <div class="w-full max-w-5xl p-6 card">
         
-        <!-- НОВЫЙ КОНТЕЙНЕР: Сетка папок --><div id="folderGridContainer" class="folder-grid">
-            <!-- Карточки папок будут вставлены сюда с помощью JavaScript --></div>
+        <!-- КОНТЕЙНЕР: Сетка папок -->
+        <div id="folderGridContainer" class="folder-grid">
+            <!-- Карточки папок будут вставлены сюда с помощью JavaScript -->
+        </div>
 
-        <!-- Старый контейнер данных, теперь скрыт --><div class="root-folder-branches" style="display: none;">
-            <!-- Data for dynamic rendering --><div id="folderData" class="hidden">
+        <!-- 
+          =============================================================================
+          [ SECTION 3: DATA SOURCE ]
+          Скрытый блок данных. JavaScript читает эту структуру для рендеринга.
+          =============================================================================
+        -->
+        <div class="root-folder-branches" style="display: none;">
+            <div id="folderData" class="hidden">
 
-                
-                  
-                     /* --- НАЧАЛО БЛОКА: "dks5.github.io" -------------------------------------------------- */
-                    <div data-folder="dks5.github.io">
+                <!-- 
+                   ПАПКА 1: Корневой раздел (имя содержит .github.io)
+                   Это позволяет скрипту понять, что файлы лежат в корне сайта.
+                -->
+                <div data-folder="dks5.github.io">
                     <div data-file="anotherfile.html">anotherfile.html</div>
-                        <div data-file="dks5-main.html">dks5-main.html</div>
-                        <div data-file="generic-auth-instructions.html">generic-auth-instructions.html</div>
-                        <div data-file="firebase-protect-prompt.html">firebase-protect-prompt.html</div>
-                        <div data-file="React-To-Single-HTML.html">React-To-Single-HTML.html</div>
-                        
-                        
-                     
-                                     /* --- НАЧАЛО БЛОКА: "GEMINI-PERPLEXITY" -------------------------------------------------------- */
-                      <div data-folder="GEMINI-PERPLEXITY">
-                          <div data-file="get-perplexity-student-access.html">get-perplexity-student-access.html</div>
-                        <div data-file="Google-AI-Pro-12-Months.html">Google-AI-Pro-12-Months.html</div>
-                          <div data-file="Setup-Gemini-CLI.html">Setup-Gemini-CLI.html</div>
-                          <div data-file="Gemini-CLI-Review.html">Gemini-CLI-Review.html</div>
-                    </div>
-
+                    <div data-file="dks5-main.html">dks5-main.html</div>
+                    <div data-file="generic-auth-instructions.html">generic-auth-instructions.html</div>
+                    <div data-file="firebase-protect-prompt.html">firebase-protect-prompt.html</div>
+                    <div data-file="React-To-Single-HTML.html">React-To-Single-HTML.html</div>
                 </div>
+                 
+                <!-- ПАПКА 2: Тематический раздел -->
+                <div data-folder="GEMINI-PERPLEXITY">
+                    <div data-file="get-perplexity-student-access.html">get-perplexity-student-access.html</div>
+                    <div data-file="Google-AI-Pro-12-Months.html">Google-AI-Pro-12-Months.html</div>
+                    <div data-file="Setup-Gemini-CLI.html">Setup-Gemini-CLI.html</div>
+                    <div data-file="Gemini-CLI-Review.html">Gemini-CLI-Review.html</div>
+                </div>
+
+            </div>
         </div>
     </div>
     
-    <!-- НОВЫЙ HTML: Модальное окно (по умолчанию скрыто) --><div id="fileModal" class="modal-overlay hidden">
+    <!-- Модальное окно (по умолчанию скрыто) -->
+    <div id="fileModal" class="modal-overlay hidden">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <!-- Заголовок модального окна --><div class="modal-header">
+            <div class="modal-header">
                 <h2 id="modalTitle" class="modal-title">[Имя папки]</h2>
                 <button id="modalCloseBtn" class="modal-close-btn" aria-label="Закрыть окно">×</button>
             </div>
             
-            <!-- Список файлов в модальном окне --><div id="modalFileList" class="modal-file-list">
-                <!-- Файлы будут вставлены сюда с помощью JavaScript --></div>
+            <div id="modalFileList" class="modal-file-list">
+                <!-- Файлы будут вставлены сюда с помощью JavaScript -->
+            </div>
         </div>
     </div>
 
-
-    <!-- Footer --><footer class="w-full text-center text-gray-500 dark:text-gray-400 text-sm mt-8 mb-4">
+    <!-- Footer -->
+    <footer class="w-full text-center text-gray-500 dark:text-gray-400 text-sm mt-8 mb-4">
         <p>&copy; 2025. Все права защищены.</p>
     </footer>
 
+    <!-- 
+      =============================================================================
+      [ SECTION 4: JS LOGIC ]
+      Основная логика приложения:
+      1. Парсинг данных из HTML.
+      2. Генерация интерактивных карточек.
+      3. Универсальное формирование путей URL.
+      4. Управление темой (Dark/Light).
+      =============================================================================
+    -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const rootHtml = document.documentElement;
@@ -373,7 +467,6 @@
             const modalFileList = document.getElementById('modalFileList');
             const modalCloseBtn = document.getElementById('modalCloseBtn');
 
-
             // --- ФУНКЦИЯ РЕНДЕРИНГА (КАРТОЧКИ) ---
             const renderFolderCards = (folders) => {
                 gridContainer.innerHTML = '';
@@ -388,9 +481,6 @@
 
                     // --- ГИБКАЯ ПРОВЕРКА НА ЗАМОК ---
                     if (folder.isLocked) {
-                        
-                        // --- "ГЛАВНЫЙ РУБИЛЬНИК" ---
-                        // Эта строка ВКЛЮЧАЕТ замок на папке.
                         iconSpan.classList.add('locked-folder-icon');
                     }
                     iconSpan.textContent = '📁'; // Всегда папка
@@ -417,25 +507,29 @@
                 modalTitle.textContent = `[${folder.name}]`;
                 
                 // 2. Очистить и заполнить список файлов
-                modalFileList.innerHTML = ''; // Очистить старые
+                modalFileList.innerHTML = ''; 
                 
                 if (folder.files.length === 0) {
                     modalFileList.innerHTML = '<p class="text-gray-500"><em>В этой папке нет файлов.</em></p>';
                 }
                 
+                // --- ЛОГИКА УНИВЕРСАЛЬНЫХ ПУТЕЙ ---
+                // Определяем, является ли папка корневой.
+                // Если имя содержит .github.io или явно равно "root"
+                const isRoot = folder.name.includes('.github.io') || folder.name === 'root';
+
                 folder.files.forEach(file => {
-                    // То же самое исправление URL, что и раньше
-                    const baseUrl = folder.name === 'dks5.github.io' 
-                        ? `https://dks5.github.io/${file.href}` 
-                        : `https://dks5.github.io/${folder.name}/${file.href}`;
+                    // Генерируем относительный путь
+                    const baseUrl = isRoot 
+                        ? `${file.href}`                 // Если корень: просто имя файла
+                        : `${folder.name}/${file.href}`; // Если папка: папка/имя файла
                     
-                    // --- ИСПРАВЛЕНИЕ ДВОЙНОГО КЛЮЧА ---
+                    // --- ОБРАБОТКА ИКОНКИ КЛЮЧА ---
                     let fileIcon = '📄';
                     let displayName = file.name;
 
                     if (file.name.startsWith('🔑')) {
                         fileIcon = '🔑';
-                        // ИСПРАВЛЕНИЕ: Корректно удаляем мультибайтный эмодзи
                         displayName = Array.from(file.name).slice(1).join('').trim();
                     }
                     
@@ -456,30 +550,28 @@
             // --- ФУНКЦИЯ ЗАКРЫТИЯ МОДАЛЬНОГО ОКНА ---
             const closeModal = () => {
                 modal.classList.remove('open');
-                // Даем анимации затухания завершиться
                 setTimeout(() => {
                     modal.classList.add('hidden');
                     modalTitle.textContent = '';
                     modalFileList.innerHTML = '';
-                }, 300); // 300ms, как в CSS transition
+                }, 300);
             };
 
-            // --- ГИБКИЙ Парсер данных (с проверкой на 🔑) ---
+            // --- ПАРСЕР ДАННЫХ ---
             const getFolderData = () => {
                 const folders = [];
                 Array.from(folderDataContainer.children).forEach(folderEl => {
-                    if (folderEl.tagName !== 'DIV' || !folderEl.dataset.folder) return; // Пропускаем комментарии
+                    if (folderEl.tagName !== 'DIV' || !folderEl.dataset.folder) return; 
                     
                     const folderName = folderEl.dataset.folder;
                     const files = [];
-                    let hasLockedFile = false; // Флаг для папки
+                    let hasLockedFile = false; 
 
                     Array.from(folderEl.children).forEach(fileEl => {
-                        if (fileEl.tagName !== 'DIV' || !fileEl.dataset.file) return; // Пропускаем текст
+                        if (fileEl.tagName !== 'DIV' || !fileEl.dataset.file) return; 
                         
                         const fileName = fileEl.textContent;
                         
-                        // Проверяем, начинается ли имя файла с ключа
                         if (fileName.startsWith('🔑')) {
                             hasLockedFile = true;
                         }
@@ -490,18 +582,15 @@
                         });
                     });
                     
-                    // Сортируем файлы по имени
                     files.sort((a, b) => a.name.localeCompare(b.name));
                     
-                    // Добавляем папку с флагом isLocked
                     folders.push({ 
                         name: folderName, 
                         files: files, 
-                        isLocked: hasLockedFile // Добавляем свойство
+                        isLocked: hasLockedFile 
                     });
                 });
                 
-                // Сортируем папки по имени
                 folders.sort((a, b) => a.name.localeCompare(b.name));
                 return folders;
             };
@@ -509,16 +598,15 @@
             const folders = getFolderData();
             renderFolderCards(folders);
             
-            // --- События закрытия модального окна ---
+            // --- События закрытия ---
             modalCloseBtn.addEventListener('click', closeModal);
             modal.addEventListener('click', (e) => {
-                // Закрываем, если клик был по самому оверлею (фону)
                 if (e.target === modal) {
                     closeModal();
                 }
             });
             
-            // --- Theme Toggle Logic (без изменений) ---
+            // --- Theme Toggle Logic ---
             const currentTheme = localStorage.getItem('theme');
             if (currentTheme === 'dark' || (!currentTheme && prefersDark.matches)) {
                 rootHtml.classList.add('dark');
@@ -552,4 +640,3 @@
     </script>
 </body>
 </html>
-
