@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
-    <title>AI Interpreter (Safari Edition)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Translator V6.1 (Scroll Logs)</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -12,14 +12,12 @@
             --text-primary: #212121;
             --text-secondary: #757575;
             --samsung-blue: #007AFF; 
-            --radius-outer: 32px;
             --ai-gradient: linear-gradient(135deg, #2E8B57, #1E90FF, #9370DB);
             --ai-glow: rgba(30, 144, 255, 0.5);
         }
 
         * {
             box-sizing: border-box;
-            /* Критично для iOS: отключаем выделение текста и лупу */
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -33,14 +31,59 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-primary);
-            /* Используем dvh (Dynamic Viewport Height) для учета адресной строки iOS */
             height: 100dvh;
             width: 100vw;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* Фикс прокрутки на iOS */
             touch-action: none; 
+        }
+
+        /* --- LOG CONSOLE (SCROLLABLE & INTERACTIVE) --- */
+        #debug-wrapper {
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            z-index: 9999;
+            background: rgba(0,0,0,0.9);
+            border-bottom: 2px solid #333;
+            transition: height 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* State: Expanded (Default) */
+        #debug-wrapper.expanded { height: 160px; }
+        /* State: Collapsed */
+        #debug-wrapper.collapsed { height: 30px; }
+
+        #debug-header {
+            height: 30px;
+            background: #222;
+            color: #fff;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+        }
+
+        #debug-content {
+            flex: 1;
+            overflow-y: auto; /* Enable Scroll */
+            padding: 10px;
+            color: #00ff00;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+            pointer-events: auto; /* Allow touch */
+            -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+        }
+        
+        #copy-btn {
+            background: #444; color: #fff; border: 1px solid #666;
+            padding: 2px 8px; border-radius: 4px; font-size: 10px;
         }
 
         .container {
@@ -50,7 +93,12 @@
             gap: 2px;
             padding: 0;
             height: 100%;
+            padding-top: 160px; /* Init padding */
+            transition: padding-top 0.3s ease;
         }
+        
+        /* Adjust container when logs are collapsed */
+        body.logs-collapsed .container { padding-top: 30px; }
 
         .card {
             flex: 1;
@@ -66,174 +114,97 @@
 
         .card-top {
             transform: rotate(180deg);
-            border-bottom-left-radius: var(--radius-outer);
-            border-bottom-right-radius: var(--radius-outer);
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
         }
 
         .card-bottom {
-            border-top-left-radius: var(--radius-outer);
-            border-top-right-radius: var(--radius-outer);
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
         }
 
         .card.active { background-color: var(--card-active); }
 
-        /* Header */
         .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            height: 44px;
-            z-index: 10;
+            display: flex; justify-content: space-between; align-items: center; width: 100%; height: 44px; z-index: 10;
         }
 
-        /* Select styling adapted for iOS visual consistency */
         .lang-select-wrapper {
-            position: relative;
-            background: #e9ecef;
-            border-radius: 18px;
-            padding: 0;
-            display: flex;
-            align-items: center;
+            position: relative; background: #e9ecef; border-radius: 18px; padding: 0; display: flex; align-items: center;
         }
 
         .lang-select {
-            appearance: none;
-            -webkit-appearance: none;
-            background: transparent;
-            border: none;
-            padding: 6px 28px 6px 14px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #333;
-            border-radius: 18px;
-            z-index: 2;
+            appearance: none; -webkit-appearance: none; background: transparent; border: none;
+            padding: 8px 30px 8px 14px; font-size: 1rem; font-weight: 600; color: #333;
+            border-radius: 18px; z-index: 2;
         }
         
         .lang-select-wrapper::after {
-            content: '';
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 4px solid transparent;
-            border-top: 4px solid #666;
-            pointer-events: none;
+            content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            border: 5px solid transparent; border-top: 5px solid #666; pointer-events: none;
         }
 
-        /* Content */
         .content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            overflow: hidden;
-            padding: 10px 0;
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            width: 100%; overflow: hidden; padding: 10px 0;
         }
 
         .main-text {
-            font-size: 1.6rem;
-            font-weight: 700;
-            line-height: 1.25;
-            text-align: center;
-            color: var(--text-primary);
-            max-height: 25vh;
-            overflow-y: auto;
-            word-wrap: break-word;
-            /* Включаем инерционную прокрутку для iOS */
+            font-size: 1.6rem; font-weight: 700; line-height: 1.25; text-align: center;
+            color: var(--text-primary); max-height: 25vh; overflow-y: auto; word-wrap: break-word;
             -webkit-overflow-scrolling: touch; 
         }
         
         .interim { color: #888; font-weight: 400; }
+        .sub-text { font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 8px; font-weight: 500; }
 
-        .sub-text {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
-        /* Controls */
         .controls-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 90px;
-            padding-bottom: 10px;
+            display: flex; justify-content: center; align-items: center; height: 100px; padding-bottom: 10px;
         }
 
         .mic-btn {
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            background: white;
-            border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            /* CRITICAL FOR iOS PTT: */
-            touch-action: none; 
-            -webkit-user-select: none;
-            cursor: pointer;
+            width: 80px; height: 80px; border-radius: 50%; background: white; border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+            position: relative; touch-action: none; cursor: pointer; transition: transform 0.1s;
         }
 
-        .mic-btn svg {
-            width: 30px; height: 30px; fill: #444;
-            pointer-events: none; /* Пропускаем клики сквозь иконку */
-        }
-
-        .mic-btn.pressed {
-            transform: scale(0.92);
-            background: var(--ai-gradient);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 15px var(--ai-glow);
-        }
-
+        .mic-btn svg { width: 32px; height: 32px; fill: #444; pointer-events: none; }
+        .mic-btn.pressed { transform: scale(0.9); background: var(--ai-gradient); box-shadow: 0 0 25px var(--ai-glow); }
         .mic-btn.pressed svg { fill: white; }
 
-        /* Animation */
-        .wave-container {
-            display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0;
+        /* TEST BUTTON */
+        .test-btn {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 1000; background: #ff3b30; color: white; border: none;
+            padding: 10px 20px; border-radius: 20px; font-weight: bold;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
+
+        .wave-container { display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0; }
         .wave-container.active { opacity: 1; }
-        .wave-bar {
-            width: 4px; background: var(--samsung-blue); border-radius: 2px;
-            animation: wave 0.5s ease-in-out infinite alternate;
-        }
+        .wave-bar { width: 4px; background: var(--samsung-blue); border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
         .wave-bar:nth-child(1) { height: 10px; animation-delay: 0.1s; }
         .wave-bar:nth-child(2) { height: 18px; animation-delay: 0.2s; }
         .wave-bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
         @keyframes wave { 0% { height: 6px; opacity: 0.5; } 100% { height: 20px; opacity: 1; } }
-
-        /* Toast */
-        .toast {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(30, 30, 30, 0.95);
-            backdrop-filter: blur(4px);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 200;
-            text-align: center;
-            max-width: 80%;
-        }
-        .toast.visible { opacity: 1; }
-        .toast.error { background: #d32f2f; }
     </style>
 </head>
 <body>
 
+    <!-- LOG CONSOLE STRUCTURE -->
+    <div id="debug-wrapper" class="expanded">
+        <div id="debug-header" onclick="toggleLogs()">
+            <span>DEBUG LOGS (Tap to toggle)</span>
+            <button id="copy-btn" onclick="copyLogs(event)">COPY</button>
+        </div>
+        <div id="debug-content">Инициализация V6.1...</div>
+    </div>
+    
+    <!-- TEST BUTTON -->
+    <button class="test-btn" onclick="manualTestSound()">🔊 ТЕСТ ЗВУКА</button>
+
     <div class="container">
+        <!-- TOP -->
         <div class="card card-top" id="cardTop">
             <div class="header-row">
                 <div class="lang-select-wrapper">
@@ -241,23 +212,16 @@
                         <option value="zh-CN">中文</option>
                         <option value="en-US">English</option>
                         <option value="ru-RU">Русский</option>
-                        <option value="ko-KR">한국어</option>
-                        <option value="ja-JP">日本語</option>
-                        <option value="de-DE">Deutsch</option>
-                        <option value="fr-FR">Français</option>
-                        <option value="es-ES">Español</option>
                     </select>
                 </div>
                 <div class="wave-container" id="waveTop">
                     <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
                 </div>
             </div>
-
             <div class="content-area">
                 <div class="main-text" id="textTop">...</div>
                 <div class="sub-text" id="subTop">Удерживайте кнопку</div>
             </div>
-
             <div class="controls-row">
                 <div class="mic-btn" id="btnTop">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -265,6 +229,7 @@
             </div>
         </div>
 
+        <!-- BOTTOM -->
         <div class="card card-bottom" id="cardBottom">
             <div class="header-row">
                 <div class="lang-select-wrapper">
@@ -272,70 +237,92 @@
                         <option value="ru-RU" selected>Русский</option>
                         <option value="en-US">English</option>
                         <option value="zh-CN">中文</option>
-                        <option value="ko-KR">한국어</option>
-                        <option value="ja-JP">日本語</option>
-                        <option value="de-DE">Deutsch</option>
-                        <option value="fr-FR">Français</option>
-                        <option value="es-ES">Español</option>
                     </select>
                 </div>
                 <div class="wave-container" id="waveBottom">
                     <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
                 </div>
             </div>
-
             <div class="content-area">
                 <div class="main-text" id="textBottom">Удерживайте и говорите</div>
                 <div class="sub-text" id="subBottom">Перевод</div>
             </div>
-
             <div class="controls-row">
                 <div class="mic-btn" id="btnBottom">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </div>
             </div>
         </div>
-
-        <div class="toast" id="toast"></div>
     </div>
 
     <script>
-        // --- Configuration ---
         const els = {
-            cardBottom: document.getElementById('cardBottom'),
-            cardTop: document.getElementById('cardTop'),
-            textBottom: document.getElementById('textBottom'),
-            textTop: document.getElementById('textTop'),
-            subBottom: document.getElementById('subBottom'),
-            subTop: document.getElementById('subTop'),
-            waveBottom: document.getElementById('waveBottom'),
-            waveTop: document.getElementById('waveTop'),
-            btnBottom: document.getElementById('btnBottom'),
-            btnTop: document.getElementById('btnTop'),
-            toast: document.getElementById('toast'),
-            selBottom: document.getElementById('langSelectBottom'),
-            selTop: document.getElementById('langSelectTop')
+            cardBottom: document.getElementById('cardBottom'), cardTop: document.getElementById('cardTop'),
+            textBottom: document.getElementById('textBottom'), textTop: document.getElementById('textTop'),
+            subBottom: document.getElementById('subBottom'), subTop: document.getElementById('subTop'),
+            waveBottom: document.getElementById('waveBottom'), waveTop: document.getElementById('waveTop'),
+            btnBottom: document.getElementById('btnBottom'), btnTop: document.getElementById('btnTop'),
+            selBottom: document.getElementById('langSelectBottom'), selTop: document.getElementById('langSelectTop'),
+            debugContent: document.getElementById('debug-content')
         };
 
         let currentLangBottom = 'ru-RU';
         let currentLangTop = 'zh-CN';
-        
         let recognition;
         let isRecording = false;
         let activeSide = null;
         let finalTranscripts = "";
         let synth = window.speechSynthesis;
-        let recognitionTimeout; // Watchdog for Safari silence
+        
+        // --- FIX: Global variable to prevent GC ---
+        window.utterances = []; 
+
+        // --- NEW LOGGING SYSTEM ---
+        function log(msg) {
+            console.log(msg);
+            const time = new Date().toLocaleTimeString().split(' ')[0];
+            // Prepend new logs (Newest at top)
+            els.debugContent.innerHTML = `[${time}] ${msg}<br>` + els.debugContent.innerHTML;
+        }
+
+        function toggleLogs() {
+            const wrapper = document.getElementById('debug-wrapper');
+            wrapper.classList.toggle('expanded');
+            wrapper.classList.toggle('collapsed');
+            
+            if(wrapper.classList.contains('collapsed')) {
+                document.body.classList.add('logs-collapsed');
+            } else {
+                document.body.classList.remove('logs-collapsed');
+            }
+        }
+
+        function copyLogs(e) {
+            e.stopPropagation(); // Don't trigger toggle
+            const text = els.debugContent.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Логи скопированы!");
+            });
+        }
 
         window.onload = () => {
+            log("V6.1 Ready.");
             initSpeech();
             updateLangs();
             setupButtons();
             
-            // Warm up TTS engine on first touch (Safari requirement)
-            document.body.addEventListener('touchstart', () => {
-                if(synth.paused) synth.resume();
-            }, {once: true});
+            // Force Voice Load
+            let attempts = 0;
+            const loadVoices = setInterval(() => {
+                const voices = synth.getVoices();
+                if (voices.length > 0) {
+                    log(`Voices: ${voices.length}`);
+                    clearInterval(loadVoices);
+                } else {
+                    attempts++;
+                    if(attempts > 10) clearInterval(loadVoices);
+                }
+            }, 500);
         };
 
         function updateLangs() {
@@ -343,229 +330,187 @@
             currentLangTop = els.selTop.value;
         }
 
-        function initSpeech() {
-            // Check for WebKit prefix (standard for Safari/iOS)
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        // --- MANUAL TEST BUTTON ---
+        function manualTestSound() {
+            log("--- MANUAL TEST START ---");
+            synth.cancel();
             
-            if (!SR) {
-                showToast("Ваш браузер не поддерживает распознавание речи", true);
-                return;
-            }
+            // Простая фраза, работает всегда
+            const u = new SpeechSynthesisUtterance("Один два три");
+            u.lang = 'ru-RU';
+            u.rate = 1.0;
+            u.volume = 1.0;
+            
+            u.onstart = () => log("TEST: Playing!");
+            u.onend = () => log("TEST: Finished.");
+            u.onerror = (e) => log("TEST ERROR: " + e.error);
+            
+            window.utterances.push(u); // PREVENT GC
+            synth.speak(u);
+        }
 
+        // --- Speech Recognition ---
+        function initSpeech() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!SR) { log("No Speech API!"); return; }
+            
             recognition = new SR();
-            recognition.continuous = true; // Essential for "hold" logic
+            recognition.continuous = true;
             recognition.interimResults = true;
             recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
                 isRecording = true;
                 finalTranscripts = "";
+                log("Mic ON");
                 updateVisuals('listening', activeSide);
             };
 
             recognition.onend = () => {
                 isRecording = false;
-                clearTimeout(recognitionTimeout);
+                log("Mic OFF");
                 updateVisuals('idle', activeSide);
                 
-                // Only translate if we have text
                 if (finalTranscripts.trim().length > 0) {
                     processTranslation(finalTranscripts, activeSide);
                 }
             };
 
             recognition.onresult = (event) => {
-                // Reset watchdog timer on every result
-                clearTimeout(recognitionTimeout);
-                recognitionTimeout = setTimeout(() => {
-                    // If silence for 3s in PTT mode, maybe stop? 
-                    // Optional, but good for Safari which can hang
-                }, 3000);
-
                 let interim = '';
-                finalTranscripts = ''; 
-
+                finalTranscripts = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscripts += event.results[i][0].transcript;
-                    } else {
-                        interim += event.results[i][0].transcript;
+                    if (event.results[i] && event.results[i][0]) {
+                        if (event.results[i].isFinal) finalTranscripts += event.results[i][0].transcript;
+                        else interim += event.results[i][0].transcript;
                     }
                 }
-
                 const displayText = finalTranscripts + '<span class="interim">' + interim + '</span>';
-                
                 if (activeSide === 'BOTTOM') els.textBottom.innerHTML = displayText || "...";
                 else els.textTop.innerHTML = displayText || "...";
             };
-
-            recognition.onerror = (e) => {
-                console.log("Error:", e.error);
-                // Safari often throws 'no-speech' if you release too quick. Ignore it.
-                if (e.error === 'not-allowed') showToast("Включите доступ к микрофону!", true);
-                if (e.error === 'network') showToast("Нет интернета", true);
-                
-                isRecording = false;
-                updateVisuals('idle', activeSide);
-            };
+            
+            recognition.onerror = (e) => log("Mic Error: " + e.error);
         }
 
-        // --- iOS Optimized Touch Logic ---
         function setupButtons() {
             const addEvents = (btn, side) => {
-                // TOUCH START
                 btn.addEventListener('touchstart', (e) => {
-                    e.preventDefault(); // Stop zoom/scroll/selection
+                    e.preventDefault();
+                    // iOS Wake up call
+                    synth.cancel();
+                    let u = new SpeechSynthesisUtterance(" ");
+                    window.utterances.push(u);
+                    synth.speak(u);
+                    
                     startRecord(side);
                 }, {passive: false});
 
-                // TOUCH END
                 btn.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     stopRecord(side);
                 }, {passive: false});
                 
-                // MOUSE (Fallback for Desktop testing)
                 btn.addEventListener('mousedown', (e) => startRecord(side));
                 btn.addEventListener('mouseup', (e) => stopRecord(side));
-                btn.addEventListener('mouseleave', (e) => { if(isRecording) stopRecord(side); });
             };
-
             addEvents(els.btnBottom, 'BOTTOM');
             addEvents(els.btnTop, 'TOP');
         }
 
         function startRecord(side) {
             if (isRecording) return;
-            
-            // Stop any ongoing speech immediately
-            synth.cancel();
-
             activeSide = side;
-            
-            // Set Language - Safari requires full locale (e.g. ru-RU)
             recognition.lang = (side === 'BOTTOM') ? currentLangBottom : currentLangTop;
-
-            try {
-                recognition.start();
-                const btn = side === 'BOTTOM' ? els.btnBottom : els.btnTop;
-                btn.classList.add('pressed');
-            } catch(err) {
-                // Safari gets cranky if you restart too fast
-                console.log("Mic restart error", err);
-            }
+            try { 
+                recognition.start(); 
+                els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.add('pressed'); 
+            } 
+            catch(err) { log("Start Fail"); }
         }
 
         function stopRecord(side) {
             if (!isRecording) return;
-            
-            const btn = side === 'BOTTOM' ? els.btnBottom : els.btnTop;
-            btn.classList.remove('pressed');
-
-            try {
-                recognition.stop();
-            } catch(err) {}
+            els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.remove('pressed');
+            try { recognition.stop(); } catch(err) {}
         }
 
         async function processTranslation(text, sourceSide) {
-            let srcLang, tgtLang, outputEl, subEl;
-
+            log("Translating...");
+            let srcLang, tgtLang, outputEl;
             if (sourceSide === 'BOTTOM') {
-                srcLang = currentLangBottom;
-                tgtLang = currentLangTop;
-                outputEl = els.textTop;
-                subEl = els.subTop;
+                srcLang = currentLangBottom; tgtLang = currentLangTop; outputEl = els.textTop;
             } else {
-                srcLang = currentLangTop;
-                tgtLang = currentLangBottom;
-                outputEl = els.textBottom;
-                subEl = els.subBottom;
+                srcLang = currentLangTop; tgtLang = currentLangBottom; outputEl = els.textBottom;
             }
 
-            outputEl.innerHTML = '<span class="interim">...</span>';
-
             try {
-                const srcCode = srcLang.split('-')[0];
-                const tgtCode = tgtLang.split('-')[0];
-                
-                // Using MyMemory API
-                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcCode}|${tgtCode}`;
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang.split('-')[0]}|${tgtLang.split('-')[0]}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                
                 let translation = data.responseData.translatedText;
                 
-                // Clean HTML entities
                 const temp = document.createElement('div');
                 temp.innerHTML = translation;
                 translation = temp.textContent;
-
-                outputEl.textContent = translation;
                 
-                // Visual cues
-                if (sourceSide === 'BOTTOM') {
-                    els.cardTop.classList.add('active');
-                    els.waveTop.classList.add('active');
-                } else {
-                    els.cardBottom.classList.add('active');
-                    els.waveBottom.classList.add('active');
-                }
+                outputEl.textContent = translation;
+                log("Got Translation. Init TTS...");
+                
+                if (sourceSide === 'BOTTOM') { els.cardTop.classList.add('active'); els.waveTop.classList.add('active'); }
+                else { els.cardBottom.classList.add('active'); els.waveBottom.classList.add('active'); }
 
                 await speak(translation, tgtLang);
 
             } catch(e) {
-                outputEl.textContent = "Ошибка перевода";
+                log("Error: " + e.message);
             } finally {
-                els.cardTop.classList.remove('active');
-                els.cardBottom.classList.remove('active');
-                els.waveTop.classList.remove('active');
-                els.waveBottom.classList.remove('active');
+                els.cardTop.classList.remove('active'); els.cardBottom.classList.remove('active');
+                els.waveTop.classList.remove('active'); els.waveBottom.classList.remove('active');
             }
         }
 
         function speak(text, lang) {
             return new Promise((resolve) => {
-                if (!text) { resolve(); return; }
+                log(`Speak call for: ${lang}`);
+                synth.cancel(); 
                 
-                synth.cancel();
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = lang;
+                u.rate = 1.0;
                 
-                // Best effort voice matching
+                // --- VOICE SELECTION ---
                 const voices = synth.getVoices();
-                // iOS voices usually have names like "Milenya", "Yuri", etc.
-                // We prioritize full locale match
-                let voice = voices.find(v => v.lang === lang) || 
-                            voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+                let voice = voices.find(v => v.lang === lang);
+                // Fallbacks
+                if (!voice && lang.includes('ru')) voice = voices.find(v => v.name.includes('Milena') || v.lang.includes('ru'));
+                if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
                 
-                if(voice) u.voice = voice;
+                if (voice) {
+                    u.voice = voice;
+                    log(`Voice: ${voice.name}`);
+                } else {
+                    log("Using default voice");
+                }
 
-                u.onend = resolve;
-                u.onerror = (e) => {
-                    console.log("TTS Error", e);
-                    resolve();
-                };
+                u.onstart = () => log("TTS: PLAYING START");
+                u.onend = () => { log("TTS: END"); resolve(); };
+                u.onerror = (e) => { log("TTS ERROR: " + e.error); resolve(); };
+                
+                // !!! CRITICAL FIX !!!
+                // Save to global array to prevent Garbage Collection
+                window.utterances.push(u);
                 
                 synth.speak(u);
             });
         }
 
         function updateVisuals(state, side) {
-            els.waveBottom.classList.remove('active');
-            els.waveTop.classList.remove('active');
-            
+            els.waveBottom.classList.remove('active'); els.waveTop.classList.remove('active');
             if (state === 'listening') {
                 if (side === 'BOTTOM') els.waveBottom.classList.add('active');
                 else els.waveTop.classList.add('active');
             }
-        }
-
-        function showToast(msg, isError = false) {
-            els.toast.textContent = msg;
-            els.toast.classList.add('visible');
-            if(isError) els.toast.classList.add('error');
-            else els.toast.classList.remove('error');
-            setTimeout(() => els.toast.classList.remove('visible'), 3000);
         }
     </script>
 </body>
