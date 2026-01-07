@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
-    <title>AI Interpreter (Safari Edition)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI Translator (iOS Fixed)</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -19,7 +19,6 @@
 
         * {
             box-sizing: border-box;
-            /* Критично для iOS: отключаем выделение текста и лупу */
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -33,13 +32,12 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-primary);
-            /* Используем dvh (Dynamic Viewport Height) для учета адресной строки iOS */
+            height: 100vh; /* Fallback */
             height: 100dvh;
             width: 100vw;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* Фикс прокрутки на iOS */
             touch-action: none; 
         }
 
@@ -77,7 +75,6 @@
 
         .card.active { background-color: var(--card-active); }
 
-        /* Header */
         .header-row {
             display: flex;
             justify-content: space-between;
@@ -87,7 +84,6 @@
             z-index: 10;
         }
 
-        /* Select styling adapted for iOS visual consistency */
         .lang-select-wrapper {
             position: relative;
             background: #e9ecef;
@@ -102,8 +98,8 @@
             -webkit-appearance: none;
             background: transparent;
             border: none;
-            padding: 6px 28px 6px 14px;
-            font-size: 0.95rem;
+            padding: 8px 30px 8px 14px;
+            font-size: 1rem;
             font-weight: 600;
             color: #333;
             border-radius: 18px;
@@ -113,15 +109,14 @@
         .lang-select-wrapper::after {
             content: '';
             position: absolute;
-            right: 10px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
-            border: 4px solid transparent;
-            border-top: 4px solid #666;
+            border: 5px solid transparent;
+            border-top: 5px solid #666;
             pointer-events: none;
         }
 
-        /* Content */
         .content-area {
             flex: 1;
             display: flex;
@@ -142,7 +137,6 @@
             max-height: 25vh;
             overflow-y: auto;
             word-wrap: break-word;
-            /* Включаем инерционную прокрутку для iOS */
             -webkit-overflow-scrolling: touch; 
         }
         
@@ -156,46 +150,58 @@
             font-weight: 500;
         }
 
-        /* Controls */
         .controls-row {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 90px;
+            height: 100px;
             padding-bottom: 10px;
         }
 
         .mic-btn {
-            width: 76px;
-            height: 76px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: white;
             border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            /* CRITICAL FOR iOS PTT: */
             touch-action: none; 
-            -webkit-user-select: none;
             cursor: pointer;
+            transition: transform 0.1s;
         }
 
         .mic-btn svg {
-            width: 30px; height: 30px; fill: #444;
-            pointer-events: none; /* Пропускаем клики сквозь иконку */
+            width: 32px; height: 32px; fill: #444;
+            pointer-events: none;
         }
 
         .mic-btn.pressed {
-            transform: scale(0.92);
+            transform: scale(0.9);
             background: var(--ai-gradient);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 15px var(--ai-glow);
+            box-shadow: 0 0 25px var(--ai-glow);
         }
-
         .mic-btn.pressed svg { fill: white; }
 
-        /* Animation */
+        /* Sound Test Button (Debug) */
+        .sound-test-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid white;
+            display: none; /* Hidden by default */
+        }
+
+        /* Waves */
         .wave-container {
             display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0;
         }
@@ -209,13 +215,11 @@
         .wave-bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
         @keyframes wave { 0% { height: 6px; opacity: 0.5; } 100% { height: 20px; opacity: 1; } }
 
-        /* Toast */
         .toast {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(30, 30, 30, 0.95);
-            backdrop-filter: blur(4px);
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
@@ -225,13 +229,13 @@
             pointer-events: none;
             z-index: 200;
             text-align: center;
-            max-width: 80%;
         }
         .toast.visible { opacity: 1; }
-        .toast.error { background: #d32f2f; }
     </style>
 </head>
 <body>
+
+    <div id="unlock-overlay" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
 
     <div class="container">
         <div class="card card-top" id="cardTop">
@@ -244,7 +248,6 @@
                         <option value="ko-KR">한국어</option>
                         <option value="ja-JP">日本語</option>
                         <option value="de-DE">Deutsch</option>
-                        <option value="fr-FR">Français</option>
                         <option value="es-ES">Español</option>
                     </select>
                 </div>
@@ -265,6 +268,8 @@
             </div>
         </div>
 
+        <button class="sound-test-btn" onclick="testSound()">Тест звука</button>
+
         <div class="card card-bottom" id="cardBottom">
             <div class="header-row">
                 <div class="lang-select-wrapper">
@@ -275,7 +280,6 @@
                         <option value="ko-KR">한국어</option>
                         <option value="ja-JP">日本語</option>
                         <option value="de-DE">Deutsch</option>
-                        <option value="fr-FR">Français</option>
                         <option value="es-ES">Español</option>
                     </select>
                 </div>
@@ -300,7 +304,7 @@
     </div>
 
     <script>
-        // --- Configuration ---
+        // --- Setup ---
         const els = {
             cardBottom: document.getElementById('cardBottom'),
             cardTop: document.getElementById('cardTop'),
@@ -319,23 +323,25 @@
 
         let currentLangBottom = 'ru-RU';
         let currentLangTop = 'zh-CN';
-        
         let recognition;
         let isRecording = false;
         let activeSide = null;
         let finalTranscripts = "";
         let synth = window.speechSynthesis;
-        let recognitionTimeout; // Watchdog for Safari silence
 
+        // --- Init ---
         window.onload = () => {
             initSpeech();
             updateLangs();
             setupButtons();
             
-            // Warm up TTS engine on first touch (Safari requirement)
-            document.body.addEventListener('touchstart', () => {
-                if(synth.paused) synth.resume();
-            }, {once: true});
+            // Pre-load voices immediately
+            synth.getVoices();
+        };
+        
+        // Force voice loading for iOS
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log("Voices loaded:", synth.getVoices().length);
         };
 
         function updateLangs() {
@@ -344,16 +350,13 @@
         }
 
         function initSpeech() {
-            // Check for WebKit prefix (standard for Safari/iOS)
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
             if (!SR) {
-                showToast("Ваш браузер не поддерживает распознавание речи", true);
+                showToast("Ваш браузер устарел");
                 return;
             }
-
             recognition = new SR();
-            recognition.continuous = true; // Essential for "hold" logic
+            recognition.continuous = true;
             recognition.interimResults = true;
             recognition.maxAlternatives = 1;
 
@@ -365,68 +368,48 @@
 
             recognition.onend = () => {
                 isRecording = false;
-                clearTimeout(recognitionTimeout);
                 updateVisuals('idle', activeSide);
-                
-                // Only translate if we have text
                 if (finalTranscripts.trim().length > 0) {
                     processTranslation(finalTranscripts, activeSide);
                 }
             };
 
             recognition.onresult = (event) => {
-                // Reset watchdog timer on every result
-                clearTimeout(recognitionTimeout);
-                recognitionTimeout = setTimeout(() => {
-                    // If silence for 3s in PTT mode, maybe stop? 
-                    // Optional, but good for Safari which can hang
-                }, 3000);
-
                 let interim = '';
-                finalTranscripts = ''; 
-
+                finalTranscripts = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscripts += event.results[i][0].transcript;
-                    } else {
-                        interim += event.results[i][0].transcript;
-                    }
+                    if (event.results[i].isFinal) finalTranscripts += event.results[i][0].transcript;
+                    else interim += event.results[i][0].transcript;
                 }
-
                 const displayText = finalTranscripts + '<span class="interim">' + interim + '</span>';
-                
                 if (activeSide === 'BOTTOM') els.textBottom.innerHTML = displayText || "...";
                 else els.textTop.innerHTML = displayText || "...";
             };
 
             recognition.onerror = (e) => {
-                console.log("Error:", e.error);
-                // Safari often throws 'no-speech' if you release too quick. Ignore it.
-                if (e.error === 'not-allowed') showToast("Включите доступ к микрофону!", true);
-                if (e.error === 'network') showToast("Нет интернета", true);
-                
                 isRecording = false;
                 updateVisuals('idle', activeSide);
+                if (e.error === 'not-allowed') showToast("Нет доступа к микрофону");
             };
         }
 
-        // --- iOS Optimized Touch Logic ---
+        // --- Button Logic (iOS Optimized) ---
         function setupButtons() {
             const addEvents = (btn, side) => {
-                // TOUCH START
+                // IMPORTANT: unlockAudio on touchstart
                 btn.addEventListener('touchstart', (e) => {
-                    e.preventDefault(); // Stop zoom/scroll/selection
+                    e.preventDefault();
+                    unlockAudio(); // <--- TRICK FOR IOS
                     startRecord(side);
                 }, {passive: false});
 
-                // TOUCH END
                 btn.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     stopRecord(side);
                 }, {passive: false});
-                
-                // MOUSE (Fallback for Desktop testing)
-                btn.addEventListener('mousedown', (e) => startRecord(side));
+
+                // Mouse (PC)
+                btn.addEventListener('mousedown', (e) => { unlockAudio(); startRecord(side); });
                 btn.addEventListener('mouseup', (e) => stopRecord(side));
                 btn.addEventListener('mouseleave', (e) => { if(isRecording) stopRecord(side); });
             };
@@ -435,137 +418,129 @@
             addEvents(els.btnTop, 'TOP');
         }
 
+        // --- Audio Unlocker ---
+        // Plays a silent sound to keep the audio session active during fetch
+        function unlockAudio() {
+            if (synth.speaking) synth.cancel();
+            // Create a practically empty utterance to "wake up" the engine
+            const u = new SpeechSynthesisUtterance(" ");
+            u.volume = 0; 
+            u.rate = 2;
+            synth.speak(u);
+        }
+
         function startRecord(side) {
             if (isRecording) return;
-            
-            // Stop any ongoing speech immediately
-            synth.cancel();
-
             activeSide = side;
-            
-            // Set Language - Safari requires full locale (e.g. ru-RU)
             recognition.lang = (side === 'BOTTOM') ? currentLangBottom : currentLangTop;
-
+            
             try {
                 recognition.start();
                 const btn = side === 'BOTTOM' ? els.btnBottom : els.btnTop;
                 btn.classList.add('pressed');
-            } catch(err) {
-                // Safari gets cranky if you restart too fast
-                console.log("Mic restart error", err);
-            }
+            } catch(err) {}
         }
 
         function stopRecord(side) {
             if (!isRecording) return;
-            
             const btn = side === 'BOTTOM' ? els.btnBottom : els.btnTop;
             btn.classList.remove('pressed');
-
-            try {
-                recognition.stop();
-            } catch(err) {}
+            try { recognition.stop(); } catch(err) {}
         }
 
         async function processTranslation(text, sourceSide) {
-            let srcLang, tgtLang, outputEl, subEl;
-
+            let srcLang, tgtLang, outputEl;
             if (sourceSide === 'BOTTOM') {
-                srcLang = currentLangBottom;
-                tgtLang = currentLangTop;
-                outputEl = els.textTop;
-                subEl = els.subTop;
+                srcLang = currentLangBottom; tgtLang = currentLangTop; outputEl = els.textTop;
             } else {
-                srcLang = currentLangTop;
-                tgtLang = currentLangBottom;
-                outputEl = els.textBottom;
-                subEl = els.subBottom;
+                srcLang = currentLangTop; tgtLang = currentLangBottom; outputEl = els.textBottom;
             }
-
+            
             outputEl.innerHTML = '<span class="interim">...</span>';
+
+            // iOS Trick: Speak "..." invisibly to keep session alive while fetching
+            const keepAlive = setInterval(() => {
+                if(!synth.speaking) {
+                    const u = new SpeechSynthesisUtterance(" ");
+                    u.volume = 0; synth.speak(u);
+                }
+            }, 2000);
 
             try {
                 const srcCode = srcLang.split('-')[0];
                 const tgtCode = tgtLang.split('-')[0];
-                
-                // Using MyMemory API
                 const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcCode}|${tgtCode}`;
+                
                 const res = await fetch(url);
                 const data = await res.json();
-                
                 let translation = data.responseData.translatedText;
-                
-                // Clean HTML entities
+
+                // Decode entities
                 const temp = document.createElement('div');
                 temp.innerHTML = translation;
                 translation = temp.textContent;
-
                 outputEl.textContent = translation;
+
+                // Stop keep-alive and speak for real
+                clearInterval(keepAlive);
+                synth.cancel(); // Clear the silent queue
                 
-                // Visual cues
-                if (sourceSide === 'BOTTOM') {
-                    els.cardTop.classList.add('active');
-                    els.waveTop.classList.add('active');
-                } else {
-                    els.cardBottom.classList.add('active');
-                    els.waveBottom.classList.add('active');
-                }
+                if (sourceSide === 'BOTTOM') { els.cardTop.classList.add('active'); els.waveTop.classList.add('active'); }
+                else { els.cardBottom.classList.add('active'); els.waveBottom.classList.add('active'); }
 
                 await speak(translation, tgtLang);
 
             } catch(e) {
-                outputEl.textContent = "Ошибка перевода";
+                clearInterval(keepAlive);
+                outputEl.textContent = "Ошибка";
             } finally {
-                els.cardTop.classList.remove('active');
-                els.cardBottom.classList.remove('active');
-                els.waveTop.classList.remove('active');
-                els.waveBottom.classList.remove('active');
+                els.cardTop.classList.remove('active'); els.cardBottom.classList.remove('active');
+                els.waveTop.classList.remove('active'); els.waveBottom.classList.remove('active');
             }
         }
 
         function speak(text, lang) {
             return new Promise((resolve) => {
                 if (!text) { resolve(); return; }
-                
-                synth.cancel();
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = lang;
+                u.rate = 1.0;
                 
-                // Best effort voice matching
+                // --- Robust Voice Selection for iOS ---
                 const voices = synth.getVoices();
-                // iOS voices usually have names like "Milenya", "Yuri", etc.
-                // We prioritize full locale match
-                let voice = voices.find(v => v.lang === lang) || 
-                            voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+                // 1. Try exact match (ru-RU)
+                let voice = voices.find(v => v.lang === lang);
+                // 2. Try base lang match (ru) - prefers local/default
+                if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]) && v.localService);
+                // 3. Try any base lang match
+                if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
                 
-                if(voice) u.voice = voice;
+                if (voice) u.voice = voice;
 
                 u.onend = resolve;
-                u.onerror = (e) => {
-                    console.log("TTS Error", e);
-                    resolve();
-                };
-                
+                u.onerror = (e) => { console.log("TTS Error:", e); resolve(); };
                 synth.speak(u);
             });
         }
 
         function updateVisuals(state, side) {
-            els.waveBottom.classList.remove('active');
-            els.waveTop.classList.remove('active');
-            
+            els.waveBottom.classList.remove('active'); els.waveTop.classList.remove('active');
             if (state === 'listening') {
                 if (side === 'BOTTOM') els.waveBottom.classList.add('active');
                 else els.waveTop.classList.add('active');
             }
         }
 
-        function showToast(msg, isError = false) {
+        function showToast(msg) {
             els.toast.textContent = msg;
             els.toast.classList.add('visible');
-            if(isError) els.toast.classList.add('error');
-            else els.toast.classList.remove('error');
             setTimeout(() => els.toast.classList.remove('visible'), 3000);
+        }
+        
+        function testSound() {
+             const u = new SpeechSynthesisUtterance("Проверка звука");
+             u.lang = "ru-RU";
+             synth.speak(u);
         }
     </script>
 </body>
