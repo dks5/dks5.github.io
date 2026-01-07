@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Translator V5.1 (Fixed)</title>
+    <title>Translator V6 (Final Audio)</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -43,7 +43,7 @@
         #debug-console {
             position: absolute;
             top: 0; left: 0; width: 100%;
-            height: 120px;
+            height: 140px;
             background: rgba(0,0,0,0.9);
             color: #00ff00;
             font-size: 11px;
@@ -65,7 +65,7 @@
             gap: 2px;
             padding: 0;
             height: 100%;
-            padding-top: 120px; 
+            padding-top: 140px; 
         }
 
         .card {
@@ -140,6 +140,14 @@
         .mic-btn.pressed { transform: scale(0.9); background: var(--ai-gradient); box-shadow: 0 0 25px var(--ai-glow); }
         .mic-btn.pressed svg { fill: white; }
 
+        /* TEST BUTTON */
+        .test-btn {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 1000; background: #ff3b30; color: white; border: none;
+            padding: 10px 20px; border-radius: 20px; font-weight: bold;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
         .wave-container { display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0; }
         .wave-container.active { opacity: 1; }
         .wave-bar { width: 4px; background: var(--samsung-blue); border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
@@ -151,7 +159,10 @@
 </head>
 <body>
 
-    <div id="debug-console">Инициализация V5.1 (Safety Checks)...</div>
+    <div id="debug-console">Инициализация V6 (Audio GC Fix)...</div>
+    
+    <!-- TEST BUTTON -->
+    <button class="test-btn" onclick="manualTestSound()">🔊 ТЕСТ ЗВУКА</button>
 
     <div class="container">
         <!-- TOP -->
@@ -206,7 +217,6 @@
     </div>
 
     <script>
-        // --- Globals ---
         const els = {
             cardBottom: document.getElementById('cardBottom'), cardTop: document.getElementById('cardTop'),
             textBottom: document.getElementById('textBottom'), textTop: document.getElementById('textTop'),
@@ -225,9 +235,8 @@
         let finalTranscripts = "";
         let synth = window.speechSynthesis;
         
-        // --- Web Audio API (The Fix) ---
-        let audioCtx;
-        let silentOscillator;
+        // --- FIX: Global variable to prevent GC ---
+        window.utterances = []; 
 
         function log(msg) {
             console.log(msg);
@@ -235,19 +244,8 @@
             els.debug.innerHTML = `[${time}] ${msg}<br>` + els.debug.innerHTML;
         }
 
-        // --- Init ---
         window.onload = () => {
-            log("V5.1 Loaded.");
-            
-            // Init AudioContext safely
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-                log("AudioContext created.");
-            } catch(e) {
-                log("Warning: Web Audio API not supported.");
-            }
-
+            log("V6 Ready.");
             initSpeech();
             updateLangs();
             setupButtons();
@@ -257,11 +255,11 @@
             const loadVoices = setInterval(() => {
                 const voices = synth.getVoices();
                 if (voices.length > 0) {
-                    log(`Voices Loaded: ${voices.length}`);
+                    log(`Voices: ${voices.length}`);
                     clearInterval(loadVoices);
                 } else {
                     attempts++;
-                    if(attempts > 20) clearInterval(loadVoices);
+                    if(attempts > 10) clearInterval(loadVoices);
                 }
             }, 500);
         };
@@ -271,42 +269,23 @@
             currentLangTop = els.selTop.value;
         }
 
-        // --- Keep-Alive Mechanism ---
-        function startKeepAlive() {
-            if (!audioCtx) return;
+        // --- MANUAL TEST BUTTON ---
+        function manualTestSound() {
+            log("--- MANUAL TEST START ---");
+            synth.cancel();
             
-            // 1. Resume context if suspended (crucial for iOS)
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => log("AudioCtx Resumed"));
-            }
-
-            // 2. Play silent sound
-            try {
-                if (silentOscillator) { silentOscillator.stop(); silentOscillator.disconnect(); }
-                
-                silentOscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                gainNode.gain.value = 0.01; // Tiny volume (inaudible but active)
-                
-                silentOscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                silentOscillator.start();
-                log("Keep-Alive signal started");
-            } catch (e) {
-                log("KA Error: " + e.message);
-            }
-        }
-
-        function stopKeepAlive() {
-            if (silentOscillator) {
-                try {
-                    silentOscillator.stop();
-                    silentOscillator.disconnect();
-                    silentOscillator = null;
-                    log("Keep-Alive stopped");
-                } catch(e) {}
-            }
+            // Простая фраза, работает всегда
+            const u = new SpeechSynthesisUtterance("Один два три");
+            u.lang = 'ru-RU';
+            u.rate = 1.0;
+            u.volume = 1.0;
+            
+            u.onstart = () => log("TEST: Playing!");
+            u.onend = () => log("TEST: Finished.");
+            u.onerror = (e) => log("TEST ERROR: " + e.error);
+            
+            window.utterances.push(u); // PREVENT GC
+            synth.speak(u);
         }
 
         // --- Speech Recognition ---
@@ -332,10 +311,7 @@
                 updateVisuals('idle', activeSide);
                 
                 if (finalTranscripts.trim().length > 0) {
-                    // Do NOT stop KeepAlive here. Wait for TTS to start.
                     processTranslation(finalTranscripts, activeSide);
-                } else {
-                    stopKeepAlive(); // Nothing to say, stop engine
                 }
             };
 
@@ -343,31 +319,29 @@
                 let interim = '';
                 finalTranscripts = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    // --- SAFETY FIX START ---
-                    // Проверяем, существует ли результат, прежде чем читать его
                     if (event.results[i] && event.results[i][0]) {
                         if (event.results[i].isFinal) finalTranscripts += event.results[i][0].transcript;
                         else interim += event.results[i][0].transcript;
                     }
-                    // --- SAFETY FIX END ---
                 }
                 const displayText = finalTranscripts + '<span class="interim">' + interim + '</span>';
                 if (activeSide === 'BOTTOM') els.textBottom.innerHTML = displayText || "...";
                 else els.textTop.innerHTML = displayText || "...";
             };
             
-            recognition.onerror = (e) => {
-                log("Mic Error: " + e.error);
-                stopKeepAlive();
-            };
+            recognition.onerror = (e) => log("Mic Error: " + e.error);
         }
 
         function setupButtons() {
             const addEvents = (btn, side) => {
                 btn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    // !!! CRITICAL: Start Audio Engine on Touch !!!
-                    startKeepAlive();
+                    // iOS Wake up call
+                    synth.cancel();
+                    let u = new SpeechSynthesisUtterance(" ");
+                    window.utterances.push(u);
+                    synth.speak(u);
+                    
                     startRecord(side);
                 }, {passive: false});
 
@@ -376,8 +350,7 @@
                     stopRecord(side);
                 }, {passive: false});
                 
-                // Mouse
-                btn.addEventListener('mousedown', (e) => { startKeepAlive(); startRecord(side); });
+                btn.addEventListener('mousedown', (e) => startRecord(side));
                 btn.addEventListener('mouseup', (e) => stopRecord(side));
             };
             addEvents(els.btnBottom, 'BOTTOM');
@@ -392,7 +365,7 @@
                 recognition.start(); 
                 els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.add('pressed'); 
             } 
-            catch(err) { log("Rec Start Fail"); }
+            catch(err) { log("Start Fail"); }
         }
 
         function stopRecord(side) {
@@ -402,7 +375,7 @@
         }
 
         async function processTranslation(text, sourceSide) {
-            log("Fetching...");
+            log("Translating...");
             let srcLang, tgtLang, outputEl;
             if (sourceSide === 'BOTTOM') {
                 srcLang = currentLangBottom; tgtLang = currentLangTop; outputEl = els.textTop;
@@ -421,7 +394,7 @@
                 translation = temp.textContent;
                 
                 outputEl.textContent = translation;
-                log("Translated.");
+                log("Got Translation. Init TTS...");
                 
                 if (sourceSide === 'BOTTOM') { els.cardTop.classList.add('active'); els.waveTop.classList.add('active'); }
                 else { els.cardBottom.classList.add('active'); els.waveBottom.classList.add('active'); }
@@ -430,7 +403,6 @@
 
             } catch(e) {
                 log("Error: " + e.message);
-                stopKeepAlive();
             } finally {
                 els.cardTop.classList.remove('active'); els.cardBottom.classList.remove('active');
                 els.waveTop.classList.remove('active'); els.waveBottom.classList.remove('active');
@@ -439,39 +411,36 @@
 
         function speak(text, lang) {
             return new Promise((resolve) => {
-                log(`Speak: ${lang}`);
+                log(`Speak call for: ${lang}`);
                 synth.cancel(); 
                 
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = lang;
+                u.rate = 1.0;
                 
+                // --- VOICE SELECTION ---
                 const voices = synth.getVoices();
                 let voice = voices.find(v => v.lang === lang);
+                // Fallbacks
                 if (!voice && lang.includes('ru')) voice = voices.find(v => v.name.includes('Milena') || v.lang.includes('ru'));
                 if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-                if (voice) u.voice = voice;
+                
+                if (voice) {
+                    u.voice = voice;
+                    log(`Voice: ${voice.name}`);
+                } else {
+                    log("Using default voice");
+                }
 
-                u.onstart = () => {
-                    log("TTS: Playing");
-                    stopKeepAlive(); // Handover to TTS engine
-                };
-                u.onend = () => { log("TTS: Done"); resolve(); };
-                u.onerror = (e) => { 
-                    log("TTS Fail: " + e.error); 
-                    stopKeepAlive(); // Ensure clean up
-                    resolve(); 
-                };
+                u.onstart = () => log("TTS: PLAYING START");
+                u.onend = () => { log("TTS: END"); resolve(); };
+                u.onerror = (e) => { log("TTS ERROR: " + e.error); resolve(); };
+                
+                // !!! CRITICAL FIX !!!
+                // Save to global array to prevent Garbage Collection
+                window.utterances.push(u);
                 
                 synth.speak(u);
-                
-                // Watchdog for iOS TTS getting stuck
-                setTimeout(() => {
-                    if (synth.pending && !synth.speaking) {
-                        log("Force Resume TTS");
-                        synth.pause();
-                        synth.resume();
-                    }
-                }, 100);
             });
         }
 
