@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Translator V4 (Debug Mode)</title>
+    <title>Translator V5.1 (Fixed)</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -12,7 +12,6 @@
             --text-primary: #212121;
             --text-secondary: #757575;
             --samsung-blue: #007AFF; 
-            --radius-outer: 32px;
             --ai-gradient: linear-gradient(135deg, #2E8B57, #1E90FF, #9370DB);
             --ai-glow: rgba(30, 144, 255, 0.5);
         }
@@ -40,13 +39,13 @@
             touch-action: none; 
         }
 
-        /* --- ОКНО ОТЛАДКИ (Черная консоль сверху) --- */
+        /* LOG CONSOLE */
         #debug-console {
             position: absolute;
             top: 0; left: 0; width: 100%;
-            height: 130px;
+            height: 120px;
             background: rgba(0,0,0,0.9);
-            color: #00ff00; /* Зеленый текст */
+            color: #00ff00;
             font-size: 11px;
             line-height: 1.4;
             z-index: 9999;
@@ -66,7 +65,7 @@
             gap: 2px;
             padding: 0;
             height: 100%;
-            padding-top: 130px; /* Место, чтобы консоль не закрывала контент */
+            padding-top: 120px; 
         }
 
         .card {
@@ -83,148 +82,79 @@
 
         .card-top {
             transform: rotate(180deg);
-            border-bottom-left-radius: var(--radius-outer);
-            border-bottom-right-radius: var(--radius-outer);
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
         }
 
         .card-bottom {
-            border-top-left-radius: var(--radius-outer);
-            border-top-right-radius: var(--radius-outer);
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
         }
 
         .card.active { background-color: var(--card-active); }
 
         .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            height: 44px;
-            z-index: 10;
+            display: flex; justify-content: space-between; align-items: center; width: 100%; height: 44px; z-index: 10;
         }
 
         .lang-select-wrapper {
-            position: relative;
-            background: #e9ecef;
-            border-radius: 18px;
-            padding: 0;
-            display: flex;
-            align-items: center;
+            position: relative; background: #e9ecef; border-radius: 18px; padding: 0; display: flex; align-items: center;
         }
 
         .lang-select {
-            appearance: none;
-            -webkit-appearance: none;
-            background: transparent;
-            border: none;
-            padding: 8px 30px 8px 14px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #333;
-            border-radius: 18px;
-            z-index: 2;
+            appearance: none; -webkit-appearance: none; background: transparent; border: none;
+            padding: 8px 30px 8px 14px; font-size: 1rem; font-weight: 600; color: #333;
+            border-radius: 18px; z-index: 2;
         }
         
         .lang-select-wrapper::after {
-            content: '';
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 5px solid transparent;
-            border-top: 5px solid #666;
-            pointer-events: none;
+            content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            border: 5px solid transparent; border-top: 5px solid #666; pointer-events: none;
         }
 
         .content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            overflow: hidden;
-            padding: 10px 0;
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            width: 100%; overflow: hidden; padding: 10px 0;
         }
 
         .main-text {
-            font-size: 1.6rem;
-            font-weight: 700;
-            line-height: 1.25;
-            text-align: center;
-            color: var(--text-primary);
-            max-height: 25vh;
-            overflow-y: auto;
-            word-wrap: break-word;
+            font-size: 1.6rem; font-weight: 700; line-height: 1.25; text-align: center;
+            color: var(--text-primary); max-height: 25vh; overflow-y: auto; word-wrap: break-word;
             -webkit-overflow-scrolling: touch; 
         }
         
         .interim { color: #888; font-weight: 400; }
-
-        .sub-text {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-top: 8px;
-            font-weight: 500;
-        }
+        .sub-text { font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 8px; font-weight: 500; }
 
         .controls-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100px;
-            padding-bottom: 10px;
+            display: flex; justify-content: center; align-items: center; height: 100px; padding-bottom: 10px;
         }
 
         .mic-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: white;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            touch-action: none; 
-            cursor: pointer;
-            transition: transform 0.1s;
+            width: 80px; height: 80px; border-radius: 50%; background: white; border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+            position: relative; touch-action: none; cursor: pointer; transition: transform 0.1s;
         }
 
-        .mic-btn svg {
-            width: 32px; height: 32px; fill: #444;
-            pointer-events: none;
-        }
-
-        .mic-btn.pressed {
-            transform: scale(0.9);
-            background: var(--ai-gradient);
-            box-shadow: 0 0 25px var(--ai-glow);
-        }
+        .mic-btn svg { width: 32px; height: 32px; fill: #444; pointer-events: none; }
+        .mic-btn.pressed { transform: scale(0.9); background: var(--ai-gradient); box-shadow: 0 0 25px var(--ai-glow); }
         .mic-btn.pressed svg { fill: white; }
 
-        .wave-container {
-            display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0;
-        }
+        .wave-container { display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0; }
         .wave-container.active { opacity: 1; }
-        .wave-bar {
-            width: 4px; background: var(--samsung-blue); border-radius: 2px;
-            animation: wave 0.5s ease-in-out infinite alternate;
-        }
+        .wave-bar { width: 4px; background: var(--samsung-blue); border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
         .wave-bar:nth-child(1) { height: 10px; animation-delay: 0.1s; }
         .wave-bar:nth-child(2) { height: 18px; animation-delay: 0.2s; }
         .wave-bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
         @keyframes wave { 0% { height: 6px; opacity: 0.5; } 100% { height: 20px; opacity: 1; } }
-
     </style>
 </head>
 <body>
 
-    <div id="debug-console">Инициализация V4...</div>
+    <div id="debug-console">Инициализация V5.1 (Safety Checks)...</div>
 
     <div class="container">
+        <!-- TOP -->
         <div class="card card-top" id="cardTop">
             <div class="header-row">
                 <div class="lang-select-wrapper">
@@ -249,6 +179,7 @@
             </div>
         </div>
 
+        <!-- BOTTOM -->
         <div class="card card-bottom" id="cardBottom">
             <div class="header-row">
                 <div class="lang-select-wrapper">
@@ -275,7 +206,7 @@
     </div>
 
     <script>
-        // --- Глобальные переменные ---
+        // --- Globals ---
         const els = {
             cardBottom: document.getElementById('cardBottom'), cardTop: document.getElementById('cardTop'),
             textBottom: document.getElementById('textBottom'), textTop: document.getElementById('textTop'),
@@ -293,30 +224,35 @@
         let activeSide = null;
         let finalTranscripts = "";
         let synth = window.speechSynthesis;
+        
+        // --- Web Audio API (The Fix) ---
+        let audioCtx;
+        let silentOscillator;
 
-        // --- Функция Логирования (Пишет в черное окно) ---
         function log(msg) {
             console.log(msg);
             const time = new Date().toLocaleTimeString().split(' ')[0];
             els.debug.innerHTML = `[${time}] ${msg}<br>` + els.debug.innerHTML;
         }
 
-        // --- Инициализация ---
+        // --- Init ---
         window.onload = () => {
-            log("App Loaded. Checking API...");
+            log("V5.1 Loaded.");
             
-            // Проверка поддержки Speech API
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                log("CRITICAL ERROR: Speech API not supported! (Are you on Chrome?)");
-            } else {
-                log("Speech API found.");
+            // Init AudioContext safely
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                log("AudioContext created.");
+            } catch(e) {
+                log("Warning: Web Audio API not supported.");
             }
 
             initSpeech();
             updateLangs();
             setupButtons();
             
-            // Принудительная загрузка голосов (Цикл проверки)
+            // Force Voice Load
             let attempts = 0;
             const loadVoices = setInterval(() => {
                 const voices = synth.getVoices();
@@ -325,10 +261,7 @@
                     clearInterval(loadVoices);
                 } else {
                     attempts++;
-                    if(attempts > 20) { 
-                        log("Warning: Voices taking long to load..."); 
-                        clearInterval(loadVoices);
-                    }
+                    if(attempts > 20) clearInterval(loadVoices);
                 }
             }, 500);
         };
@@ -338,10 +271,48 @@
             currentLangTop = els.selTop.value;
         }
 
-        // --- Распознавание Речи ---
+        // --- Keep-Alive Mechanism ---
+        function startKeepAlive() {
+            if (!audioCtx) return;
+            
+            // 1. Resume context if suspended (crucial for iOS)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => log("AudioCtx Resumed"));
+            }
+
+            // 2. Play silent sound
+            try {
+                if (silentOscillator) { silentOscillator.stop(); silentOscillator.disconnect(); }
+                
+                silentOscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.01; // Tiny volume (inaudible but active)
+                
+                silentOscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                silentOscillator.start();
+                log("Keep-Alive signal started");
+            } catch (e) {
+                log("KA Error: " + e.message);
+            }
+        }
+
+        function stopKeepAlive() {
+            if (silentOscillator) {
+                try {
+                    silentOscillator.stop();
+                    silentOscillator.disconnect();
+                    silentOscillator = null;
+                    log("Keep-Alive stopped");
+                } catch(e) {}
+            }
+        }
+
+        // --- Speech Recognition ---
         function initSpeech() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if(!SR) return;
+            if(!SR) { log("No Speech API!"); return; }
             
             recognition = new SR();
             recognition.continuous = true;
@@ -351,24 +322,20 @@
             recognition.onstart = () => {
                 isRecording = true;
                 finalTranscripts = "";
-                log("Mic STARTED (Recording...)");
+                log("Mic ON");
                 updateVisuals('listening', activeSide);
             };
 
             recognition.onend = () => {
                 isRecording = false;
-                log("Mic STOPPED.");
+                log("Mic OFF");
                 updateVisuals('idle', activeSide);
                 
                 if (finalTranscripts.trim().length > 0) {
-                    // !!! ВАЖНАЯ ЗАДЕРЖКА ДЛЯ IOS !!!
-                    // Ждем 0.8 сек, чтобы iOS успела переключить аудиоканал
-                    log("Wait 800ms for audio switch...");
-                    setTimeout(() => {
-                         processTranslation(finalTranscripts, activeSide);
-                    }, 800); 
+                    // Do NOT stop KeepAlive here. Wait for TTS to start.
+                    processTranslation(finalTranscripts, activeSide);
                 } else {
-                    log("Ignored: No text detected");
+                    stopKeepAlive(); // Nothing to say, stop engine
                 }
             };
 
@@ -376,8 +343,13 @@
                 let interim = '';
                 finalTranscripts = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) finalTranscripts += event.results[i][0].transcript;
-                    else interim += event.results[i][0].transcript;
+                    // --- SAFETY FIX START ---
+                    // Проверяем, существует ли результат, прежде чем читать его
+                    if (event.results[i] && event.results[i][0]) {
+                        if (event.results[i].isFinal) finalTranscripts += event.results[i][0].transcript;
+                        else interim += event.results[i][0].transcript;
+                    }
+                    // --- SAFETY FIX END ---
                 }
                 const displayText = finalTranscripts + '<span class="interim">' + interim + '</span>';
                 if (activeSide === 'BOTTOM') els.textBottom.innerHTML = displayText || "...";
@@ -386,23 +358,16 @@
             
             recognition.onerror = (e) => {
                 log("Mic Error: " + e.error);
-                if(e.error === 'not-allowed') log("CHECK SETTINGS -> SAFARI -> MICROPHONE");
+                stopKeepAlive();
             };
         }
 
-        // --- Кнопки и "Разблокировка" Аудио ---
         function setupButtons() {
             const addEvents = (btn, side) => {
-                // TOUCH START (Самое важное для iOS)
                 btn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    // ХАК: Запускаем пустой звук, чтобы "разбудить" динамики прямо при касании
-                    log("Unlocking Audio Engine...");
-                    synth.cancel();
-                    let u = new SpeechSynthesisUtterance(" ");
-                    u.volume = 0; 
-                    synth.speak(u);
-                    
+                    // !!! CRITICAL: Start Audio Engine on Touch !!!
+                    startKeepAlive();
                     startRecord(side);
                 }, {passive: false});
 
@@ -411,8 +376,8 @@
                     stopRecord(side);
                 }, {passive: false});
                 
-                // MOUSE (для тестов на ПК)
-                btn.addEventListener('mousedown', (e) => startRecord(side));
+                // Mouse
+                btn.addEventListener('mousedown', (e) => { startKeepAlive(); startRecord(side); });
                 btn.addEventListener('mouseup', (e) => stopRecord(side));
             };
             addEvents(els.btnBottom, 'BOTTOM');
@@ -427,7 +392,7 @@
                 recognition.start(); 
                 els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.add('pressed'); 
             } 
-            catch(err) { log("Start failed: " + err); }
+            catch(err) { log("Rec Start Fail"); }
         }
 
         function stopRecord(side) {
@@ -436,9 +401,8 @@
             try { recognition.stop(); } catch(err) {}
         }
 
-        // --- Перевод и Озвучка ---
         async function processTranslation(text, sourceSide) {
-            log(`Translating: "${text.substring(0,10)}..."`);
+            log("Fetching...");
             let srcLang, tgtLang, outputEl;
             if (sourceSide === 'BOTTOM') {
                 srcLang = currentLangBottom; tgtLang = currentLangTop; outputEl = els.textTop;
@@ -447,29 +411,26 @@
             }
 
             try {
-                // Запрос к бесплатному API
                 const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang.split('-')[0]}|${tgtLang.split('-')[0]}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 let translation = data.responseData.translatedText;
                 
-                // Декодирование HTML сущностей
                 const temp = document.createElement('div');
                 temp.innerHTML = translation;
                 translation = temp.textContent;
                 
                 outputEl.textContent = translation;
-                log("Translation received.");
+                log("Translated.");
                 
-                // Анимация волн
                 if (sourceSide === 'BOTTOM') { els.cardTop.classList.add('active'); els.waveTop.classList.add('active'); }
                 else { els.cardBottom.classList.add('active'); els.waveBottom.classList.add('active'); }
 
                 await speak(translation, tgtLang);
 
             } catch(e) {
-                log("Network Error: " + e.message);
-                outputEl.textContent = "Error";
+                log("Error: " + e.message);
+                stopKeepAlive();
             } finally {
                 els.cardTop.classList.remove('active'); els.cardBottom.classList.remove('active');
                 els.waveTop.classList.remove('active'); els.waveBottom.classList.remove('active');
@@ -478,40 +439,39 @@
 
         function speak(text, lang) {
             return new Promise((resolve) => {
-                log(`Attempting TTS: ${lang}`);
-                synth.cancel(); // Очистить очередь
+                log(`Speak: ${lang}`);
+                synth.cancel(); 
                 
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = lang;
-                u.rate = 1.0;
-                u.volume = 1.0; 
-
-                // --- Умный выбор голоса для iOS ---
+                
                 const voices = synth.getVoices();
-                
-                // 1. Точное совпадение
                 let voice = voices.find(v => v.lang === lang);
-                
-                // 2. Поиск "Милены" (для русского), так как она работает лучше всего
-                if (!voice && lang.includes('ru')) {
-                    voice = voices.find(v => v.name.includes('Milena') || v.lang.includes('ru'));
-                }
-                
-                // 3. Любой голос этого языка
+                if (!voice && lang.includes('ru')) voice = voices.find(v => v.name.includes('Milena') || v.lang.includes('ru'));
                 if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-                
-                if (voice) {
-                    u.voice = voice;
-                    log(`Voice Selected: ${voice.name}`);
-                } else {
-                    log(`Warning: No specific voice found for ${lang}`);
-                }
+                if (voice) u.voice = voice;
 
-                u.onstart = () => log("TTS Status: PLAYING (Listen carefully!)");
-                u.onend = () => { log("TTS Status: Finished"); resolve(); };
-                u.onerror = (e) => { log("TTS ERROR: " + e.error); resolve(); };
+                u.onstart = () => {
+                    log("TTS: Playing");
+                    stopKeepAlive(); // Handover to TTS engine
+                };
+                u.onend = () => { log("TTS: Done"); resolve(); };
+                u.onerror = (e) => { 
+                    log("TTS Fail: " + e.error); 
+                    stopKeepAlive(); // Ensure clean up
+                    resolve(); 
+                };
                 
                 synth.speak(u);
+                
+                // Watchdog for iOS TTS getting stuck
+                setTimeout(() => {
+                    if (synth.pending && !synth.speaking) {
+                        log("Force Resume TTS");
+                        synth.pause();
+                        synth.resume();
+                    }
+                }, 100);
             });
         }
 
