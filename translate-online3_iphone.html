@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AI Translator (iOS Fixed)</title>
+    <title>Translator V4 (Debug Mode)</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -32,13 +32,31 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-primary);
-            height: 100vh; /* Fallback */
             height: 100dvh;
             width: 100vw;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             touch-action: none; 
+        }
+
+        /* --- ОКНО ОТЛАДКИ (Черная консоль сверху) --- */
+        #debug-console {
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            height: 130px;
+            background: rgba(0,0,0,0.9);
+            color: #00ff00; /* Зеленый текст */
+            font-size: 11px;
+            line-height: 1.4;
+            z-index: 9999;
+            pointer-events: none; 
+            overflow: hidden;
+            padding: 10px;
+            display: flex;
+            flex-direction: column-reverse;
+            font-family: 'Courier New', monospace;
+            border-bottom: 2px solid #333;
         }
 
         .container {
@@ -48,6 +66,7 @@
             gap: 2px;
             padding: 0;
             height: 100%;
+            padding-top: 130px; /* Место, чтобы консоль не закрывала контент */
         }
 
         .card {
@@ -186,22 +205,6 @@
         }
         .mic-btn.pressed svg { fill: white; }
 
-        /* Sound Test Button (Debug) */
-        .sound-test-btn {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 100;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 12px;
-            border: 1px solid white;
-            display: none; /* Hidden by default */
-        }
-
-        /* Waves */
         .wave-container {
             display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0;
         }
@@ -215,27 +218,11 @@
         .wave-bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
         @keyframes wave { 0% { height: 6px; opacity: 0.5; } 100% { height: 20px; opacity: 1; } }
 
-        .toast {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(30, 30, 30, 0.95);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 200;
-            text-align: center;
-        }
-        .toast.visible { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div id="unlock-overlay" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
+    <div id="debug-console">Инициализация V4...</div>
 
     <div class="container">
         <div class="card card-top" id="cardTop">
@@ -245,30 +232,22 @@
                         <option value="zh-CN">中文</option>
                         <option value="en-US">English</option>
                         <option value="ru-RU">Русский</option>
-                        <option value="ko-KR">한국어</option>
-                        <option value="ja-JP">日本語</option>
-                        <option value="de-DE">Deutsch</option>
-                        <option value="es-ES">Español</option>
                     </select>
                 </div>
                 <div class="wave-container" id="waveTop">
                     <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
                 </div>
             </div>
-
             <div class="content-area">
                 <div class="main-text" id="textTop">...</div>
                 <div class="sub-text" id="subTop">Удерживайте кнопку</div>
             </div>
-
             <div class="controls-row">
                 <div class="mic-btn" id="btnTop">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </div>
             </div>
         </div>
-
-        <button class="sound-test-btn" onclick="testSound()">Тест звука</button>
 
         <div class="card card-bottom" id="cardBottom">
             <div class="header-row">
@@ -277,48 +256,34 @@
                         <option value="ru-RU" selected>Русский</option>
                         <option value="en-US">English</option>
                         <option value="zh-CN">中文</option>
-                        <option value="ko-KR">한국어</option>
-                        <option value="ja-JP">日本語</option>
-                        <option value="de-DE">Deutsch</option>
-                        <option value="es-ES">Español</option>
                     </select>
                 </div>
                 <div class="wave-container" id="waveBottom">
                     <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
                 </div>
             </div>
-
             <div class="content-area">
                 <div class="main-text" id="textBottom">Удерживайте и говорите</div>
                 <div class="sub-text" id="subBottom">Перевод</div>
             </div>
-
             <div class="controls-row">
                 <div class="mic-btn" id="btnBottom">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </div>
             </div>
         </div>
-
-        <div class="toast" id="toast"></div>
     </div>
 
     <script>
-        // --- Setup ---
+        // --- Глобальные переменные ---
         const els = {
-            cardBottom: document.getElementById('cardBottom'),
-            cardTop: document.getElementById('cardTop'),
-            textBottom: document.getElementById('textBottom'),
-            textTop: document.getElementById('textTop'),
-            subBottom: document.getElementById('subBottom'),
-            subTop: document.getElementById('subTop'),
-            waveBottom: document.getElementById('waveBottom'),
-            waveTop: document.getElementById('waveTop'),
-            btnBottom: document.getElementById('btnBottom'),
-            btnTop: document.getElementById('btnTop'),
-            toast: document.getElementById('toast'),
-            selBottom: document.getElementById('langSelectBottom'),
-            selTop: document.getElementById('langSelectTop')
+            cardBottom: document.getElementById('cardBottom'), cardTop: document.getElementById('cardTop'),
+            textBottom: document.getElementById('textBottom'), textTop: document.getElementById('textTop'),
+            subBottom: document.getElementById('subBottom'), subTop: document.getElementById('subTop'),
+            waveBottom: document.getElementById('waveBottom'), waveTop: document.getElementById('waveTop'),
+            btnBottom: document.getElementById('btnBottom'), btnTop: document.getElementById('btnTop'),
+            selBottom: document.getElementById('langSelectBottom'), selTop: document.getElementById('langSelectTop'),
+            debug: document.getElementById('debug-console')
         };
 
         let currentLangBottom = 'ru-RU';
@@ -329,19 +294,43 @@
         let finalTranscripts = "";
         let synth = window.speechSynthesis;
 
-        // --- Init ---
+        // --- Функция Логирования (Пишет в черное окно) ---
+        function log(msg) {
+            console.log(msg);
+            const time = new Date().toLocaleTimeString().split(' ')[0];
+            els.debug.innerHTML = `[${time}] ${msg}<br>` + els.debug.innerHTML;
+        }
+
+        // --- Инициализация ---
         window.onload = () => {
+            log("App Loaded. Checking API...");
+            
+            // Проверка поддержки Speech API
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                log("CRITICAL ERROR: Speech API not supported! (Are you on Chrome?)");
+            } else {
+                log("Speech API found.");
+            }
+
             initSpeech();
             updateLangs();
             setupButtons();
             
-            // Pre-load voices immediately
-            synth.getVoices();
-        };
-        
-        // Force voice loading for iOS
-        window.speechSynthesis.onvoiceschanged = () => {
-            console.log("Voices loaded:", synth.getVoices().length);
+            // Принудительная загрузка голосов (Цикл проверки)
+            let attempts = 0;
+            const loadVoices = setInterval(() => {
+                const voices = synth.getVoices();
+                if (voices.length > 0) {
+                    log(`Voices Loaded: ${voices.length}`);
+                    clearInterval(loadVoices);
+                } else {
+                    attempts++;
+                    if(attempts > 20) { 
+                        log("Warning: Voices taking long to load..."); 
+                        clearInterval(loadVoices);
+                    }
+                }
+            }, 500);
         };
 
         function updateLangs() {
@@ -349,12 +338,11 @@
             currentLangTop = els.selTop.value;
         }
 
+        // --- Распознавание Речи ---
         function initSpeech() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                showToast("Ваш браузер устарел");
-                return;
-            }
+            if(!SR) return;
+            
             recognition = new SR();
             recognition.continuous = true;
             recognition.interimResults = true;
@@ -363,14 +351,24 @@
             recognition.onstart = () => {
                 isRecording = true;
                 finalTranscripts = "";
+                log("Mic STARTED (Recording...)");
                 updateVisuals('listening', activeSide);
             };
 
             recognition.onend = () => {
                 isRecording = false;
+                log("Mic STOPPED.");
                 updateVisuals('idle', activeSide);
+                
                 if (finalTranscripts.trim().length > 0) {
-                    processTranslation(finalTranscripts, activeSide);
+                    // !!! ВАЖНАЯ ЗАДЕРЖКА ДЛЯ IOS !!!
+                    // Ждем 0.8 сек, чтобы iOS успела переключить аудиоканал
+                    log("Wait 800ms for audio switch...");
+                    setTimeout(() => {
+                         processTranslation(finalTranscripts, activeSide);
+                    }, 800); 
+                } else {
+                    log("Ignored: No text detected");
                 }
             };
 
@@ -385,21 +383,26 @@
                 if (activeSide === 'BOTTOM') els.textBottom.innerHTML = displayText || "...";
                 else els.textTop.innerHTML = displayText || "...";
             };
-
+            
             recognition.onerror = (e) => {
-                isRecording = false;
-                updateVisuals('idle', activeSide);
-                if (e.error === 'not-allowed') showToast("Нет доступа к микрофону");
+                log("Mic Error: " + e.error);
+                if(e.error === 'not-allowed') log("CHECK SETTINGS -> SAFARI -> MICROPHONE");
             };
         }
 
-        // --- Button Logic (iOS Optimized) ---
+        // --- Кнопки и "Разблокировка" Аудио ---
         function setupButtons() {
             const addEvents = (btn, side) => {
-                // IMPORTANT: unlockAudio on touchstart
+                // TOUCH START (Самое важное для iOS)
                 btn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    unlockAudio(); // <--- TRICK FOR IOS
+                    // ХАК: Запускаем пустой звук, чтобы "разбудить" динамики прямо при касании
+                    log("Unlocking Audio Engine...");
+                    synth.cancel();
+                    let u = new SpeechSynthesisUtterance(" ");
+                    u.volume = 0; 
+                    synth.speak(u);
+                    
                     startRecord(side);
                 }, {passive: false});
 
@@ -407,92 +410,66 @@
                     e.preventDefault();
                     stopRecord(side);
                 }, {passive: false});
-
-                // Mouse (PC)
-                btn.addEventListener('mousedown', (e) => { unlockAudio(); startRecord(side); });
+                
+                // MOUSE (для тестов на ПК)
+                btn.addEventListener('mousedown', (e) => startRecord(side));
                 btn.addEventListener('mouseup', (e) => stopRecord(side));
-                btn.addEventListener('mouseleave', (e) => { if(isRecording) stopRecord(side); });
             };
-
             addEvents(els.btnBottom, 'BOTTOM');
             addEvents(els.btnTop, 'TOP');
-        }
-
-        // --- Audio Unlocker ---
-        // Plays a silent sound to keep the audio session active during fetch
-        function unlockAudio() {
-            if (synth.speaking) synth.cancel();
-            // Create a practically empty utterance to "wake up" the engine
-            const u = new SpeechSynthesisUtterance(" ");
-            u.volume = 0; 
-            u.rate = 2;
-            synth.speak(u);
         }
 
         function startRecord(side) {
             if (isRecording) return;
             activeSide = side;
             recognition.lang = (side === 'BOTTOM') ? currentLangBottom : currentLangTop;
-            
-            try {
-                recognition.start();
-                const btn = side === 'BOTTOM' ? els.btnBottom : els.btnTop;
-                btn.classList.add('pressed');
-            } catch(err) {}
+            try { 
+                recognition.start(); 
+                els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.add('pressed'); 
+            } 
+            catch(err) { log("Start failed: " + err); }
         }
 
         function stopRecord(side) {
             if (!isRecording) return;
-            const btn = side === 'BOTTOM' ? els.btnBottom : els.btnTop;
-            btn.classList.remove('pressed');
+            els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.remove('pressed');
             try { recognition.stop(); } catch(err) {}
         }
 
+        // --- Перевод и Озвучка ---
         async function processTranslation(text, sourceSide) {
+            log(`Translating: "${text.substring(0,10)}..."`);
             let srcLang, tgtLang, outputEl;
             if (sourceSide === 'BOTTOM') {
                 srcLang = currentLangBottom; tgtLang = currentLangTop; outputEl = els.textTop;
             } else {
                 srcLang = currentLangTop; tgtLang = currentLangBottom; outputEl = els.textBottom;
             }
-            
-            outputEl.innerHTML = '<span class="interim">...</span>';
-
-            // iOS Trick: Speak "..." invisibly to keep session alive while fetching
-            const keepAlive = setInterval(() => {
-                if(!synth.speaking) {
-                    const u = new SpeechSynthesisUtterance(" ");
-                    u.volume = 0; synth.speak(u);
-                }
-            }, 2000);
 
             try {
-                const srcCode = srcLang.split('-')[0];
-                const tgtCode = tgtLang.split('-')[0];
-                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcCode}|${tgtCode}`;
-                
+                // Запрос к бесплатному API
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang.split('-')[0]}|${tgtLang.split('-')[0]}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 let translation = data.responseData.translatedText;
-
-                // Decode entities
+                
+                // Декодирование HTML сущностей
                 const temp = document.createElement('div');
                 temp.innerHTML = translation;
                 translation = temp.textContent;
-                outputEl.textContent = translation;
-
-                // Stop keep-alive and speak for real
-                clearInterval(keepAlive);
-                synth.cancel(); // Clear the silent queue
                 
+                outputEl.textContent = translation;
+                log("Translation received.");
+                
+                // Анимация волн
                 if (sourceSide === 'BOTTOM') { els.cardTop.classList.add('active'); els.waveTop.classList.add('active'); }
                 else { els.cardBottom.classList.add('active'); els.waveBottom.classList.add('active'); }
 
                 await speak(translation, tgtLang);
 
             } catch(e) {
-                clearInterval(keepAlive);
-                outputEl.textContent = "Ошибка";
+                log("Network Error: " + e.message);
+                outputEl.textContent = "Error";
             } finally {
                 els.cardTop.classList.remove('active'); els.cardBottom.classList.remove('active');
                 els.waveTop.classList.remove('active'); els.waveBottom.classList.remove('active');
@@ -501,24 +478,39 @@
 
         function speak(text, lang) {
             return new Promise((resolve) => {
-                if (!text) { resolve(); return; }
+                log(`Attempting TTS: ${lang}`);
+                synth.cancel(); // Очистить очередь
+                
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = lang;
                 u.rate = 1.0;
-                
-                // --- Robust Voice Selection for iOS ---
+                u.volume = 1.0; 
+
+                // --- Умный выбор голоса для iOS ---
                 const voices = synth.getVoices();
-                // 1. Try exact match (ru-RU)
+                
+                // 1. Точное совпадение
                 let voice = voices.find(v => v.lang === lang);
-                // 2. Try base lang match (ru) - prefers local/default
-                if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]) && v.localService);
-                // 3. Try any base lang match
+                
+                // 2. Поиск "Милены" (для русского), так как она работает лучше всего
+                if (!voice && lang.includes('ru')) {
+                    voice = voices.find(v => v.name.includes('Milena') || v.lang.includes('ru'));
+                }
+                
+                // 3. Любой голос этого языка
                 if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
                 
-                if (voice) u.voice = voice;
+                if (voice) {
+                    u.voice = voice;
+                    log(`Voice Selected: ${voice.name}`);
+                } else {
+                    log(`Warning: No specific voice found for ${lang}`);
+                }
 
-                u.onend = resolve;
-                u.onerror = (e) => { console.log("TTS Error:", e); resolve(); };
+                u.onstart = () => log("TTS Status: PLAYING (Listen carefully!)");
+                u.onend = () => { log("TTS Status: Finished"); resolve(); };
+                u.onerror = (e) => { log("TTS ERROR: " + e.error); resolve(); };
+                
                 synth.speak(u);
             });
         }
@@ -529,18 +521,6 @@
                 if (side === 'BOTTOM') els.waveBottom.classList.add('active');
                 else els.waveTop.classList.add('active');
             }
-        }
-
-        function showToast(msg) {
-            els.toast.textContent = msg;
-            els.toast.classList.add('visible');
-            setTimeout(() => els.toast.classList.remove('visible'), 3000);
-        }
-        
-        function testSound() {
-             const u = new SpeechSynthesisUtterance("Проверка звука");
-             u.lang = "ru-RU";
-             synth.speak(u);
         }
     </script>
 </body>
