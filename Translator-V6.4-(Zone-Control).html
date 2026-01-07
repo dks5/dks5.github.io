@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Translator V6.2 (Swipe Logs)</title>
+    <title>Translator V6.4 (Zone Control)</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -36,20 +36,19 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            touch-action: pan-y; /* Разрешаем вертикальные жесты */
+            touch-action: pan-y; 
         }
 
-        /* --- LOG CONSOLE (SWIPEABLE DRAWER) --- */
+        /* --- LOG CONSOLE --- */
         #debug-wrapper {
-            position: fixed; /* Поверх всего */
+            position: fixed;
             top: 0; left: 0; width: 100%;
-            height: 40vh; /* 40% экрана */
+            height: 45vh;
             z-index: 9999;
             background: rgba(0,0,0,0.95);
             border-bottom: 2px solid #333;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
             
-            /* Скрыто по умолчанию (сдвинуто вверх) */
             transform: translateY(-100%);
             transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
             
@@ -57,39 +56,41 @@
             flex-direction: column;
         }
 
-        /* Класс для показа */
         #debug-wrapper.visible {
             transform: translateY(0);
         }
 
         #debug-header {
-            height: 40px;
+            height: 45px;
             background: #222;
             color: #fff;
-            font-size: 12px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 15px;
             border-bottom: 1px solid #444;
             flex-shrink: 0;
+            /* Заголовок реагирует на свайп */
         }
 
         #debug-content {
             flex: 1;
-            overflow-y: auto;
+            overflow-y: auto; 
             padding: 10px;
             color: #00ff00;
             font-size: 11px;
             font-family: 'Courier New', monospace;
-            line-height: 1.4;
+            line-height: 1.5;
             -webkit-overflow-scrolling: touch;
             pointer-events: auto;
+            /* Важно: предотвращает передачу скролла родительскому элементу */
+            overscroll-behavior: contain;
         }
         
         #copy-btn {
             background: #444; color: #fff; border: 1px solid #666;
-            padding: 4px 10px; border-radius: 4px; font-size: 10px;
+            padding: 5px 12px; border-radius: 6px; font-size: 11px;
             font-weight: bold;
         }
 
@@ -100,15 +101,13 @@
             gap: 2px;
             padding: 0;
             height: 100%;
-            padding-top: 0; /* Больше не нужно место под логи */
         }
         
-        /* Визуальная подсказка о свайпе (опционально) */
         .swipe-hint {
             position: absolute;
-            top: 10px; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 4px; border-radius: 2px;
-            background: rgba(0,0,0,0.1);
+            top: 15px; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 5px; border-radius: 3px;
+            background: rgba(0,0,0,0.15);
             z-index: 5;
             pointer-events: none;
         }
@@ -189,8 +188,8 @@
         .test-btn {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 1000; background: #ff3b30; color: white; border: none;
-            padding: 10px 20px; border-radius: 20px; font-weight: bold;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            padding: 12px 24px; border-radius: 24px; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .wave-container { display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0; }
@@ -206,11 +205,15 @@
 
     <!-- LOG CONSOLE STRUCTURE -->
     <div id="debug-wrapper">
-        <div id="debug-header">
-            <span>DEBUG LOGS (Swipe Up to close)</span>
+        <div id="debug-header" onclick="toggleLogs()">
+            <span>LOGS (Pull Header Up to Close)</span>
             <button id="copy-btn" onclick="copyLogs(event)">COPY</button>
         </div>
-        <div id="debug-content">Инициализация V6.2...<br>Свайпните ВНИЗ чтобы открыть логи.<br>Свайпните ВВЕРХ чтобы закрыть.</div>
+        <div id="debug-content">
+            V6.4.1 (Smart Voice Selection)<br>
+            - ТЕКСТ: Скролл (безопасный)<br>
+            - ПЕРЕВОДЧИК: Свайп (управление)<br>
+        </div>
     </div>
     
     <div class="swipe-hint"></div>
@@ -289,49 +292,62 @@
         let activeSide = null;
         let finalTranscripts = "";
         let synth = window.speechSynthesis;
-        
-        // --- FIX: Global variable to prevent GC ---
         window.utterances = []; 
 
-        // --- NEW LOGGING SYSTEM ---
         function log(msg) {
             console.log(msg);
             const time = new Date().toLocaleTimeString().split(' ')[0];
             els.debugContent.innerHTML = `[${time}] ${msg}<br>` + els.debugContent.innerHTML;
         }
 
-        // --- SWIPE GESTURES ---
+        function toggleLogs() {
+            els.debugWrapper.classList.toggle('visible');
+        }
+
+        // --- ZONE-BASED SWIPE GESTURES ---
         let touchStartY = 0;
         let touchEndY = 0;
+        let isSwipeTarget = false;
 
         document.addEventListener('touchstart', e => {
-            touchStartY = e.changedTouches[0].screenY;
+            if (e.target.closest('#debug-content')) {
+                isSwipeTarget = false; // Это скролл, игнорируем жест
+                return;
+            }
+
+            if (e.target.closest('.container') || e.target.closest('#debug-header')) {
+                isSwipeTarget = true;
+                touchStartY = e.changedTouches[0].screenY;
+            } else {
+                isSwipeTarget = false;
+            }
         }, {passive: false});
 
         document.addEventListener('touchend', e => {
+            if (!isSwipeTarget) return;
+
             touchEndY = e.changedTouches[0].screenY;
             handleSwipe();
+            isSwipeTarget = false;
         }, {passive: false});
 
         function handleSwipe() {
-            const SWIPE_THRESHOLD = 50; // pixels
+            const SWIPE_THRESHOLD = 50; 
             const swipeDistance = touchEndY - touchStartY;
             
-            // Swipe DOWN (positive distance) -> SHOW LOGS
+            // Свайп ВНИЗ -> ОТКРЫТЬ (если закрыто)
             if (swipeDistance > SWIPE_THRESHOLD) {
-                // Only allow opening if we are near the top (optional, but good for UX)
-                // or just allow it globally
                 if (!els.debugWrapper.classList.contains('visible')) {
                     els.debugWrapper.classList.add('visible');
-                    log("Logs Opened (Swipe Down)");
+                    log("Logs Opened");
                 }
             }
             
-            // Swipe UP (negative distance) -> HIDE LOGS
+            // Свайп ВВЕРХ -> ЗАКРЫТЬ (если открыто)
             if (swipeDistance < -SWIPE_THRESHOLD) {
                  if (els.debugWrapper.classList.contains('visible')) {
                     els.debugWrapper.classList.remove('visible');
-                    log("Logs Closed (Swipe Up)");
+                    log("Logs Closed");
                 }
             }
         }
@@ -345,7 +361,7 @@
         }
 
         window.onload = () => {
-            log("V6.2 Ready. Swipe DOWN to see logs.");
+            log("V6.4.1 Ready.");
             initSpeech();
             updateLangs();
             setupButtons();
@@ -368,25 +384,18 @@
             currentLangTop = els.selTop.value;
         }
 
-        // --- MANUAL TEST BUTTON ---
         function manualTestSound() {
             log("--- MANUAL TEST START ---");
             synth.cancel();
-            
             const u = new SpeechSynthesisUtterance("Один два три");
-            u.lang = 'ru-RU';
-            u.rate = 1.0;
-            u.volume = 1.0;
-            
+            u.lang = 'ru-RU'; u.rate = 1.0;
             u.onstart = () => log("TEST: Playing!");
             u.onend = () => log("TEST: Finished.");
             u.onerror = (e) => log("TEST ERROR: " + e.error);
-            
             window.utterances.push(u); 
             synth.speak(u);
         }
 
-        // --- Speech Recognition ---
         function initSpeech() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if(!SR) { log("No Speech API!"); return; }
@@ -507,19 +516,38 @@
 
         function speak(text, lang) {
             return new Promise((resolve) => {
-                log(`Speak call for: ${lang}`);
+                log(`Speak call: ${lang}`);
                 synth.cancel(); 
                 
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = lang;
                 u.rate = 1.0;
                 
-                // --- VOICE SELECTION ---
                 const voices = synth.getVoices();
-                let voice = voices.find(v => v.lang === lang);
-                // Fallbacks
-                if (!voice && lang.includes('ru')) voice = voices.find(v => v.name.includes('Milena') || v.lang.includes('ru'));
-                if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+                
+                // 1. Собираем все подходящие голоса (точное совпадение + базовый язык)
+                let availableVoices = voices.filter(v => v.lang === lang || v.lang.replace('_', '-') === lang);
+                
+                if (availableVoices.length === 0) {
+                    availableVoices = voices.filter(v => v.lang.startsWith(lang.split('-')[0]));
+                }
+
+                // 2. Умный выбор (Smart Selection)
+                let voice = null;
+                if (availableVoices.length > 0) {
+                    // Приоритет 1: Google (для Android)
+                    voice = availableVoices.find(v => v.name.includes('Google'));
+
+                    // Приоритет 2: Premium / Enhanced (для iOS/Windows)
+                    if (!voice) voice = availableVoices.find(v => v.name.includes('Premium') || v.name.includes('Enhanced'));
+
+                    // Приоритет 3: Известные хорошие голоса (Ting-Ting для китайского, Milena для русского)
+                    if (!voice && lang.includes('zh')) voice = availableVoices.find(v => v.name.includes('Ting-Ting'));
+                    if (!voice && lang.includes('ru')) voice = availableVoices.find(v => v.name.includes('Milena'));
+
+                    // Приоритет 4: Просто берем первый, если ничего крутого не нашли
+                    if (!voice) voice = availableVoices[0];
+                }
                 
                 if (voice) {
                     u.voice = voice;
@@ -533,7 +561,6 @@
                 u.onerror = (e) => { log("TTS ERROR: " + e.error); resolve(); };
                 
                 window.utterances.push(u);
-                
                 synth.speak(u);
             });
         }
