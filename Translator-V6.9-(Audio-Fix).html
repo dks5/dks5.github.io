@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Translator V6.9 (Audio Fix)</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --card-active: #e3f2fd;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --samsung-blue: #007AFF; 
+            --ai-gradient: linear-gradient(135deg, #2E8B57, #1E90FF, #9370DB);
+            --ai-glow: rgba(30, 144, 255, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            outline: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            touch-action: pan-y; 
+        }
+
+        /* --- LOG CONSOLE --- */
+        #debug-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: 45vh;
+            z-index: 9999;
+            background: rgba(0,0,0,0.95);
+            border-bottom: 2px solid #333;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            
+            transform: translateY(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            
+            display: flex;
+            flex-direction: column;
+        }
+
+        #debug-wrapper.visible { transform: translateY(0); }
+
+        #debug-header {
+            height: 45px; background: #222; color: #fff; font-size: 13px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; border-bottom: 1px solid #444; flex-shrink: 0;
+        }
+
+        #debug-content {
+            flex: 1; overflow-y: auto; padding: 10px; color: #00ff00;
+            font-size: 11px; font-family: 'Courier New', monospace; line-height: 1.5;
+            -webkit-overflow-scrolling: touch; pointer-events: auto; overscroll-behavior: contain;
+        }
+        
+        #copy-btn {
+            background: #444; color: #fff; border: 1px solid #666;
+            padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: bold;
+        }
+
+        .container {
+            flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 0; height: 100%;
+        }
+        
+        .swipe-hint {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.15);
+            z-index: 5; pointer-events: none;
+        }
+
+        .card {
+            flex: 1; background-color: var(--card-bg); display: flex; flex-direction: column;
+            padding: 20px; position: relative; transition: background-color 0.2s ease;
+            overflow: hidden; justify-content: space-between;
+        }
+
+        .card-top {
+            transform: rotate(180deg);
+            border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
+        }
+
+        .card-bottom {
+            border-top-left-radius: 32px; border-top-right-radius: 32px;
+        }
+
+        .card.active { background-color: var(--card-active); }
+
+        .header-row {
+            display: flex; justify-content: space-between; align-items: center; width: 100%; height: 44px; z-index: 10;
+        }
+
+        .lang-select-wrapper {
+            position: relative; background: #e9ecef; border-radius: 18px; padding: 0; display: flex; align-items: center;
+        }
+
+        .lang-select {
+            appearance: none; -webkit-appearance: none; background: transparent; border: none;
+            padding: 8px 30px 8px 14px; font-size: 1rem; font-weight: 600; color: #333;
+            border-radius: 18px; z-index: 2;
+        }
+        
+        .lang-select-wrapper::after {
+            content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            border: 5px solid transparent; border-top: 5px solid #666; pointer-events: none;
+        }
+
+        .content-area {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            width: 100%; overflow: hidden; padding: 10px 0;
+        }
+
+        .main-text {
+            font-size: 1.6rem; font-weight: 700; line-height: 1.25; text-align: center;
+            color: var(--text-primary); max-height: 25vh; overflow-y: auto; word-wrap: break-word;
+            -webkit-overflow-scrolling: touch; cursor: pointer; /* Hint that it's clickable */
+            padding: 10px; border-radius: 12px; transition: background 0.2s;
+        }
+        
+        .main-text:active { background: rgba(0,0,0,0.05); }
+        
+        .interim { color: #888; font-weight: 400; }
+        .sub-text { font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 8px; font-weight: 500; }
+
+        .controls-row {
+            display: flex; justify-content: center; align-items: center; height: 100px; padding-bottom: 10px;
+        }
+
+        .mic-btn {
+            width: 80px; height: 80px; border-radius: 50%; background: white; border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+            position: relative; touch-action: none; cursor: pointer; transition: transform 0.1s;
+        }
+
+        .mic-btn svg { width: 32px; height: 32px; fill: #444; pointer-events: none; }
+        .mic-btn.pressed { transform: scale(0.9); background: var(--ai-gradient); box-shadow: 0 0 25px var(--ai-glow); }
+        .mic-btn.pressed svg { fill: white; }
+
+        /* TEST BUTTONS */
+        .test-controls {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 1000; display: flex; flex-direction: column; gap: 12px;
+            pointer-events: none; 
+        }
+
+        .test-btn {
+            pointer-events: auto; 
+            background: rgba(255, 59, 48, 0.9); 
+            color: white; border: none;
+            padding: 8px 16px; border-radius: 20px; font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            font-size: 11px; text-transform: uppercase;
+            backdrop-filter: blur(4px); white-space: nowrap; text-align: center;
+        }
+
+        /* --- EDIT MODAL STYLES --- */
+        .edit-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 2000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .edit-overlay.visible { display: flex; opacity: 1; }
+        
+        .edit-box {
+            background: var(--bg-color); width: 85%; max-width: 400px;
+            border-radius: 24px; padding: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column; gap: 15px;
+            transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .edit-overlay.visible .edit-box { transform: scale(1); }
+        
+        .edit-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); text-align: center; }
+        
+        #edit-input {
+            width: 100%; height: 120px; padding: 16px;
+            border: 2px solid #e0e0e0; border-radius: 16px;
+            font-size: 1.1rem; font-family: inherit; line-height: 1.4;
+            resize: none; outline: none;
+            background: #f8f9fa; color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+        #edit-input:focus { border-color: var(--samsung-blue); background: #fff; }
+        
+        .edit-actions { display: flex; gap: 12px; margin-top: 5px; }
+        
+        .edit-btn {
+            flex: 1; padding: 14px; border-radius: 16px; font-weight: 600; border: none; font-size: 1rem; cursor: pointer;
+        }
+        .btn-cancel { background: #f0f0f0; color: #555; }
+        .btn-save { background: var(--samsung-blue); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+
+        .wave-container { display: flex; align-items: center; gap: 3px; height: 20px; opacity: 0; }
+        .wave-container.active { opacity: 1; }
+        .wave-bar { width: 4px; background: var(--samsung-blue); border-radius: 2px; animation: wave 0.5s ease-in-out infinite alternate; }
+        .wave-bar:nth-child(1) { height: 10px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(2) { height: 18px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
+        @keyframes wave { 0% { height: 6px; opacity: 0.5; } 100% { height: 20px; opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <!-- LOG CONSOLE STRUCTURE -->
+    <div id="debug-wrapper">
+        <div id="debug-header" onclick="toggleLogs()">
+            <span>LOGS (Pull Header Up to Close)</span>
+            <button id="copy-btn" onclick="copyLogs(event)">COPY</button>
+        </div>
+        <div id="debug-content">
+            V6.9 Init (Fixed).<br>
+            Нажми на текст чтобы исправить.<br>
+        </div>
+    </div>
+    
+    <div class="swipe-hint"></div>
+
+    <!-- TEST BUTTONS -->
+    <div class="test-controls">
+        <button class="test-btn" onclick="testVoice('TOP')">🔊 ТЕСТ ВЕРХ</button>
+        <button class="test-btn" onclick="testVoice('BOTTOM')">🔊 ТЕСТ НИЗ</button>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div class="edit-overlay" id="editModal" onclick="if(event.target===this) closeEditor()">
+        <div class="edit-box">
+            <div class="edit-title">Исправить текст</div>
+            <textarea id="edit-input" placeholder="Введите текст..."></textarea>
+            <div class="edit-actions">
+                <button class="edit-btn btn-cancel" onclick="closeEditor()">Отмена</button>
+                <button class="edit-btn btn-save" onclick="saveEdit()">Перевести</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- TOP -->
+        <div class="card card-top" id="cardTop">
+            <div class="header-row">
+                <div class="lang-select-wrapper">
+                    <select class="lang-select" id="langSelectTop" onchange="updateLangs()">
+                        <option value="zh-CN">中文</option>
+                        <option value="en-US">English</option>
+                        <option value="ru-RU">Русский</option>
+                    </select>
+                </div>
+                <div class="wave-container" id="waveTop">
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+            </div>
+            <!-- Added onclick for edit -->
+            <div class="content-area">
+                <div class="main-text" id="textTop" onclick="openEditor('TOP')">...</div>
+                <div class="sub-text" id="subTop">Нажми текст для правки</div>
+            </div>
+            <div class="controls-row">
+                <div class="mic-btn" id="btnTop">
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM -->
+        <div class="card card-bottom" id="cardBottom">
+            <div class="header-row">
+                <div class="lang-select-wrapper">
+                    <select class="lang-select" id="langSelectBottom" onchange="updateLangs()">
+                        <option value="ru-RU" selected>Русский</option>
+                        <option value="en-US">English</option>
+                        <option value="zh-CN">中文</option>
+                    </select>
+                </div>
+                <div class="wave-container" id="waveBottom">
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+            </div>
+            <!-- Added onclick for edit -->
+            <div class="content-area">
+                <div class="main-text" id="textBottom" onclick="openEditor('BOTTOM')">Удерживайте и говорите</div>
+                <div class="sub-text" id="subBottom">Нажми текст для правки</div>
+            </div>
+            <div class="controls-row">
+                <div class="mic-btn" id="btnBottom">
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const els = {
+            cardBottom: document.getElementById('cardBottom'), cardTop: document.getElementById('cardTop'),
+            textBottom: document.getElementById('textBottom'), textTop: document.getElementById('textTop'),
+            subBottom: document.getElementById('subBottom'), subTop: document.getElementById('subTop'),
+            waveBottom: document.getElementById('waveBottom'), waveTop: document.getElementById('waveTop'),
+            btnBottom: document.getElementById('btnBottom'), btnTop: document.getElementById('btnTop'),
+            selBottom: document.getElementById('langSelectBottom'), selTop: document.getElementById('langSelectTop'),
+            debugContent: document.getElementById('debug-content'),
+            debugWrapper: document.getElementById('debug-wrapper'),
+            editModal: document.getElementById('editModal'),
+            editInput: document.getElementById('edit-input')
+        };
+
+        let currentLangBottom = 'ru-RU';
+        let currentLangTop = 'zh-CN';
+        let recognition;
+        let isRecording = false;
+        let activeSide = null;
+        let finalTranscripts = "";
+        let synth = window.speechSynthesis;
+        window.utterances = []; 
+        
+        // --- EDITING LOGIC ---
+        let editingSide = null;
+
+        function openEditor(side) {
+            if (isRecording) return;
+            
+            const textEl = side === 'TOP' ? els.textTop : els.textBottom;
+            const currentText = textEl.innerText;
+            
+            if (currentText === "..." || currentText.includes("Удерживайте")) {
+                els.editInput.value = "";
+            } else {
+                els.editInput.value = currentText;
+            }
+            
+            editingSide = side;
+            els.editModal.classList.add('visible');
+            setTimeout(() => els.editInput.focus(), 100); 
+        }
+
+        function closeEditor() {
+            els.editModal.classList.remove('visible');
+            editingSide = null;
+        }
+
+        function saveEdit() {
+            const newText = els.editInput.value.trim();
+            if (newText.length > 0 && editingSide) {
+                log(`Edited ${editingSide}: ${newText}`);
+                
+                if (editingSide === 'TOP') els.textTop.innerText = newText;
+                else els.textBottom.innerText = newText;
+                
+                processTranslation(newText, editingSide);
+            }
+            closeEditor();
+        }
+
+        function log(msg) {
+            console.log(msg);
+            const time = new Date().toLocaleTimeString().split(' ')[0];
+            els.debugContent.innerHTML = `[${time}] ${msg}<br>` + els.debugContent.innerHTML;
+        }
+
+        function toggleLogs() {
+            els.debugWrapper.classList.toggle('visible');
+        }
+
+        // --- ZONE-BASED SWIPE GESTURES ---
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isSwipeTarget = false;
+
+        document.addEventListener('touchstart', e => {
+            if (e.target.closest('#debug-content') || e.target.closest('#editModal')) {
+                isSwipeTarget = false; 
+                return;
+            }
+
+            if (e.target.closest('.container') || e.target.closest('#debug-header')) {
+                isSwipeTarget = true;
+                touchStartY = e.changedTouches[0].screenY;
+            } else {
+                isSwipeTarget = false;
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', e => {
+            if (!isSwipeTarget) return;
+
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+            isSwipeTarget = false;
+        }, {passive: false});
+
+        function handleSwipe() {
+            const SWIPE_THRESHOLD = 50; 
+            const swipeDistance = touchEndY - touchStartY;
+            
+            if (swipeDistance > SWIPE_THRESHOLD) {
+                if (!els.debugWrapper.classList.contains('visible')) {
+                    els.debugWrapper.classList.add('visible');
+                    log("Logs Opened");
+                }
+            }
+            if (swipeDistance < -SWIPE_THRESHOLD) {
+                 if (els.debugWrapper.classList.contains('visible')) {
+                    els.debugWrapper.classList.remove('visible');
+                    log("Logs Closed");
+                }
+            }
+        }
+
+        function copyLogs(e) {
+            e.stopPropagation(); 
+            const text = els.debugContent.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Логи скопированы!");
+            });
+        }
+
+        window.onload = () => {
+            log("V6.9 Ready.");
+            initSpeech();
+            updateLangs();
+            setupButtons();
+            
+            let attempts = 0;
+            const loadVoices = setInterval(() => {
+                const voices = synth.getVoices();
+                if (voices.length > 0) {
+                    log(`Voices loaded: ${voices.length}`);
+                    clearInterval(loadVoices);
+                } else {
+                    attempts++;
+                    if(attempts > 10) clearInterval(loadVoices);
+                }
+            }, 500);
+        };
+
+        function updateLangs() {
+            currentLangBottom = els.selBottom.value;
+            currentLangTop = els.selTop.value;
+        }
+
+        // --- RESTORED TEST FUNCTION ---
+        function testVoice(side) {
+            const lang = side === 'TOP' ? currentLangTop : currentLangBottom;
+            log(`--- TEST ${side} (${lang}) ---`);
+            
+            let text = "One two three";
+            if (lang.includes('ru')) text = "Проверка: раз два три";
+            else if (lang.includes('zh')) text = "测试 一 二 三";
+            else if (lang.includes('es')) text = "Uno dos tres";
+            else if (lang.includes('de')) text = "Eins zwei drei";
+            
+            speak(text, lang);
+        }
+
+        function initSpeech() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!SR) { log("No Speech API!"); return; }
+            
+            recognition = new SR();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                finalTranscripts = "";
+                log("Mic ON");
+                updateVisuals('listening', activeSide);
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                log("Mic OFF");
+                updateVisuals('idle', activeSide);
+                
+                if (finalTranscripts.trim().length > 0) {
+                    processTranslation(finalTranscripts, activeSide);
+                }
+            };
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                finalTranscripts = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i] && event.results[i][0]) {
+                        if (event.results[i].isFinal) finalTranscripts += event.results[i][0].transcript;
+                        else interim += event.results[i][0].transcript;
+                    }
+                }
+                const displayText = finalTranscripts + '<span class="interim">' + interim + '</span>';
+                if (activeSide === 'BOTTOM') els.textBottom.innerHTML = displayText || "...";
+                else els.textTop.innerHTML = displayText || "...";
+            };
+            
+            recognition.onerror = (e) => log("Mic Error: " + e.error);
+        }
+
+        function setupButtons() {
+            const addEvents = (btn, side) => {
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    synth.cancel();
+                    let u = new SpeechSynthesisUtterance(" ");
+                    window.utterances.push(u);
+                    synth.speak(u);
+                    startRecord(side);
+                }, {passive: false});
+
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    stopRecord(side);
+                }, {passive: false});
+                
+                btn.addEventListener('mousedown', (e) => startRecord(side));
+                btn.addEventListener('mouseup', (e) => stopRecord(side));
+            };
+            addEvents(els.btnBottom, 'BOTTOM');
+            addEvents(els.btnTop, 'TOP');
+        }
+
+        function startRecord(side) {
+            if (isRecording) return;
+            activeSide = side;
+            recognition.lang = (side === 'BOTTOM') ? currentLangBottom : currentLangTop;
+            try { 
+                recognition.start(); 
+                els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.add('pressed'); 
+            } 
+            catch(err) { log("Start Fail"); }
+        }
+
+        function stopRecord(side) {
+            if (!isRecording) return;
+            els[side === 'BOTTOM'?'btnBottom':'btnTop'].classList.remove('pressed');
+            try { recognition.stop(); } catch(err) {}
+        }
+
+        async function processTranslation(text, sourceSide) {
+            log("Translating...");
+            let srcLang, tgtLang, outputEl;
+            if (sourceSide === 'BOTTOM') {
+                srcLang = currentLangBottom; tgtLang = currentLangTop; outputEl = els.textTop;
+            } else {
+                srcLang = currentLangTop; tgtLang = currentLangBottom; outputEl = els.textBottom;
+            }
+
+            try {
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang.split('-')[0]}|${tgtLang.split('-')[0]}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                let translation = data.responseData.translatedText;
+                
+                const temp = document.createElement('div');
+                temp.innerHTML = translation;
+                translation = temp.textContent;
+                
+                outputEl.textContent = translation;
+                log("Got Translation. Init TTS...");
+                
+                if (sourceSide === 'BOTTOM') { els.cardTop.classList.add('active'); els.waveTop.classList.add('active'); }
+                else { els.cardBottom.classList.add('active'); els.waveBottom.classList.add('active'); }
+
+                await speak(translation, tgtLang);
+
+            } catch(e) {
+                log("Error: " + e.message);
+            } finally {
+                els.cardTop.classList.remove('active'); els.cardBottom.classList.remove('active');
+                els.waveTop.classList.remove('active'); els.waveBottom.classList.remove('active');
+            }
+        }
+
+        function speak(text, lang) {
+            return new Promise((resolve) => {
+                log(`Speak call: ${lang}`);
+                synth.cancel(); 
+                
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = lang;
+                u.rate = 1.0;
+                
+                const voices = synth.getVoices();
+                
+                // --- DETAILED VOICE LOGGING ---
+                let availableVoices = voices.filter(v => v.lang === lang || v.lang.replace('_', '-') === lang);
+                if (availableVoices.length === 0) {
+                    availableVoices = voices.filter(v => v.lang.startsWith(lang.split('-')[0]));
+                }
+
+                log(`Candidates for ${lang}: ${availableVoices.length}`);
+                availableVoices.forEach(v => log(`- ${v.name} (${v.lang})`)); 
+
+                let voice = null;
+                let selectionMethod = "Default";
+
+                if (availableVoices.length > 0) {
+                    // Li-li Priority
+                    if (!voice && lang.includes('zh')) {
+                         voice = availableVoices.find(v => v.name.includes('Li-li'));
+                         if(voice) selectionMethod = "Li-li (User Pref)";
+                    }
+                    if (!voice) {
+                        voice = availableVoices.find(v => v.name.includes('Google'));
+                        if(voice) selectionMethod = "Google Priority";
+                    }
+                    if (!voice) {
+                        voice = availableVoices.find(v => v.name.includes('Premium') || v.name.includes('Enhanced'));
+                        if(voice) selectionMethod = "Enhanced Priority";
+                    }
+                    if (!voice && lang.includes('zh')) {
+                        voice = availableVoices.find(v => v.name.includes('Ting-Ting'));
+                        if(voice) selectionMethod = "Ting-Ting Fallback";
+                    }
+                    if (!voice && lang.includes('ru')) {
+                        voice = availableVoices.find(v => v.name.includes('Milena'));
+                        if(voice) selectionMethod = "Milena Rule";
+                    }
+                    if (!voice) {
+                        voice = availableVoices[0];
+                        selectionMethod = "First Available";
+                    }
+                }
+                
+                if (voice) {
+                    u.voice = voice;
+                    log(`SELECTED: ${voice.name}`);
+                    log(`Method: ${selectionMethod}`);
+                } else {
+                    log("Using system default");
+                }
+
+                u.onstart = () => log("TTS: PLAYING START");
+                u.onend = () => { log("TTS: END"); resolve(); };
+                u.onerror = (e) => { log("TTS ERROR: " + e.error); resolve(); };
+                
+                window.utterances.push(u);
+                synth.speak(u);
+            });
+        }
+
+        function updateVisuals(state, side) {
+            els.waveBottom.classList.remove('active'); els.waveTop.classList.remove('active');
+            if (state === 'listening') {
+                if (side === 'BOTTOM') els.waveBottom.classList.add('active');
+                else els.waveTop.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
