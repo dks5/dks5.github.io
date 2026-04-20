@@ -2,112 +2,128 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>НПД 2026 - Мобильный Дашборд</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>НПД 2026 - Оптимизировано для iOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #F8FAFC; 
             color: #334155; 
-            overscroll-behavior-y: none; /* Предотвращает pull-to-refresh на мобильных */
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
         }
+        
+        /* Фикс для Safari bottom bar */
+        .h-dynamic { height: 100dvh; }
+
         .chart-container { 
             position: relative; 
             width: 100%; 
             max-width: 800px; 
             margin: 0 auto; 
-            height: 250px; /* Адаптировано под мобильные */
+            height: 250px; 
         }
-        @media (min-width: 768px) { .chart-container { height: 350px; } }
         
         .glass-panel { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(226, 232, 240, 0.8); 
+            background: rgba(255, 255, 255, 0.98); 
+            border: 1px solid rgba(226, 232, 240, 1); 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
         }
         
-        /* Скрытие скроллбара для горизонтальной навигации */
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .nav-link { position: relative; transition: all 0.3s; }
-        .nav-link.active { color: #2563EB; font-weight: 600; }
+        /* Навигация */
+        .nav-link { position: relative; transition: all 0.2s; }
+        .nav-link.active { color: #2563EB; }
+        .nav-link.active i { transform: scale(1.15); transition: transform 0.2s; }
         .nav-link.active::after {
             content: '';
             position: absolute;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0; left: 10%; right: 10%;
             height: 3px;
             background-color: #2563EB;
-            border-top-left-radius: 3px;
-            border-top-right-radius: 3px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
         }
 
-        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .fade-in { animation: fadeIn 0.25s ease-out forwards; }
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateX(10px); } 
+            from { opacity: 0; transform: translateX(8px); } 
             to { opacity: 1; transform: translateX(0); } 
         }
         
-        /* Цветовые акценты рисков */
         .risk-high { border-left: 4px solid #EF4444; }
         .risk-medium { border-left: 4px solid #F59E0B; }
+
+        /* Пульсация для подсказки свайпа */
+        @keyframes pulse-swipe {
+            0%, 100% { opacity: 0.4; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+        .animate-swipe { animation: pulse-swipe 2s infinite; }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+<body class="h-dynamic flex flex-col overflow-hidden text-slate-800">
 
-    <!-- Chosen Palette: Warm Neutrals with Blue Accents (Slate-50 to 900, Blue-600 for primary actions, Red/Amber for risks). Optimized for mobile screens. -->
-    <!-- Application Structure Plan: Mobile-First Dashboard. Top sticky navigation bar allowing horizontal scroll. Main content area structured to handle touch swipe events (Left/Right) to navigate between sections. Views are linearized to prevent horizontal scrolling within content, ensuring charts and tables fit phone screens natively. -->
+    <!-- Chosen Palette: Warm Neutrals with Blue Accents. -->
+    <!-- Application Structure Plan: Mobile-First Dashboard (v2). Top navigation is now a compact 5-column grid (icons + micro-text) eliminating scroll. Added explicit swipe indicators. Added padding-bottom to main content for Safari bottom bar clearance. Accordions styled as distinct buttons with clear CTAs. -->
     <!-- Visualization & Content Choices: 
-         - Overview: Vertical stacked cards for key metrics -> Inform.
-         - Compare: Sliders + Bar Chart (Chart.js, height reduced for mobile) -> Compare.
-         - Risks: Vertical accordion layout instead of side-by-side. -> Organize.
-         - Platform (289-FZ): Touch-friendly expand/collapse blocks -> Organize/Change.
+         - Overview: Vertical stacked cards.
+         - Compare: Sliders + Bar Chart.
+         - Platform (289-FZ): Thick-bordered accordions with "РАСКРЫТЬ" badges.
          NO SVG. NO Mermaid. -->
     <!-- CONFIRMATION: NO SVG graphics used (using FontAwesome). NO Mermaid JS used. -->
 
-    <!-- Top Navigation Header -->
-    <header class="bg-white border-b border-slate-200 shrink-0 z-20 shadow-sm relative">
-        <div class="px-4 py-3 flex items-center justify-between">
-            <h1 class="text-xl font-bold text-slate-900 flex items-center">
-                <i class="fa-solid fa-briefcase text-blue-600 mr-2"></i>НПД 2026
+    <!-- Compact Top Navigation -->
+    <header class="bg-white border-b border-slate-200 shrink-0 z-20 shadow-sm relative pt-safe">
+        <div class="px-4 py-2 flex items-center justify-center bg-slate-800 text-white">
+            <h1 class="text-sm font-bold flex items-center tracking-wide">
+                <i class="fa-solid fa-briefcase text-blue-400 mr-2"></i> НПД 2026: Аналитика
             </h1>
-            <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded-full"><i class="fa-solid fa-hand-pointer mr-1"></i>Свайп</span>
         </div>
-        <!-- Scrollable Navigation Tabs -->
-        <nav class="flex overflow-x-auto hide-scrollbar px-2 bg-slate-50 border-t border-slate-100 scroll-smooth" id="top-nav">
-            <button data-index="0" class="nav-link active whitespace-nowrap py-3 px-4 text-sm text-slate-500 hover:text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie"></i> Главное
+        
+        <!-- Grid Navigation (No Scroll) -->
+        <nav class="grid grid-cols-5 bg-white" id="top-nav">
+            <button data-index="0" class="nav-link active py-2.5 flex flex-col items-center justify-center gap-1 text-slate-500">
+                <i class="fa-solid fa-chart-pie text-[18px]"></i>
+                <span class="text-[9px] font-semibold uppercase tracking-tighter w-full text-center">Главное</span>
             </button>
-            <button data-index="1" class="nav-link whitespace-nowrap py-3 px-4 text-sm text-slate-500 hover:text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-scale-balanced"></i> НПД vs ИП
+            <button data-index="1" class="nav-link py-2.5 flex flex-col items-center justify-center gap-1 text-slate-500">
+                <i class="fa-solid fa-scale-balanced text-[18px]"></i>
+                <span class="text-[9px] font-semibold uppercase tracking-tighter w-full text-center">Сравнение</span>
             </button>
-            <button data-index="2" class="nav-link whitespace-nowrap py-3 px-4 text-sm text-slate-500 hover:text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-mobile-screen"></i> Платформы
+            <button data-index="2" class="nav-link py-2.5 flex flex-col items-center justify-center gap-1 text-slate-500">
+                <i class="fa-solid fa-mobile-screen text-[18px]"></i>
+                <span class="text-[9px] font-semibold uppercase tracking-tighter w-full text-center">Платформы</span>
             </button>
-            <button data-index="3" class="nav-link whitespace-nowrap py-3 px-4 text-sm text-slate-500 hover:text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-shield-halved"></i> Риски
+            <button data-index="3" class="nav-link py-2.5 flex flex-col items-center justify-center gap-1 text-slate-500">
+                <i class="fa-solid fa-shield-halved text-[18px]"></i>
+                <span class="text-[9px] font-semibold uppercase tracking-tighter w-full text-center">Риски</span>
             </button>
-            <button data-index="4" class="nav-link whitespace-nowrap py-3 px-4 text-sm text-slate-500 hover:text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-list-check"></i> Чек-листы
+            <button data-index="4" class="nav-link py-2.5 flex flex-col items-center justify-center gap-1 text-slate-500">
+                <i class="fa-solid fa-list-check text-[18px]"></i>
+                <span class="text-[9px] font-semibold uppercase tracking-tighter w-full text-center">Чек-листы</span>
             </button>
         </nav>
     </header>
 
-    <!-- Main Content Area (Swipeable) -->
-    <main class="flex-1 overflow-y-auto bg-slate-50 relative pb-10" id="main-content">
+    <!-- Main Content Area (pb-32 for Safari Bottom Bar fix) -->
+    <main class="flex-1 overflow-y-auto bg-slate-50 relative pb-32" id="main-content">
         
+        <!-- Global Swipe Indicator -->
+        <div class="flex items-center justify-center gap-3 text-blue-500/70 py-3 bg-blue-50/50 border-b border-blue-100 text-[11px] font-bold uppercase tracking-widest animate-swipe">
+            <i class="fa-solid fa-chevron-left"></i>
+            <i class="fa-solid fa-hand-pointer text-sm"></i> Свайп для навигации
+            <i class="fa-solid fa-chevron-right"></i>
+        </div>
+
         <!-- View 0: Overview -->
         <section id="view-0" class="view-section p-4 md:p-8 fade-in block">
             <div class="max-w-3xl mx-auto">
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Архитектура НПД</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Ключевые цифры и ограничения, определяющие правила игры в 2026 году.
-                </p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Архитектура НПД</h2>
+                <p class="text-sm text-slate-600 mb-6 leading-relaxed">Ключевые цифры и ограничения 2026 года.</p>
 
                 <!-- Key Metrics Grid -->
                 <div class="grid grid-cols-2 gap-3 mb-6">
@@ -135,43 +151,17 @@
 
                 <!-- Absolute Restrictions -->
                 <div class="glass-panel rounded-xl p-5 mb-6">
-                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center"><i class="fa-solid fa-ban text-red-500 mr-2"></i> Запреты режима</h3>
+                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center"><i class="fa-solid fa-ban text-red-500 mr-2"></i> Запреты режима</h3>
                     <ul class="space-y-3">
                         <li class="flex items-start">
                             <i class="fa-solid fa-xmark text-red-500 mt-0.5 mr-2 text-sm"></i>
-                            <span class="text-sm">Наем сотрудников по трудовым договорам.</span>
+                            <span class="text-sm leading-tight">Наем сотрудников (по ТД).</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fa-solid fa-xmark text-red-500 mt-0.5 mr-2 text-sm"></i>
-                            <span class="text-sm">Перепродажа чужих товаров (только свое).</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-xmark text-red-500 mt-0.5 mr-2 text-sm"></i>
-                            <span class="text-sm">Вычеты НДФЛ (стандартные, имущественные).</span>
+                            <span class="text-sm leading-tight">Перепродажа чужих товаров.</span>
                         </li>
                     </ul>
-                </div>
-
-                <!-- What happens at limit -->
-                <div class="glass-panel rounded-xl p-5 bg-slate-800 text-white border-none">
-                    <h3 class="text-base font-bold mb-3 flex items-center text-white"><i class="fa-solid fa-stopwatch text-amber-400 mr-2"></i> Превышение лимита</h3>
-                    <ol class="space-y-4 relative border-l border-slate-600 ml-2 pl-4">
-                        <li class="relative">
-                            <span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                            <span class="text-sm font-medium text-white block mb-0.5">1. Блокировка чеков</span>
-                            <span class="text-xs text-slate-400">Приложение деактивирует чеки.</span>
-                        </li>
-                        <li class="relative">
-                            <span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            <span class="text-sm font-medium text-white block mb-0.5">2. Разделение базы</span>
-                            <span class="text-xs text-slate-400">Превышение выводится из НПД.</span>
-                        </li>
-                        <li class="relative">
-                            <span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                            <span class="text-sm font-medium text-white block mb-0.5">3. Транзит (20 дней)</span>
-                            <span class="text-xs text-slate-400">Срок для ИП/УСН (иначе ОСНО 13%).</span>
-                        </li>
-                    </ol>
                 </div>
             </div>
         </section>
@@ -179,39 +169,28 @@
         <!-- View 1: Compare & Calculator -->
         <section id="view-1" class="view-section p-4 md:p-8 hidden">
             <div class="max-w-3xl mx-auto">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">НПД против ИП</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Смоделируйте налоговую нагрузку, чтобы понять момент рентабельности перехода на ИП (УСН).
-                </p>
-
-                <!-- Calculator Controls -->
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">НПД vs ИП</h2>
+                
                 <div class="glass-panel p-5 rounded-xl mb-6">
                     <h3 class="font-bold text-slate-800 text-sm mb-4">Доходы в год</h3>
-                    
                     <div class="mb-5">
-                        <label class="block text-xs font-medium text-slate-500 mb-1">От Физ. лиц (B2C)</label>
-                        <input type="range" id="calc-b2c" min="0" max="3000000" step="50000" value="800000" class="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                        <div class="flex justify-end text-sm mt-1 font-bold text-slate-800" id="val-b2c">800 000 ₽</div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-2">От Физ. лиц (B2C)</label>
+                        <input type="range" id="calc-b2c" min="0" max="3000000" step="50000" value="800000" class="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none">
+                        <div class="flex justify-end text-sm mt-1 font-bold text-blue-600" id="val-b2c">800 000 ₽</div>
                     </div>
-
                     <div class="mb-5">
-                        <label class="block text-xs font-medium text-slate-500 mb-1">От Юр. лиц (B2B)</label>
-                        <input type="range" id="calc-b2b" min="0" max="3000000" step="50000" value="1000000" class="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
-                        <div class="flex justify-end text-sm mt-1 font-bold text-slate-800" id="val-b2b">1 000 000 ₽</div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-2">От Юр. лиц (B2B)</label>
+                        <input type="range" id="calc-b2b" min="0" max="3000000" step="50000" value="1000000" class="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none">
+                        <div class="flex justify-end text-sm mt-1 font-bold text-indigo-600" id="val-b2b">1 000 000 ₽</div>
                     </div>
-
                     <div class="flex items-center justify-between pt-3 border-t border-slate-200">
                         <span class="text-sm font-medium text-slate-600">Суммарно:</span>
                         <span id="val-total" class="font-bold text-lg text-slate-900">1 800 000 ₽</span>
                     </div>
-                    <div id="limit-warning" class="text-xs text-red-500 font-medium hidden mt-2 text-center bg-red-50 p-2 rounded">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Лимит НПД 2.4 млн превышен!
-                    </div>
                 </div>
 
-                <!-- Chart Display -->
                 <div class="glass-panel p-4 rounded-xl flex flex-col mb-6">
-                    <h3 class="font-bold text-slate-800 text-sm mb-4 text-center">Обязательные платежи</h3>
+                    <h3 class="font-bold text-slate-800 text-sm mb-4 text-center">Сравнение налогов</h3>
                     <div class="chart-container">
                         <canvas id="taxCompareChart"></canvas>
                     </div>
@@ -222,66 +201,43 @@
         <!-- View 2: Platform Economy (289-FZ) -->
         <section id="view-2" class="view-section p-4 md:p-8 hidden">
              <div class="max-w-3xl mx-auto">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Экономика Платформ</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Закон 289-ФЗ ликвидирует диктат маркетплейсов. Права самозанятых защищены.
-                </p>
-
-                <!-- Before/After Cards (Mobile optimized) -->
-                <div class="grid grid-cols-1 gap-4 mb-6">
-                    <div class="glass-panel p-4 rounded-xl border-l-4 border-l-emerald-500 shadow-sm">
-                        <div class="text-xs font-bold text-emerald-600 uppercase mb-2 flex items-center">
-                            <i class="fa-solid fa-scale-balanced mr-2"></i> Новые права (с 2026)
-                        </div>
-                        <ul class="space-y-2 text-sm text-slate-800 font-medium">
-                            <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Официальный статус "Партнера".</li>
-                            <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Договор ГПХ вместо односторонней оферты.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Механизмы защиты (Нажми)</h3>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Экономика Платформ</h2>
                 
-                <!-- Touch-friendly Interactive Accordion -->
-                <div class="space-y-3">
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">Защита по 289-ФЗ</h3>
+                
+                <!-- Highly Recognizable Accordions -->
+                <div class="space-y-4">
+                    
+                    <div class="bg-white border-2 border-indigo-100 rounded-xl overflow-hidden shadow-sm hover:border-indigo-300 transition-colors">
                         <button class="w-full p-4 flex items-center justify-between text-left focus:outline-none active:bg-slate-50" onclick="toggleDetails('det-1', this)">
                             <div class="flex items-center gap-3">
-                                <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-regular fa-clock"></i></div>
-                                <span class="font-bold text-sm text-slate-800">Изменение условий</span>
+                                <div class="bg-indigo-100 text-indigo-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0"><i class="fa-regular fa-clock text-lg"></i></div>
+                                <span class="font-bold text-[13px] text-slate-800 leading-tight">Изменение условий<br><span class="text-[10px] text-slate-400 font-normal">Сроки уведомлений</span></span>
                             </div>
-                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded font-bold uppercase tracking-wider border border-indigo-100 detail-badge">Раскрыть</span>
+                            </div>
                         </button>
-                        <div id="det-1" class="hidden px-4 pb-4 text-sm text-slate-600">
+                        <div id="det-1" class="hidden px-4 pb-4 pt-2 text-sm text-slate-600 border-t border-slate-100 bg-slate-50">
                             Платформа обязана предупреждать об ухудшении условий минимум за <strong>45 дней</strong>, о технических — за <strong>15 дней</strong>.
                         </div>
                     </div>
 
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <div class="bg-white border-2 border-emerald-100 rounded-xl overflow-hidden shadow-sm hover:border-emerald-300 transition-colors">
                         <button class="w-full p-4 flex items-center justify-between text-left focus:outline-none active:bg-slate-50" onclick="toggleDetails('det-2', this)">
                             <div class="flex items-center gap-3">
-                                <div class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-code-branch"></i></div>
-                                <span class="font-bold text-sm text-slate-800">Алгоритмы & Штрафы</span>
+                                <div class="bg-emerald-100 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-code-branch text-lg"></i></div>
+                                <span class="font-bold text-[13px] text-slate-800 leading-tight">Алгоритмы<br><span class="text-[10px] text-slate-400 font-normal">Штрафы и ранжирование</span></span>
                             </div>
-                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-1 rounded font-bold uppercase tracking-wider border border-emerald-100 detail-badge">Раскрыть</span>
+                            </div>
                         </button>
-                        <div id="det-2" class="hidden px-4 pb-4 text-sm text-slate-600">
-                            Обязательное раскрытие алгоритмов ранжирования. Запрещены скрытые штрафы, принуждение к графику или штрафы за отказ от заказа.
+                        <div id="det-2" class="hidden px-4 pb-4 pt-2 text-sm text-slate-600 border-t border-slate-100 bg-slate-50">
+                            Обязательное раскрытие алгоритмов. Запрещены скрытые штрафы, принуждение к графику или штрафы за отказ от заказа.
                         </div>
                     </div>
 
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <button class="w-full p-4 flex items-center justify-between text-left focus:outline-none active:bg-slate-50" onclick="toggleDetails('det-3', this)">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-handshake-angle"></i></div>
-                                <span class="font-bold text-sm text-slate-800">Защита от блокировок</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
-                        </button>
-                        <div id="det-3" class="hidden px-4 pb-4 text-sm text-slate-600">
-                            Срок ответа платформы на претензию — <strong>15 дней</strong>. Восстановление при необоснованной блокировке — <strong>48 часов</strong>.
-                        </div>
-                    </div>
                 </div>
              </div>
         </section>
@@ -289,56 +245,46 @@
         <!-- View 3: Risks & 115-FZ -->
         <section id="view-3" class="view-section p-4 md:p-8 hidden">
              <div class="max-w-3xl mx-auto">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Риски и Контроль</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Триггеры автоматизированных систем ФНС и алгоритмов банковского комплаенса.
-                </p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Риски и Контроль</h2>
 
-                <!-- Sub-view: Bank (Mobile cards) -->
-                <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
-                    <h3 class="font-bold text-red-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-building-columns mr-2"></i> Блокировки 115-ФЗ</h3>
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm">
+                    <h3 class="font-bold text-red-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-building-columns mr-2"></i> Блокировки банков (115-ФЗ)</h3>
                     <div class="space-y-2">
-                        <div class="bg-white p-3 rounded shadow-sm risk-high flex flex-col justify-center">
-                            <span class="font-bold text-slate-800 text-xs">Несоответствие профилю</span>
-                            <span class="text-[11px] text-slate-500">Назначение платежа B2B не бьется со сферой.</span>
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex items-center">
+                            <i class="fa-solid fa-magnifying-glass-chart text-red-400 mr-3 text-lg"></i>
+                            <div>
+                                <span class="font-bold text-slate-800 text-xs block">Несоответствие профилю</span>
+                                <span class="text-[11px] text-slate-500 leading-tight">Назначение платежа B2B не бьется со сферой.</span>
+                            </div>
                         </div>
-                        <div class="bg-white p-3 rounded shadow-sm risk-high flex flex-col justify-center">
-                            <span class="font-bold text-slate-800 text-xs">Дефицит чеков</span>
-                            <span class="text-[11px] text-slate-500">Поступления от юрлиц без чеков в "Мой налог".</span>
-                        </div>
-                        <div class="bg-white p-3 rounded shadow-sm risk-high flex flex-col justify-center">
-                            <span class="font-bold text-slate-800 text-xs">Транзит / Cash-out</span>
-                            <span class="text-[11px] text-slate-500">Мгновенное снятие наличных, дробление.</span>
+                        <div class="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex items-center">
+                            <i class="fa-solid fa-receipt text-red-400 mr-3 text-lg"></i>
+                            <div>
+                                <span class="font-bold text-slate-800 text-xs block">Дефицит чеков</span>
+                                <span class="text-[11px] text-slate-500 leading-tight">Поступления от юрлиц без чеков в "Мой налог".</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sub-view: FNS (Mobile cards) -->
-                <div class="glass-panel p-4 rounded-xl">
-                    <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-user-secret mr-2"></i> Подмена найма (АСК ДФЛ)</h3>
+                <div class="glass-panel p-4 rounded-xl shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-user-secret mr-2"></i> Подмена найма (ФНС)</h3>
                     
-                    <div class="flex items-start p-3 bg-white rounded-lg border border-slate-100 risk-medium mb-3 shadow-sm">
-                        <i class="fa-solid fa-eye text-amber-500 text-lg mt-0.5 mr-3"></i>
+                    <div class="flex items-start p-3 bg-white rounded-lg border border-slate-200 risk-medium mb-3 shadow-sm">
+                        <div class="w-8 h-8 bg-amber-100 text-amber-500 rounded flex justify-center items-center font-bold mr-3 shrink-0"><i class="fa-solid fa-eye"></i></div>
                         <div>
-                            <span class="font-bold text-slate-800 text-xs block">Желтая зона</span>
+                            <span class="font-bold text-slate-800 text-xs block mb-0.5">Желтая зона</span>
                             <span class="text-[11px] text-slate-600 leading-tight">10+ самозанятых у компании с оплатой > 25к ₽/мес.</span>
                         </div>
                     </div>
                     
-                    <div class="flex items-start p-3 bg-white rounded-lg border border-slate-100 risk-high mb-4 shadow-sm">
-                        <i class="fa-solid fa-bullseye text-red-500 text-lg mt-0.5 mr-3"></i>
+                    <div class="flex items-start p-3 bg-white rounded-lg border border-slate-200 risk-high shadow-sm">
+                        <div class="w-8 h-8 bg-red-100 text-red-500 rounded flex justify-center items-center font-bold mr-3 shrink-0"><i class="fa-solid fa-bullseye"></i></div>
                         <div>
-                            <span class="font-bold text-slate-800 text-xs block">Красная зона (Проверка)</span>
-                            <span class="text-[11px] text-slate-600 leading-tight">35+ НПД, доход > 35к/мес, 1 клиент дает > 75% дохода.</span>
+                            <span class="font-bold text-slate-800 text-xs block mb-0.5">Красная зона</span>
+                            <span class="text-[11px] text-slate-600 leading-tight">35+ НПД, доход > 35к, 1 клиент дает > 75% дохода.</span>
                         </div>
                     </div>
-
-                    <h4 class="font-bold text-slate-700 text-xs mb-2 uppercase tracking-wide">Улики в суде:</h4>
-                    <ul class="text-xs text-slate-600 space-y-2 list-disc pl-4">
-                        <li>Предоставление ПК, почты, офиса.</li>
-                        <li>Выплаты 2 раза в месяц в дни зарплаты.</li>
-                        <li>Массовая регистрация НПД с одного IP офиса.</li>
-                    </ul>
                 </div>
              </div>
         </section>
@@ -346,219 +292,169 @@
         <!-- View 4: Checklists -->
         <section id="view-4" class="view-section p-4 md:p-8 hidden">
              <div class="max-w-3xl mx-auto">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Чек-листы</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Протоколы безопасности для легальной работы.
-                </p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Чек-листы</h2>
 
-                <!-- Checklists designed for touch targeting -->
-                <div class="mb-6">
-                    <h3 class="bg-blue-600 text-white p-3 font-bold rounded-t-xl text-sm flex items-center">
+                <div class="mb-6 shadow-sm rounded-xl overflow-hidden">
+                    <h3 class="bg-blue-600 text-white p-3 font-bold text-sm flex items-center">
                         <i class="fa-solid fa-building mr-2"></i> B2B Заказчикам
                     </h3>
-                    <div class="bg-white border border-t-0 border-slate-200 rounded-b-xl p-3">
-                        <ul class="space-y-2">
-                            <li class="flex items-center p-2 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
-                                <i class="fa-regular fa-circle text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
-                                <span class="text-sm font-medium text-slate-700">Валидация статуса перед каждым платежом (API ФНС)</span>
+                    <div class="bg-white border border-t-0 border-slate-200 p-2">
+                        <ul class="space-y-1">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
+                                <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
+                                <span class="text-[13px] font-medium text-slate-700 leading-tight">Валидация статуса перед платежом (API ФНС)</span>
                             </li>
-                            <li class="flex items-center p-2 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
-                                <i class="fa-regular fa-circle text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
-                                <span class="text-sm font-medium text-slate-700">Договор на конечный результат, а не процесс</span>
-                            </li>
-                            <li class="flex items-center p-2 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
-                                <i class="fa-regular fa-circle text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
-                                <span class="text-sm font-medium text-slate-700">Оплата строго после подписания Акта</span>
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50" onclick="toggleCheck(this)">
+                                <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
+                                <span class="text-[13px] font-medium text-slate-700 leading-tight">Оплата строго после подписания Акта (не в дни ЗП)</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div>
-                    <h3 class="bg-indigo-600 text-white p-3 font-bold rounded-t-xl text-sm flex items-center">
+                <div class="shadow-sm rounded-xl overflow-hidden">
+                    <h3 class="bg-slate-800 text-white p-3 font-bold text-sm flex items-center">
                         <i class="fa-solid fa-user-tie mr-2"></i> Самозанятым
                     </h3>
-                    <div class="bg-white border border-t-0 border-slate-200 rounded-b-xl p-3">
-                        <ul class="space-y-2">
-                            <li class="flex items-center p-2 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
-                                <i class="fa-regular fa-circle text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
-                                <span class="text-sm font-medium text-slate-700">Диверсификация: < 70% дохода от одного клиента</span>
+                    <div class="bg-white border border-t-0 border-slate-200 p-2">
+                        <ul class="space-y-1">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
+                                <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
+                                <span class="text-[13px] font-medium text-slate-700 leading-tight">Диверсификация: < 70% дохода от одного клиента</span>
                             </li>
-                            <li class="flex items-center p-2 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
-                                <i class="fa-regular fa-circle text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
-                                <span class="text-sm font-medium text-slate-700">Отдельная карта только для доходов от НПД</span>
-                            </li>
-                            <li class="flex items-center p-2 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
-                                <i class="fa-regular fa-circle text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
-                                <span class="text-sm font-medium text-slate-700">Формирование чека строго в день поступления</span>
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50" onclick="toggleCheck(this)">
+                                <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
+                                <span class="text-[13px] font-medium text-slate-700 leading-tight">Отдельная карта для бизнеса</span>
                             </li>
                         </ul>
                     </div>
                 </div>
-
              </div>
         </section>
 
     </main>
 
     <script>
-        // --- Core Navigation & Swipe Logic ---
+        // --- Navigation & Swipe Logic ---
         const views = document.querySelectorAll('.view-section');
         const navLinks = document.querySelectorAll('.nav-link');
-        const topNav = document.getElementById('top-nav');
         const mainContent = document.getElementById('main-content');
         let currentViewIndex = 0;
 
         function switchView(index) {
             if (index < 0 || index >= views.length) return;
             
-            // Update Active Nav Link
             navLinks.forEach(l => l.classList.remove('active'));
-            const targetLink = document.querySelector(`.nav-link[data-index="${index}"]`);
-            targetLink.classList.add('active');
+            document.querySelector(`.nav-link[data-index="${index}"]`).classList.add('active');
 
-            // Scroll Top Nav to ensure active tab is visible (Mobile UX)
-            targetLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-            // Hide all views, show target
             views.forEach(view => {
                 view.classList.add('hidden');
                 view.classList.remove('fade-in');
             });
             const targetView = document.getElementById(`view-${index}`);
             targetView.classList.remove('hidden');
-            
-            // Trigger reflow for animation
             void targetView.offsetWidth;
             targetView.classList.add('fade-in');
 
             currentViewIndex = index;
 
-            // Chart re-render trigger if Compare view
-            if(index === 1) {
-                updateCalculator();
-            }
+            // Скролл вверх при смене вкладки
+            mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if(index === 1) updateCalculator();
         }
 
-        // Top Nav Clicks
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.getAttribute('data-index'));
-                switchView(index);
+                switchView(parseInt(e.currentTarget.getAttribute('data-index')));
             });
         });
 
-        // Touch Swipe Event Listeners
-        let startX = 0;
-        let startY = 0;
-
-        mainContent.addEventListener('touchstart', (e) => {
+        // Touch Swipe
+        let startX = 0, startY = 0;
+        mainContent.addEventListener('touchstart', e => {
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
         }, { passive: true });
 
-        mainContent.addEventListener('touchend', (e) => {
+        mainContent.addEventListener('touchend', e => {
             if (!startX || !startY) return;
+            let diffX = startX - e.changedTouches[0].clientX;
+            let diffY = startY - e.changedTouches[0].clientY;
 
-            let endX = e.changedTouches[0].clientX;
-            let endY = e.changedTouches[0].clientY;
-
-            let diffX = startX - endX;
-            let diffY = startY - endY;
-
-            // Check if it's mostly a horizontal swipe (prevents accidental swipe while scrolling down)
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
-                if (diffX > 0) {
-                    // Swiped Left -> Go to Next View
-                    switchView(currentViewIndex + 1);
-                } else {
-                    // Swiped Right -> Go to Prev View
-                    switchView(currentViewIndex - 1);
-                }
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) switchView(currentViewIndex + 1); // Swipe Left
+                else switchView(currentViewIndex - 1); // Swipe Right
             }
-
-            // Reset
-            startX = 0;
-            startY = 0;
+            startX = 0; startY = 0;
         }, { passive: true });
 
-        // --- Accordion Logic ---
+        // --- Accordions ---
         window.toggleDetails = function(id, btnElement) {
             const content = document.getElementById(id);
-            const icon = btnElement.querySelector('.fa-chevron-down');
+            const badge = btnElement.querySelector('.detail-badge');
+            
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
-                icon.style.transform = 'rotate(180deg)';
                 btnElement.classList.add('bg-slate-50');
+                badge.innerText = 'Свернуть';
+                badge.classList.replace('bg-indigo-50', 'bg-slate-200');
+                badge.classList.replace('text-indigo-600', 'text-slate-600');
+                badge.classList.replace('bg-emerald-50', 'bg-slate-200');
+                badge.classList.replace('text-emerald-600', 'text-slate-600');
             } else {
                 content.classList.add('hidden');
-                icon.style.transform = 'rotate(0deg)';
                 btnElement.classList.remove('bg-slate-50');
+                badge.innerText = 'Раскрыть';
+                
+                // Return original colors based on parent border color
+                if(btnElement.parentElement.classList.contains('border-indigo-100')) {
+                    badge.classList.replace('bg-slate-200', 'bg-indigo-50');
+                    badge.classList.replace('text-slate-600', 'text-indigo-600');
+                } else {
+                    badge.classList.replace('bg-slate-200', 'bg-emerald-50');
+                    badge.classList.replace('text-slate-600', 'text-emerald-600');
+                }
             }
         };
 
-        // --- Checklist Logic ---
+        // --- Checklists ---
         window.toggleCheck = function(element) {
             const icon = element.querySelector('.check-icon');
-            if (icon.classList.contains('fa-circle')) {
-                icon.classList.remove('fa-circle', 'text-slate-300', 'fa-regular');
-                icon.classList.add('fa-circle-check', 'text-emerald-500', 'fa-solid');
+            if (icon.classList.contains('fa-square')) {
+                icon.classList.replace('fa-square', 'fa-square-check');
+                icon.classList.replace('text-slate-300', 'text-emerald-500');
+                icon.classList.replace('fa-regular', 'fa-solid');
             } else {
-                icon.classList.add('fa-circle', 'text-slate-300', 'fa-regular');
-                icon.classList.remove('fa-circle-check', 'text-emerald-500', 'fa-solid');
+                icon.classList.replace('fa-square-check', 'fa-square');
+                icon.classList.replace('text-emerald-500', 'text-slate-300');
+                icon.classList.replace('fa-solid', 'fa-regular');
             }
         };
 
-        // --- Calculator & Chart Logic (Adapted for Mobile) ---
+        // --- Calculator & Chart ---
         let taxChart = null;
-
-        const calcB2C = document.getElementById('calc-b2c');
-        const calcB2B = document.getElementById('calc-b2b');
-        const valB2C = document.getElementById('val-b2c');
-        const valB2B = document.getElementById('val-b2b');
+        const calcB2C = document.getElementById('calc-b2c'), calcB2B = document.getElementById('calc-b2b');
+        const valB2C = document.getElementById('val-b2c'), valB2B = document.getElementById('val-b2b');
         const valTotal = document.getElementById('val-total');
-        const limitWarning = document.getElementById('limit-warning');
-
-        function formatCurrency(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(2) + ' млн ₽';
-            }
-            return num.toLocaleString('ru-RU') + ' ₽';
-        }
 
         [calcB2C, calcB2B].forEach(input => {
             input.addEventListener('input', () => {
-                valB2C.textContent = formatCurrency(parseInt(calcB2C.value));
-                valB2B.textContent = formatCurrency(parseInt(calcB2B.value));
+                valB2C.textContent = (calcB2C.value / 1000) + 'к ₽';
+                valB2B.textContent = (calcB2B.value / 1000) + 'к ₽';
                 updateCalculator();
             });
         });
 
         function updateCalculator() {
-            const incB2C = parseInt(calcB2C.value);
-            const incB2B = parseInt(calcB2B.value);
+            const incB2C = parseInt(calcB2C.value), incB2B = parseInt(calcB2B.value);
             const total = incB2C + incB2B;
+            valTotal.textContent = total >= 1000000 ? (total/1000000).toFixed(2) + ' млн ₽' : total.toLocaleString('ru-RU') + ' ₽';
+            valTotal.className = total > 2400000 ? 'font-bold text-lg text-red-500' : 'font-bold text-lg text-slate-900';
 
-            valTotal.textContent = total.toLocaleString('ru-RU') + ' ₽';
-
-            if (total > 2400000) {
-                limitWarning.classList.remove('hidden');
-                valTotal.classList.add('text-red-500');
-            } else {
-                limitWarning.classList.add('hidden');
-                valTotal.classList.remove('text-red-500');
-            }
-
-            // Calculation (Bonus applied by default for simplicity on mobile)
-            let maxBonusB2C = incB2C * 0.01;
-            let maxBonusB2B = incB2B * 0.02;
-            let usedBonus = Math.min(10000, maxBonusB2C + maxBonusB2B);
+            let usedBonus = Math.min(10000, (incB2C * 0.01) + (incB2B * 0.02));
             let taxNPD = Math.max(0, ((incB2C * 0.04) + (incB2B * 0.06)) - usedBonus);
-
-            // USN 6%
-            const fixedPayments = 57390; 
-            const extra1Percent = total > 300000 ? (total - 300000) * 0.01 : 0;
-            const usnIns = fixedPayments + extra1Percent;
+            const usnIns = 57390 + (total > 300000 ? (total - 300000) * 0.01 : 0);
             let taxUSN = Math.max(0, (total * 0.06) - usnIns); 
 
             updateChart(taxNPD, usnIns, taxUSN);
@@ -567,63 +463,26 @@
         function updateChart(npd, usnIns, usnTax) {
             const ctx = document.getElementById('taxCompareChart').getContext('2d');
             if (taxChart) taxChart.destroy();
-
             taxChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['НПД', 'УСН 6%'],
                     datasets: [
-                        {
-                            label: 'Налог',
-                            data: [npd, usnTax],
-                            backgroundColor: '#3B82F6',
-                            borderRadius: 4,
-                            barPercentage: 0.6
-                        },
-                        {
-                            label: 'Взносы',
-                            data: [0, usnIns],
-                            backgroundColor: '#F59E0B',
-                            borderRadius: 4,
-                            barPercentage: 0.6
-                        }
+                        { label: 'Налог', data: [npd, usnTax], backgroundColor: '#3B82F6', borderRadius: 4 },
+                        { label: 'Взносы', data: [0, usnIns], backgroundColor: '#F59E0B', borderRadius: 4 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            position: 'bottom',
-                            labels: { boxWidth: 12, font: { size: 10 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.raw.toLocaleString() + ' ₽';
-                                }
-                            }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
                     scales: {
                         x: { stacked: true, grid: { display: false } },
-                        y: { 
-                            stacked: true,
-                            ticks: {
-                                maxTicksLimit: 5,
-                                callback: function(value) {
-                                    return value >= 1000 ? (value/1000) + 'к' : value;
-                                }
-                            }
-                        }
+                        y: { stacked: true, ticks: { callback: v => v >= 1000 ? (v/1000) + 'к' : v } }
                     }
                 }
             });
         }
-
-        // Init Calculator on load
         setTimeout(updateCalculator, 100);
-
     </script>
 </body>
 </html>
