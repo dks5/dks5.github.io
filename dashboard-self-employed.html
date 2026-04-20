@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>НПД 2026 - Мобильная Аналитика</title>
+    <title>НПД 2026 - Дашборд</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
-        /* Жесткая фиксация от сдвигов */
         html, body {
             width: 100vw;
             max-width: 100vw;
@@ -25,7 +24,6 @@
             color: #334155; 
         }
         
-        /* Фикс для Safari bottom bar */
         .h-dynamic { height: 100dvh; }
 
         .chart-container { 
@@ -42,7 +40,6 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
         }
         
-        /* Навигация */
         .nav-link { position: relative; transition: all 0.2s; }
         .nav-link.active { color: #2563EB; }
         .nav-link.active i { transform: scale(1.15); transition: transform 0.2s; }
@@ -74,7 +71,10 @@
 </head>
 <body class="h-dynamic flex flex-col text-slate-800 relative w-full">
 
-    <!-- Compact Top Navigation -->
+    <!-- Chosen Palette: Warm Neutrals with Blue Accents. -->
+    <!-- Application Structure Plan: Mobile-First Dashboard (v4). Text-heavy explanations and accordions removed entirely. Content presented as direct, skimmable banners and cards. Swipe mechanics and fixed viewports remain intact for optimal mobile experience. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
     <header class="bg-white border-b border-slate-200 shrink-0 z-20 shadow-sm relative pt-safe w-full">
         <div class="px-4 py-2 flex items-center justify-center bg-slate-800 text-white w-full">
             <h1 class="text-sm font-bold flex items-center tracking-wide">
@@ -106,7 +106,6 @@
         </nav>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 relative pb-32 w-full" id="main-content">
         
         <div class="flex items-center justify-center gap-3 text-blue-500/70 py-3 bg-blue-50/50 border-b border-blue-100 text-[11px] font-bold uppercase tracking-widest animate-swipe w-full">
@@ -115,28 +114,13 @@
             <i class="fa-solid fa-chevron-right"></i>
         </div>
 
-        <!-- View 0: Overview -->
+        <!-- View 0: Overview (Banners Only) -->
         <section id="view-0" class="view-section p-4 md:p-8 fade-in block w-full">
-            <div class="max-w-3xl mx-auto w-full">
+            <div class="max-w-3xl mx-auto w-full space-y-4">
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Архитектура НПД</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    К 2026 году режим НПД трансформировался в строго регламентированный сегмент экономики. Правительство пролонгировало эксперимент до 2028 года на стабильных фискальных условиях, однако механизмы администрирования были усилены.
-                </p>
-
-                <!-- NEW: Совмещение с наймом -->
-                <div class="glass-panel p-5 rounded-xl border-t-4 border-t-indigo-500 mb-6 shadow-sm">
-                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center"><i class="fa-solid fa-user-tie text-indigo-500 mr-2 text-lg"></i> Совмещение с наймом</h3>
-                    <p class="text-sm text-slate-700 leading-relaxed mb-3">
-                        Законодательство <strong>напрямую разрешает</strong> физическим лицам параллельно работать по трудовому договору в компании (где работодатель удерживает 13% НДФЛ) и вести независимую деятельность как самозанятый (НПД).
-                    </p>
-                    <div class="bg-indigo-50 p-3 rounded text-xs text-indigo-800 border border-indigo-100">
-                        <strong>Критическое правило ("Правило 2-х лет"):</strong><br>
-                        Категорически запрещено оказывать услуги в статусе самозанятого своему <em>текущему</em> или <em>бывшему</em> работодателю, если с момента увольнения прошло <strong>менее 2 лет</strong>. ФНС автоматически заблокирует формирование чека на такой ИНН.
-                    </div>
-                </div>
 
                 <!-- Key Metrics Grid -->
-                <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="grid grid-cols-2 gap-3">
                     <div class="glass-panel p-4 rounded-xl border-t-4 border-t-blue-500 text-center">
                         <div class="text-xs text-slate-500 font-medium mb-1">Физ. лица</div>
                         <div class="text-2xl font-bold text-slate-800">4%</div>
@@ -155,61 +139,46 @@
                     <div class="glass-panel p-4 rounded-xl border-t-4 border-t-red-500 text-center">
                         <div class="text-xs text-slate-500 font-medium mb-1">Лимит</div>
                         <div class="text-xl font-bold text-slate-800">2.4 млн ₽</div>
-                        <div class="text-[10px] text-slate-400 mt-1">Без индексации</div>
+                        <div class="text-[10px] text-slate-400 mt-1">В год</div>
                     </div>
                 </div>
 
-                <!-- Absolute Restrictions -->
-                <div class="glass-panel rounded-xl p-5 mb-6">
-                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center"><i class="fa-solid fa-ban text-red-500 mr-2"></i> Жесткие запреты режима</h3>
-                    <ul class="space-y-3">
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-xmark text-red-500 mt-0.5 mr-2 text-sm"></i>
-                            <span class="text-sm leading-tight text-slate-700">Абсолютный запрет на наем сотрудников по трудовым договорам.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-xmark text-red-500 mt-0.5 mr-2 text-sm"></i>
-                            <span class="text-sm leading-tight text-slate-700">Запрет на перепродажу чужих товаров (допускается только свое производство или существенная переработка).</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-xmark text-red-500 mt-0.5 mr-2 text-sm"></i>
-                            <span class="text-sm leading-tight text-slate-700">Недоступны имущественные и социальные налоговые вычеты по НДФЛ.</span>
-                        </li>
-                    </ul>
+                <!-- Banner: Найм -->
+                <div class="glass-panel p-4 rounded-xl border-l-4 border-l-indigo-500 flex items-start gap-3 shadow-sm">
+                    <div class="bg-indigo-100 w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="fa-solid fa-user-tie text-indigo-500"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-800 text-[13px] block mb-1 leading-tight">Совмещение с наймом</span>
+                        <span class="text-[11px] text-slate-600 leading-snug block">Работа по трудовому договору полностью разрешена параллельно с НПД.</span>
+                        <div class="mt-2 bg-slate-100 p-2 rounded text-[10px] text-slate-700 font-medium">
+                            <span class="text-red-500 font-bold uppercase tracking-wider text-[9px]">Запрет:</span> Работа с текущим или бывшим работодателем (менее 2 лет после увольнения).
+                        </div>
+                    </div>
                 </div>
 
-                <!-- What happens at limit -->
-                <div class="glass-panel rounded-xl p-5 bg-slate-800 text-white border-none shadow-lg">
-                    <h3 class="text-sm font-bold mb-3 flex items-center text-white"><i class="fa-solid fa-stopwatch text-amber-400 mr-2"></i> Алгоритм превышения 2.4 млн ₽</h3>
-                    <p class="text-xs text-slate-300 mb-4 leading-relaxed">Механизм государственного контроля полностью автоматизирован ФНС. В день превышения наступают мгновенные последствия:</p>
-                    <ol class="space-y-4 relative border-l border-slate-600 ml-2 pl-4">
-                        <li class="relative">
-                            <span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
-                            <span class="text-sm font-bold text-white block mb-0.5">1. Блокировка кассы</span>
-                            <span class="text-xs text-slate-300">Приложение "Мой налог" деактивирует формирование новых фискальных чеков.</span>
-                        </li>
-                        <li class="relative">
-                            <span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span>
-                            <span class="text-sm font-bold text-white block mb-0.5">2. Разделение базы</span>
-                            <span class="text-xs text-slate-300">Доходы до лимита облагаются льготно. Сумма превышения выводится из-под юрисдикции НПД.</span>
-                        </li>
-                        <li class="relative">
-                            <span class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span>
-                            <span class="text-sm font-bold text-white block mb-0.5">3. Транзитное окно (20 дней)</span>
-                            <span class="text-xs text-slate-300">Срок для экстренной регистрации ИП и подачи уведомления на УСН, чтобы избежать перевода на ОСНО (13% НДФЛ).</span>
-                        </li>
-                    </ol>
+                <!-- Banner: Запреты -->
+                <div class="glass-panel p-4 rounded-xl border-l-4 border-l-red-500 flex items-start gap-3 shadow-sm">
+                    <div class="bg-red-100 w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="fa-solid fa-ban text-red-500"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-800 text-[13px] block mb-2 leading-tight">Жесткие запреты режима</span>
+                        <ul class="text-[11px] text-slate-600 list-disc pl-3 space-y-1">
+                            <li>Наем сотрудников по трудовым договорам.</li>
+                            <li>Перепродажа чужих товаров (только свое/переработка).</li>
+                            <li>Вычеты НДФЛ (имущественные, социальные).</li>
+                        </ul>
+                    </div>
                 </div>
+
             </div>
         </section>
 
         <!-- View 1: Compare & Calculator -->
         <section id="view-1" class="view-section p-4 md:p-8 hidden w-full">
             <div class="max-w-3xl mx-auto w-full">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">НПД vs ИП (УСН 6%)</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Масштабирование бизнеса требует привлечения подрядчиков или выхода за лимит выручки. Смоделируйте налоговую нагрузку для оценки рентабельности.
-                </p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">НПД vs ИП (УСН 6%)</h2>
                 
                 <div class="glass-panel p-5 rounded-xl mb-6 shadow-sm">
                     <h3 class="font-bold text-slate-800 text-sm mb-4">Калькулятор доходов (в год)</h3>
@@ -231,7 +200,7 @@
 
                 <div class="glass-panel p-4 rounded-xl flex flex-col mb-6 shadow-sm">
                     <h3 class="font-bold text-slate-800 text-sm mb-2 text-center">Фискальная нагрузка (Налоги + Взносы)</h3>
-                    <p class="text-[10px] text-center text-slate-500 mb-4">*ИП на УСН 6% включает фикс. взносы (~57 390 ₽) и 1% свыше 300к. Взносы уменьшают сам налог.</p>
+                    <p class="text-[10px] text-center text-slate-500 mb-4">*ИП на УСН 6% включает фикс. взносы (~57 390 ₽) и 1% свыше 300к.</p>
                     <div class="chart-container">
                         <canvas id="taxCompareChart"></canvas>
                     </div>
@@ -239,60 +208,41 @@
             </div>
         </section>
 
-        <!-- View 2: Platform Economy (289-FZ) -->
+        <!-- View 2: Platform Economy (Static Cards, NO Accordions) -->
         <section id="view-2" class="view-section p-4 md:p-8 hidden w-full">
              <div class="max-w-3xl mx-auto w-full">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Экономика Платформ</h2>
-                <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                    С 1 октября 2026 года вступил в силу Федеральный закон № 289-ФЗ, выстраивающий правовой каркас для маркетплейсов и агрегаторов.
-                </p>
-                
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">Защита по 289-ФЗ</h3>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Экономика Платформ</h2>
+                <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-3 bg-slate-100 p-2 rounded text-center">Защита по 289-ФЗ (с октября 2026)</h3>
                 
                 <div class="space-y-4">
                     
-                    <div class="bg-white border-2 border-indigo-100 rounded-xl overflow-hidden shadow-sm hover:border-indigo-300 transition-colors">
-                        <button class="w-full p-4 flex items-center justify-between text-left focus:outline-none active:bg-slate-50" onclick="toggleDetails('det-1', this)">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-indigo-100 text-indigo-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0"><i class="fa-regular fa-clock text-lg"></i></div>
-                                <span class="font-bold text-[13px] text-slate-800 leading-tight">Изменение условий<br><span class="text-[10px] text-slate-400 font-normal">Регламентация оферт</span></span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[9px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded font-bold uppercase tracking-wider border border-indigo-100 detail-badge">Раскрыть</span>
-                            </div>
-                        </button>
-                        <div id="det-1" class="hidden px-4 pb-4 pt-3 text-sm text-slate-700 border-t border-slate-100 bg-slate-50 leading-relaxed">
-                            Оператор платформы (маркетплейс, агрегатор такси) лишается права мгновенно менять правила игры. При изменениях, ухудшающих коммерческое положение партнера, платформа обязана уведомить самозанятого не менее чем за <strong>45 календарных дней</strong>. Технические изменения требуют уведомления за 15 дней.
+                    <div class="bg-white border border-indigo-100 rounded-xl overflow-hidden shadow-sm p-4 border-l-4 border-l-indigo-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-regular fa-clock"></i></div>
+                            <span class="font-bold text-[13px] text-slate-800 leading-tight">Изменение условий (Оферты)</span>
+                        </div>
+                        <div class="text-[12px] text-slate-600 leading-relaxed pl-11">
+                            Платформа обязана предупреждать об ухудшении условий минимум за <strong>45 дней</strong>, а о технических изменениях — за <strong>15 дней</strong>. Мгновенные изменения запрещены.
                         </div>
                     </div>
 
-                    <div class="bg-white border-2 border-emerald-100 rounded-xl overflow-hidden shadow-sm hover:border-emerald-300 transition-colors">
-                        <button class="w-full p-4 flex items-center justify-between text-left focus:outline-none active:bg-slate-50" onclick="toggleDetails('det-2', this)">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-emerald-100 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-code-branch text-lg"></i></div>
-                                <span class="font-bold text-[13px] text-slate-800 leading-tight">Алгоритмы и Штрафы<br><span class="text-[10px] text-slate-400 font-normal">Запрет скрытого найма</span></span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-1 rounded font-bold uppercase tracking-wider border border-emerald-100 detail-badge">Раскрыть</span>
-                            </div>
-                        </button>
-                        <div id="det-2" class="hidden px-4 pb-4 pt-3 text-sm text-slate-700 border-t border-slate-100 bg-slate-50 leading-relaxed">
-                            Платформы обязаны публично раскрывать алгоритмы ранжирования карточек и принципы динамического ценообразования. <strong>Важно:</strong> Запрещены штрафы за отказ от принятия заказа и принуждение к корпоративному дресс-коду или графику, так как это является признаком трудовых отношений.
+                    <div class="bg-white border border-emerald-100 rounded-xl overflow-hidden shadow-sm p-4 border-l-4 border-l-emerald-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-code-branch"></i></div>
+                            <span class="font-bold text-[13px] text-slate-800 leading-tight">Алгоритмы и Штрафы</span>
+                        </div>
+                        <div class="text-[12px] text-slate-600 leading-relaxed pl-11">
+                            Обязательное раскрытие принципов ранжирования карточек. <strong>Запрещены:</strong> штрафы за отказ от заказа и принуждение к корпоративному графику.
                         </div>
                     </div>
 
-                    <div class="bg-white border-2 border-amber-100 rounded-xl overflow-hidden shadow-sm hover:border-amber-300 transition-colors">
-                        <button class="w-full p-4 flex items-center justify-between text-left focus:outline-none active:bg-slate-50" onclick="toggleDetails('det-3', this)">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-handshake-angle text-lg"></i></div>
-                                <span class="font-bold text-[13px] text-slate-800 leading-tight">Защита от блокировок<br><span class="text-[10px] text-slate-400 font-normal">Досудебные споры</span></span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[9px] bg-amber-50 text-amber-600 px-2 py-1 rounded font-bold uppercase tracking-wider border border-amber-100 detail-badge">Раскрыть</span>
-                            </div>
-                        </button>
-                        <div id="det-3" class="hidden px-4 pb-4 pt-3 text-sm text-slate-700 border-t border-slate-100 bg-slate-50 leading-relaxed">
-                            Введен механизм защиты от немотивированных алгоритмических банов. Платформа обязана рассмотреть официальную претензию партнера в течение <strong>15 дней</strong>. Если блокировка признана необоснованной, доступ должен быть восстановлен за <strong>48 часов</strong>.
+                    <div class="bg-white border border-amber-100 rounded-xl overflow-hidden shadow-sm p-4 border-l-4 border-l-amber-500">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="bg-amber-100 text-amber-600 w-8 h-8 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-handshake-angle"></i></div>
+                            <span class="font-bold text-[13px] text-slate-800 leading-tight">Защита от блокировок</span>
+                        </div>
+                        <div class="text-[12px] text-slate-600 leading-relaxed pl-11">
+                            Официальный механизм досудебных споров. Срок ответа платформы на претензию — <strong>15 дней</strong>. При необоснованном бане аккаунт восстанавливается за <strong>48 часов</strong>.
                         </div>
                     </div>
 
@@ -303,65 +253,61 @@
         <!-- View 3: Risks & 115-FZ -->
         <section id="view-3" class="view-section p-4 md:p-8 hidden w-full">
              <div class="max-w-3xl mx-auto w-full">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Риски и 115-ФЗ</h2>
-                <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                    Триггеры автоматизированных систем ФНС (АСК ДФЛ) и алгоритмов банковского комплаенса, блокирующих счета самозанятых.
-                </p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Риски и 115-ФЗ</h2>
 
                 <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm">
                     <h3 class="font-bold text-red-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-building-columns mr-2"></i> Красные флаги банков (115-ФЗ)</h3>
-                    <p class="text-[11px] text-red-700 mb-3 font-medium">Операции, отправляющие счет на ручную проверку службой финмониторинга:</p>
+                    <p class="text-[11px] text-red-700 mb-3 font-medium">Операции, отправляющие счет на ручную проверку:</p>
                     <div class="space-y-3">
                         <div class="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex items-start">
                             <i class="fa-solid fa-magnifying-glass-chart text-red-400 mr-3 mt-1 text-lg"></i>
                             <div>
                                 <span class="font-bold text-slate-800 text-xs block mb-1">Семантическое несоответствие</span>
-                                <span class="text-[11px] text-slate-600 leading-relaxed">Система анализирует назначения B2B платежей. Если ИТ-разработчик получает деньги "за стройматериалы", счет блокируется до выяснения.</span>
+                                <span class="text-[11px] text-slate-600 leading-relaxed">Назначение B2B платежей не совпадает со сферой деятельности самозанятого.</span>
                             </div>
                         </div>
                         <div class="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex items-start">
                             <i class="fa-solid fa-receipt text-red-400 mr-3 mt-1 text-lg"></i>
                             <div>
-                                <span class="font-bold text-slate-800 text-xs block mb-1">Дефицит фискальных чеков</span>
-                                <span class="text-[11px] text-slate-600 leading-relaxed">Регулярные поступления от юридических лиц без синхронного пробития закрывающих чеков в приложении "Мой налог".</span>
+                                <span class="font-bold text-slate-800 text-xs block mb-1">Дефицит чеков</span>
+                                <span class="text-[11px] text-slate-600 leading-relaxed">Регулярные поступления от юридических лиц без пробития чеков в "Мой налог".</span>
                             </div>
                         </div>
                         <div class="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex items-start">
                             <i class="fa-solid fa-money-bill-transfer text-red-400 mr-3 mt-1 text-lg"></i>
                             <div>
-                                <span class="font-bold text-slate-800 text-xs block mb-1">Транзит и Cash-out</span>
-                                <span class="text-[11px] text-slate-600 leading-relaxed">Немедленное снятие наличных в банкомате в день поступления безнала. Искусственное дробление крупных сумм.</span>
+                                <span class="font-bold text-slate-800 text-xs block mb-1">Транзит / Cash-out</span>
+                                <span class="text-[11px] text-slate-600 leading-relaxed">Немедленное снятие наличных, дробление крупных транзакций.</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="glass-panel p-4 rounded-xl shadow-sm">
-                    <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-user-secret mr-2"></i> Подмена найма (Контроль ФНС)</h3>
-                    <p class="text-[11px] text-slate-600 mb-3 leading-relaxed">ФНС и Минтруд используют систему МАРМ для выявления компаний, экономящих на НДФЛ и взносах за счет перевода штата в статус самозанятых.</p>
+                    <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center"><i class="fa-solid fa-user-secret mr-2"></i> Подмена найма (АСК ДФЛ)</h3>
                     
                     <div class="flex items-start p-3 bg-white rounded-lg border border-slate-200 risk-medium mb-3 shadow-sm">
                         <div class="w-8 h-8 bg-amber-100 text-amber-500 rounded flex justify-center items-center font-bold mr-3 shrink-0"><i class="fa-solid fa-eye"></i></div>
                         <div>
                             <span class="font-bold text-slate-800 text-xs block mb-0.5">Желтая зона (Мониторинг)</span>
-                            <span class="text-[11px] text-slate-600 leading-tight">Привлечение компанией 10 и более самозанятых с вознаграждением свыше 25 000 руб/мес. Данные передаются в комиссию по легализации.</span>
+                            <span class="text-[11px] text-slate-600 leading-tight">Привлечение компанией 10+ самозанятых с оплатой > 25 000 руб/мес.</span>
                         </div>
                     </div>
                     
                     <div class="flex items-start p-3 bg-white rounded-lg border border-slate-200 risk-high mb-4 shadow-sm">
                         <div class="w-8 h-8 bg-red-100 text-red-500 rounded flex justify-center items-center font-bold mr-3 shrink-0"><i class="fa-solid fa-bullseye"></i></div>
                         <div>
-                            <span class="font-bold text-slate-800 text-xs block mb-0.5">Красная зона (Выездная проверка)</span>
-                            <span class="text-[11px] text-slate-600 leading-tight">35+ НПД исполнителей, доход > 35к, длительность > 3 месяцев. Доля доходов исполнителя от этой конкретной компании превышает 75%.</span>
+                            <span class="font-bold text-slate-800 text-xs block mb-0.5">Красная зона (Проверка)</span>
+                            <span class="text-[11px] text-slate-600 leading-tight">35+ исполнителей, доход > 35к, длительность > 3 месяцев. Клиент дает > 75% дохода.</span>
                         </div>
                     </div>
 
-                    <div class="bg-slate-100 p-3 rounded-lg">
-                        <h4 class="font-bold text-slate-700 text-[10px] mb-2 uppercase tracking-wide">Доказательства подмены в суде:</h4>
+                    <div class="bg-slate-100 p-3 rounded-lg border border-slate-200">
+                        <h4 class="font-bold text-slate-700 text-[10px] mb-2 uppercase tracking-wide">Доказательства в суде:</h4>
                         <ul class="text-[11px] text-slate-600 space-y-1.5 list-disc pl-4 marker:text-slate-400">
-                            <li>Предоставление рабочего места, ПК, корпоративной почты, пропуска.</li>
-                            <li>Выплаты фиксированных сумм строго 2 раза в месяц в дни зарплаты.</li>
-                            <li>Массовая регистрация статусов НПД с одного IP-адреса офиса компании.</li>
+                            <li>Рабочее место, ПК, корпоративная почта, пропуск.</li>
+                            <li>Выплаты строго 2 раза в месяц в дни зарплаты штата.</li>
+                            <li>Регистрация НПД с одного IP-адреса офиса компании.</li>
                         </ul>
                     </div>
                 </div>
@@ -371,10 +317,7 @@
         <!-- View 4: Checklists -->
         <section id="view-4" class="view-section p-4 md:p-8 hidden w-full">
              <div class="max-w-3xl mx-auto w-full">
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Чек-листы Безопасности</h2>
-                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Практические протоколы для минимизации фискальных рисков при заключении договоров ГПХ.
-                </p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Чек-листы Безопасности</h2>
 
                 <div class="mb-6 shadow-sm rounded-xl overflow-hidden">
                     <h3 class="bg-blue-600 text-white p-3 font-bold text-sm flex items-center">
@@ -382,25 +325,25 @@
                     </h3>
                     <div class="bg-white border border-t-0 border-slate-200 p-2">
                         <ul class="space-y-1">
-                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition cursor-pointer" onclick="toggleCheck(this)">
                                 <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
                                 <div>
                                     <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Валидация статуса (API ФНС)</span>
-                                    <span class="text-[11px] text-slate-500 leading-tight block">Проверка актуальности статуса НПД непосредственно перед проведением каждого платежа.</span>
+                                    <span class="text-[11px] text-slate-500 leading-tight block">Проверка актуальности статуса НПД перед проведением платежа.</span>
                                 </div>
                             </li>
-                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50" onclick="toggleCheck(this)">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50 cursor-pointer" onclick="toggleCheck(this)">
                                 <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
                                 <div>
-                                    <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Спецификация предмета договора</span>
-                                    <span class="text-[11px] text-slate-500 leading-tight block">Запрет на формулировки должностных инструкций. Договор должен содержать конечный, измеримый результат работ.</span>
+                                    <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Спецификация результата</span>
+                                    <span class="text-[11px] text-slate-500 leading-tight block">Договор должен содержать измеримый результат, а не процесс.</span>
                                 </div>
                             </li>
-                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50" onclick="toggleCheck(this)">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50 cursor-pointer" onclick="toggleCheck(this)">
                                 <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
                                 <div>
-                                    <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Оплата по закрывающему Акту</span>
-                                    <span class="text-[11px] text-slate-500 leading-tight block">Сроки выплат привязаны к Акту приема-передачи. Категорически избегать совпадений с датами зарплат в компании.</span>
+                                    <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Оплата по Акту</span>
+                                    <span class="text-[11px] text-slate-500 leading-tight block">Сроки выплат привязаны к Акту приема-передачи (не в дни зарплат).</span>
                                 </div>
                             </li>
                         </ul>
@@ -413,25 +356,25 @@
                     </h3>
                     <div class="bg-white border border-t-0 border-slate-200 p-2">
                         <ul class="space-y-1">
-                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition" onclick="toggleCheck(this)">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition cursor-pointer" onclick="toggleCheck(this)">
                                 <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
                                 <div>
                                     <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Диверсификация заказчиков</span>
-                                    <span class="text-[11px] text-slate-500 leading-tight block">Доля доходов от одного, якорного B2B-клиента не должна превышать 70% на горизонте 3-6 месяцев.</span>
+                                    <span class="text-[11px] text-slate-500 leading-tight block">Доля от одного якорного B2B-клиента не должна превышать 70%.</span>
                                 </div>
                             </li>
-                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50" onclick="toggleCheck(this)">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50 cursor-pointer" onclick="toggleCheck(this)">
                                 <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
                                 <div>
-                                    <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Финансовая изоляция (Комплаенс)</span>
-                                    <span class="text-[11px] text-slate-500 leading-tight block">Использование отдельного банковского счета исключительно для коммерческих поступлений НПД.</span>
+                                    <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Финансовая изоляция</span>
+                                    <span class="text-[11px] text-slate-500 leading-tight block">Использование отдельного банковского счета для поступлений НПД.</span>
                                 </div>
                             </li>
-                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50" onclick="toggleCheck(this)">
+                            <li class="flex items-start p-3 rounded-lg active:bg-slate-50 transition border-t border-slate-50 cursor-pointer" onclick="toggleCheck(this)">
                                 <i class="fa-regular fa-square text-2xl text-slate-300 mr-3 check-icon transition-colors"></i>
                                 <div>
                                     <span class="text-[13px] font-bold text-slate-800 leading-tight block mb-1">Кассовая дисциплина</span>
-                                    <span class="text-[11px] text-slate-500 leading-tight block">Формирование чека строго в день получения наличных, или до 9 числа следующего месяца (при безнале).</span>
+                                    <span class="text-[11px] text-slate-500 leading-tight block">Выдача чека строго в день получения наличных или до 9 числа (безнал).</span>
                                 </div>
                             </li>
                         </ul>
@@ -476,7 +419,7 @@
             });
         });
 
-        // Touch Swipe Logic (with Strict Y-axis Ignore)
+        // Touch Swipe Logic
         let startX = 0, startY = 0;
         
         mainContent.addEventListener('touchstart', e => {
@@ -493,59 +436,12 @@
             let diffX = startX - endX;
             let diffY = startY - endY;
 
-            // Trigger swipe only if X diff is significant AND Y diff is minimal (prevent triggering while scrolling down)
             if (Math.abs(diffX) > 60 && Math.abs(diffY) < 40) {
-                if (diffX > 0) switchView(currentViewIndex + 1); // Swipe Left -> Next
-                else switchView(currentViewIndex - 1); // Swipe Right -> Prev
+                if (diffX > 0) switchView(currentViewIndex + 1);
+                else switchView(currentViewIndex - 1);
             }
             startX = 0; startY = 0;
         }, { passive: true });
-
-        // --- Accordions ---
-        window.toggleDetails = function(id, btnElement) {
-            const content = document.getElementById(id);
-            const badge = btnElement.querySelector('.detail-badge');
-            
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                btnElement.classList.add('bg-slate-50');
-                badge.innerText = 'Свернуть';
-                
-                if(btnElement.parentElement.classList.contains('border-indigo-100')) {
-                    badge.classList.replace('bg-indigo-50', 'bg-slate-200');
-                    badge.classList.replace('text-indigo-600', 'text-slate-600');
-                } else if(btnElement.parentElement.classList.contains('border-emerald-100')) {
-                    badge.classList.replace('bg-emerald-50', 'bg-slate-200');
-                    badge.classList.replace('text-emerald-600', 'text-slate-600');
-                } else {
-                    badge.classList.replace('bg-amber-50', 'bg-slate-200');
-                    badge.classList.replace('text-amber-600', 'text-slate-600');
-                }
-                badge.classList.replace('border-indigo-100', 'border-slate-300');
-                badge.classList.replace('border-emerald-100', 'border-slate-300');
-                badge.classList.replace('border-amber-100', 'border-slate-300');
-                
-            } else {
-                content.classList.add('hidden');
-                btnElement.classList.remove('bg-slate-50');
-                badge.innerText = 'Раскрыть';
-                badge.classList.replace('border-slate-300', 'border-indigo-100'); // defaults, will be overridden below
-                
-                if(btnElement.parentElement.classList.contains('border-indigo-100')) {
-                    badge.classList.replace('bg-slate-200', 'bg-indigo-50');
-                    badge.classList.replace('text-slate-600', 'text-indigo-600');
-                    badge.classList.add('border-indigo-100');
-                } else if(btnElement.parentElement.classList.contains('border-emerald-100')) {
-                    badge.classList.replace('bg-slate-200', 'bg-emerald-50');
-                    badge.classList.replace('text-slate-600', 'text-emerald-600');
-                    badge.classList.replace('border-indigo-100', 'border-emerald-100');
-                } else {
-                    badge.classList.replace('bg-slate-200', 'bg-amber-50');
-                    badge.classList.replace('text-slate-600', 'text-amber-600');
-                    badge.classList.replace('border-indigo-100', 'border-amber-100');
-                }
-            }
-        };
 
         // --- Checklists ---
         window.toggleCheck = function(element) {
