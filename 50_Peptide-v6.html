@@ -458,7 +458,6 @@
                     if (target.classList.contains('calc-vial-toggle') && target.classList.contains('active')) {
                         let val = parseInt(target.dataset.val) === 10 ? 100 : 10;
                         target.dataset.val = val;
-                        target.innerText = val + ' 🔄';
                     }
 
                     this.vialMg = parseFloat(target.dataset.val);
