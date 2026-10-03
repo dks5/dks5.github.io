@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Очистка и Проверка</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: #5cb85c; } /* Зеленый заголовок */
+        
+        .instruction-step {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px solid #5cb85c;
+            border-radius: 4px;
+            background-color: #f0fff4;
+        }
+        .command-block {
+            background-color: #222;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            border-left: 5px solid #0f0;
+        }
+        .copy-button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            text-align: center;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .copy-button:hover { background-color: #555; }
+        .note { font-size: 0.9em; color: #555; margin-top: 5px; }
+        .success-text { color: green; font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Office Активирован!</h1>
+        
+        <p class="success-text">Основная активация прошла успешно. Вы можете закрыть это окно и пользоваться программами.</p>
+        <p>Ниже инструкция, как удалить ошибку о старой версии (Office 365 Grace), если она мозолит глаза.</p>
+
+        <div class="instruction-step">
+            <h3>Удаление "мусорного" ключа (KHGM9)</h3>
+            <p>Эта команда удалит остатки пробной версии, которая выдает ошибку.</p>
+            
+            <div class="command-block">cscript ospp.vbs /unpkey:KHGM9</div>
+            <button class="copy-button" onclick="copyToClipboard('cscript ospp.vbs /unpkey:KHGM9')">Копировать команду удаления</button>
+        </div>
+
+        <div class="instruction-step">
+            <h3>Финальная проверка</h3>
+            <p>Нажмите эту кнопку, чтобы вывести статус. В ответе вы должны увидеть <strong>LICENSE STATUS:  ---LICENSED---</strong> для версии ProPlusVL.</p>
+            
+            <div class="command-block">cscript ospp.vbs /dstatus</div>
+            <button class="copy-button" onclick="copyToClipboard('cscript ospp.vbs /dstatus')">Копировать команду проверки</button>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            alert('Скопировано! Вставьте в CMD.');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activation Suite | macOS Style</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --accent-blue: #007AFF;
+            --accent-green: #34C759;
+            --accent-purple: #5856D6;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --result-bg: rgba(52, 199, 89, 0.1);
+            --result-text: #1e5c2e;
+            
+            --term-header-bg: #e3e3e8;
+            --term-body-bg: #ffffff;
+            --term-border: rgba(0,0,0,0.12);
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%), 
+                        radial-gradient(circle at top left, #a8edea 0%, #fed6e3 100%);
+            background-blend-mode: overlay;
+            background-attachment: fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .mac-window {
+            width: 100%;
+            max-width: 860px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .window-header {
+            height: 52px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .traffic-lights { display: flex; gap: 8px; margin-right: 20px; }
+        .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+        .close { background-color: #ff5f57; border: 1px solid #e0443e; }
+        .minimize { background-color: #febc2e; border: 1px solid #d89e24; }
+        .maximize { background-color: #28c840; border: 1px solid #1aab29; }
+
+        .window-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            flex-grow: 1;
+            text-align: center;
+            opacity: 0.8;
+            margin-right: 60px;
+        }
+
+        .tabs-nav {
+            display: flex;
+            padding: 10px 20px 0 20px;
+            gap: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 12px 4px;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .tab-btn:hover { color: var(--text-primary); }
+        .tab-btn.active { color: var(--accent-blue); }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-blue);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .tab-content { padding: 30px 40px; display: none; animation: slideIn 0.3s ease-out; }
+        .tab-content.active { display: block; }
+
+        h1 { font-size: 26px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+        p { line-height: 1.5; color: #424245; margin-bottom: 15px; font-size: 15px; }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .step-header-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .step-badge {
+            display: inline-block;
+            background: var(--accent-blue);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-bottom: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .step-badge.purple { background: var(--accent-purple); }
+
+        .step-title {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .terminal-wrapper {
+            border: 1px solid var(--term-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 12px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .terminal-header-bar {
+            background: var(--term-header-bg);
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--term-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 28px;
+        }
+        
+        .term-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .term-icon { font-size: 12px; }
+
+        .code-container {
+            background: var(--term-body-bg);
+            padding: 12px 14px;
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 13px;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .btn-copy-icon {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-blue);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-copy-icon:hover {
+            background: rgba(0, 122, 255, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .btn-copy-icon svg { width: 16px; height: 16px; }
+
+        .result-pane {
+            margin-top: 8px;
+            margin-bottom: 16px;
+            padding: 8px 12px;
+            background: var(--result-bg);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--result-text);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            border: 1px solid rgba(52, 199, 89, 0.2);
+        }
+
+        /* Стиль для примера вывода терминала */
+        .terminal-example {
+            background: #fafafa;
+            border: 1px dashed #c7c7c7;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .terminal-example strong {
+            color: #d63031;
+            background: rgba(214, 48, 49, 0.1);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .warning-card {
+            background: rgba(255, 149, 0, 0.1);
+            border: 1px solid rgba(255, 149, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            color: #b35900;
+            font-size: 14px;
+        }
+        
+        .version-selector { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .version-block { 
+            flex: 1; min-width: 240px; background: rgba(255,255,255,0.5); 
+            padding: 15px; border-radius: 12px; border: 2px solid transparent; 
+        }
+        .version-block.home { border-color: rgba(52, 199, 89, 0.3); }
+        .version-block.pro { border-color: rgba(88, 86, 214, 0.3); }
+
+        kbd {
+            background: white; border: 1px solid #d1d1d1; border-radius: 5px;
+            box-shadow: 0 2px 0 #e5e5e5; color: #555; padding: 2px 6px; font-size: 0.85em;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .tab-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mac-window">
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="traffic-light close"></div>
+                <div class="traffic-light minimize"></div>
+                <div class="traffic-light maximize"></div>
+            </div>
+            <div class="window-title">Terminal — Activation Assistant Suite</div>
+        </div>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="openTab('windows')">Windows</button>
+            <button class="tab-btn" onclick="openTab('office')">Microsoft Office</button>
+        </div>
+
+        <div class="content-wrapper">
+            
+            <!-- WINDOWS TAB -->
+            <div id="windows" class="tab-content active">
+                <h1>Активация Windows</h1>
+                <p>Команды выполняются в стандартной командной строке или PowerShell.</p>
+
+                <div class="warning-card">
+                    <span>💡</span>
+                    <div>Запускайте терминал только от имени администратора.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Шаг 1</span>
+                        <h3 class="step-title">Установка ключа продукта</h3>
+                    </div>
+                    <p>Выберите вашу версию Windows:</p>
+
+                    <div class="version-selector">
+                        <div class="version-block home">
+                            <strong style="color: #248a3d; display: block; margin-bottom: 5px;">Home / Core</strong>
+                            <div class="terminal-wrapper">
+                                <div class="terminal-header-bar">
+                                    <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                                    <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /ipk TX9XD-98N7V-6WMQ6-BX7FG-H8Q99')" title="Копировать">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="code-container">
+                                    slmgr /ipk TX9XD-98N7V-6WMQ6-BX7FG-H8Q99
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="version-block pro">
+                            <strong style="color: #5856d6; display: block; margin-bottom: 5px;">Professional</strong>
+                            <div class="terminal-wrapper">
+                                <div class="terminal-header-bar">
+                                    <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                                    <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /ipk W269N-WFGWX-YVC9B-4J6C9-T83GX')" title="Копировать">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="code-container">
+                                    slmgr /ipk W269N-WFGWX-YVC9B-4J6C9-T83GX
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Окно "Успешно установлен ключ продукта...".</div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Шаг 2</span>
+                        <h3 class="step-title">Настройка сервера и Активация</h3>
+                    </div>
+                    
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /skms kms.digiboy.ir')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            slmgr /skms kms.digiboy.ir
+                        </div>
+                    </div>
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Окно "Имя компьютера службы управления ключами успешно установлено".</div>
+                    </div>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /ato')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            slmgr /ato
+                        </div>
+                    </div>
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Окно "Активация Windows(R)... выполнена успешно".</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- OFFICE TAB -->
+            <div id="office" class="tab-content">
+                <h1>Активация Microsoft Office</h1>
+                <p>Исправленный метод для решения проблемы "SKU not found".</p>
+
+                <div class="warning-card">
+                    <span>⚠️</span>
+                    <div><strong>Обязательно:</strong> Все команды в этом разделе выполняйте в <strong>CMD (Командная строка)</strong>. В PowerShell они работать не будут.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge purple">Шаг 1</span>
+                        <h3 class="step-title">Вход в папку установки</h3>
+                    </div>
+                    <p>Если первая команда не сработает (путь не найден), попробуйте вторую.</p>
+
+                    <!-- x64 -->
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cd /d &quot;%ProgramFiles%\\Microsoft Office\\Office16&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cd /d "%ProgramFiles%\Microsoft Office\Office16"
+                        </div>
+                    </div>
+
+                    <!-- x86 -->
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cd /d &quot;%ProgramFiles(x86)%\\Microsoft Office\\Office16&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cd /d "%ProgramFiles(x86)%\Microsoft Office\Office16"
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Путь в строке изменится на <code>...\Microsoft Office\Office16></code></div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge purple">Шаг 2</span>
+                        <h3 class="step-title">Ручная установка лицензий</h3>
+                    </div>
+                    <p>Выполните все три команды по очереди:</p>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlusVL_KMS_Client-ppd.xrm-ms&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlusVL_KMS_Client-ppd.xrm-ms"
+                        </div>
+                    </div>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlusVL_KMS_Client-ul.xrm-ms&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlusVL_KMS_Client-ul.xrm-ms"
+                        </div>
+                    </div>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlusVL_KMS_Client-ul-oob.xrm-ms&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlusVL_KMS_Client-ul-oob.xrm-ms"
+                        </div>
+                    </div>
+                    
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Строка <code>License installed successfully</code></div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge purple">Шаг 3</span>
+                        <h3 class="step-title">Установка ключа и Активация</h3>
+                    </div>
+                    
+                    <p>1. Установка ключа:</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99
+                        </div>
+                    </div>
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: <code>&lt;Product key installation successful&gt;</code></div>
+                    </div>
+
+                    <p style="margin-top: 20px;">2. Активация:</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /sethst:kms.digiboy.ir & cscript ospp.vbs /act')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /sethst:kms.digiboy.ir & cscript ospp.vbs /act
+                        </div>
+                    </div>
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: <code>&lt;Product activation successful&gt;</code></div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge purple">Шаг 4</span>
+                        <h3 class="step-title">Диагностика и Очистка (Опционально)</h3>
+                    </div>
+                    <p>Рекомендуется сначала проверить статус, и только при наличии конфликтов удалять ключ.</p>
+                    
+                    <p>1. Проверка статуса (показывает все установленные ключи):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /dstatus')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /dstatus
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-example">
+                        Пример лишней лицензии (ищите подобное):<br><br>
+                        LICENSE NAME: Office 16, Office16O365HomePremR_<strong>Grace</strong> edition<br>
+                        LICENSE DESCRIPTION: Office 16, RETAIL(Grace) channel<br>
+                        Last 5 characters of installed product key: <strong>KHGM9</strong>
+                    </div>
+
+                    <p style="margin-top: 20px;">2. Удаление ключа KHGM9:</p>
+                    <p style="font-size: 13px; color: #b35900;">Это стоит выполнять, только если диагностика показала наличие "лишней" лицензии (обычно она подписана как Grace edition).</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /unpkey:KHGM9')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /unpkey:KHGM9
+                        </div>
+                    </div>
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: <code>&lt;Product key uninstall successful&gt;</code></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            buttons.forEach(btn => {
+                if(btn.getAttribute('onclick').includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function copyText(btn, text) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                document.execCommand('copy');
+                const originalContent = btn.innerHTML;
+                
+                // SVG галочки
+                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                btn.style.color = "#34C759";
+                btn.style.borderColor = "#34C759"; // для консистентности, хотя бордера нет
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.color = "";
+                    btn.style.borderColor = "";
+                }, 1500);
+            } catch (err) {
+                alert('Ошибка копирования');
+            }
+            document.body.removeChild(tempInput);
+        }
+    </script>
+</body>
+</html>
