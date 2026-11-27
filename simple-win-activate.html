@@ -6,47 +6,49 @@
     <title>Activation Suite | iOS Style</title>
     <style>
         :root {
-            --bg-page: #c7c7cc;
-            --glass-bg: #d8d8df;
-            --header-bg: #d1d1d8;
-            --card-bg: #e2e2e8;
-            --subcard-bg: #d7d7df;
-            --glass-border: rgba(60, 60, 67, 0.14);
-            --glass-shadow: 0 24px 54px rgba(28, 28, 30, 0.16), 0 4px 14px rgba(28, 28, 30, 0.08);
+            --bg-page: #d5d6dc;
+            --glass-bg: #e5e5ea;
+            --header-bg: #ececf0;
+            --card-bg: #ededf2;
+            --subcard-bg: #e3e3ea;
+            --border-subtle: #c8c8d0;
+            --border-strong: #b6b7c2;
+            --glass-border: rgba(28, 28, 30, 0.16);
+            --glass-shadow: 0 28px 64px -14px rgba(15, 18, 28, 0.22), 0 4px 16px rgba(15, 18, 28, 0.08);
             --accent-blue: #007AFF;
-            --accent-green: #34C759;
-            --accent-purple: #5856D6;
+            --badge-bg: #2c2c2e;
             --text-primary: #1c1c1e;
-            --text-secondary: #636366;
-            --result-bg: rgba(52, 199, 89, 0.13);
-            --result-text: #1b5e20;
-            --term-header-bg: #f5f5f7;
+            --text-secondary: #5c5c60;
+            --result-bg: #e4e4ec;
+            --result-text: #2c2c2e;
+            --term-header-bg: #f6f6f9;
             --term-body-bg: #ffffff;
-            --term-border: rgba(60, 60, 67, 0.12);
+            --term-border: #b8b9c4;
         }
 
         body {
             margin: 0;
-            padding: 40px 20px;
+            padding: 36px 20px;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(180deg, #cfd0d6 0%, #c2c3ca 100%);
+            background: radial-gradient(circle at top, #dfe0e6 0%, #cfd1d8 100%);
             background-attachment: fixed;
             min-height: 100vh;
             color: var(--text-primary);
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            -webkit-font-smoothing: antialiased;
         }
 
         .mac-window {
             width: 100%;
-            max-width: 860px;
+            max-width: 880px;
             background: var(--glass-bg);
             border-radius: 22px;
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
             overflow: hidden;
-            animation: fadeIn 0.45s ease-out;
+            animation: fadeIn 0.4s ease-out;
             display: flex;
             flex-direction: column;
         }
@@ -57,7 +59,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 24px;
-            border-bottom: 1px solid rgba(60, 60, 67, 0.10);
+            border-bottom: 1px solid var(--border-subtle);
             background: var(--header-bg);
             flex-shrink: 0;
         }
@@ -65,43 +67,40 @@
         .window-title {
             font-weight: 600;
             font-size: 14px;
-            letter-spacing: -0.1px;
+            letter-spacing: -0.15px;
             color: var(--text-primary);
             text-align: center;
-            opacity: 0.85;
         }
 
         .tabs-nav {
             display: flex;
-            padding: 8px 24px 0 24px;
-            gap: 24px;
-            border-bottom: 1px solid rgba(60, 60, 67, 0.10);
-            background: rgba(209, 209, 216, 0.65);
+            margin: 18px 40px 0 40px;
+            padding: 4px;
+            gap: 4px;
+            background: #d6d6de;
+            border: 1px solid #c4c5ce;
+            border-radius: 12px;
         }
 
         .tab-btn {
-            background: none;
-            border: none;
+            flex: 1;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 9px;
             font-family: inherit;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-secondary);
-            padding: 12px 4px;
+            padding: 9px 14px;
             cursor: pointer;
-            position: relative;
-            transition: color 0.2s;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
         }
         .tab-btn:hover { color: var(--text-primary); }
-        .tab-btn.active { color: var(--accent-blue); }
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--accent-blue);
-            border-radius: 2px 2px 0 0;
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--text-primary);
+            border-color: rgba(28, 28, 30, 0.10);
+            box-shadow: 0 2px 6px rgba(15, 18, 28, 0.10), 0 1px 2px rgba(15, 18, 28, 0.06);
         }
 
         .tab-content { padding: 30px 40px; display: none; animation: slideIn 0.3s ease-out; }
@@ -115,8 +114,8 @@
             border-radius: 16px;
             padding: 22px 24px;
             margin-bottom: 20px;
-            border: 1px solid rgba(60, 60, 67, 0.09);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 1px 3px rgba(15, 18, 28, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.72);
         }
 
         .step-header-row {
@@ -126,26 +125,27 @@
             margin-bottom: 16px;
         }
 
-        .step-badge {
+        .step-badge,
+        .step-badge.purple,
+        .step-badge.green {
             display: inline-block;
-            background: var(--accent-blue);
-            color: white;
+            background: var(--badge-bg);
+            color: #ffffff;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
             padding: 4px 10px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-bottom: 0;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.55px;
             flex-shrink: 0;
         }
-        .step-badge.purple { background: var(--accent-purple); }
-        .step-badge.green { background: var(--accent-green); }
 
         .step-title {
             margin: 0;
             font-size: 17px;
             font-weight: 600;
+            letter-spacing: -0.2px;
             color: var(--text-primary);
         }
 
@@ -155,14 +155,15 @@
             border-radius: 12px;
             overflow: hidden;
             margin: 14px 0;
-            box-shadow: 0 10px 26px -6px rgba(28, 28, 30, 0.16),
-                        0 3px 8px -2px rgba(28, 28, 30, 0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 12px 28px -8px rgba(15, 18, 28, 0.20),
+                        0 3px 8px -2px rgba(15, 18, 28, 0.09);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
         .terminal-wrapper:hover {
             transform: translateY(-2px);
-            box-shadow: 0 14px 32px -6px rgba(28, 28, 30, 0.20),
-                        0 4px 10px -2px rgba(28, 28, 30, 0.10);
+            border-color: #9b9da9;
+            box-shadow: 0 16px 34px -8px rgba(15, 18, 28, 0.24),
+                        0 4px 10px -2px rgba(15, 18, 28, 0.11);
         }
 
         .terminal-header-bar {
@@ -239,66 +240,90 @@
         }
 
         .result-pane {
-            margin-top: 10px;
+            margin-top: 12px;
             margin-bottom: 16px;
-            padding: 10px 14px;
+            padding: 11px 14px;
             background: var(--result-bg);
             border-radius: 10px;
             font-size: 13px;
             color: var(--result-text);
             display: flex;
             align-items: flex-start;
-            gap: 8px;
-            border: 1px solid rgba(52, 199, 89, 0.24);
+            gap: 10px;
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid #636366;
         }
+        .result-icon { display: none; }
 
         .terminal-example {
-            background: #ececf1;
-            border: 1px dashed #aeaeb2;
+            background: #e4e4ec;
+            border: 1px dashed var(--border-strong);
             border-radius: 10px;
             padding: 12px 14px;
             font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
             font-size: 12px;
-            color: #48484a;
+            color: #3a3a3c;
             margin-bottom: 15px;
             line-height: 1.5;
         }
         .terminal-example strong {
-            color: #d63031;
-            background: rgba(214, 48, 49, 0.1);
-            padding: 0 2px;
-            border-radius: 2px;
+            color: #1c1c1e;
+            background: rgba(0, 122, 255, 0.14);
+            padding: 1px 4px;
+            border-radius: 4px;
         }
 
         .warning-card {
-            background: rgba(255, 149, 0, 0.12);
-            border: 1px solid rgba(255, 149, 0, 0.26);
-            border-radius: 14px;
-            padding: 16px;
+            background: #e2e2ea;
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 14px 16px;
             margin-bottom: 24px;
             display: flex;
             gap: 12px;
             align-items: center;
-            color: #8a4300;
+            color: var(--text-primary);
             font-size: 14px;
         }
-
-        .version-selector { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
-        .version-block {
-            flex: 1; min-width: 240px; background: var(--subcard-bg);
-            padding: 16px; border-radius: 14px; border: 1.5px solid transparent;
+        .warning-card > span:first-child { display: none; }
+        .warning-card::before {
+            content: "i";
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-        .version-block.home { border-color: rgba(52, 199, 89, 0.35); }
-        .version-block.pro { border-color: rgba(88, 86, 214, 0.35); }
-        .version-block.ltsc { border-color: rgba(0, 122, 255, 0.35); }
-        .version-block.ent { border-color: rgba(255, 149, 0, 0.35); }
+
+        .version-selector { display: flex; gap: 14px; margin-top: 15px; flex-wrap: wrap; }
+        .version-block {
+            flex: 1;
+            min-width: 240px;
+            background: var(--subcard-bg);
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border-subtle);
+        }
+        .version-block > strong {
+            color: var(--text-primary) !important;
+            font-size: 14px;
+            letter-spacing: -0.1px;
+        }
 
         kbd {
-            background: white; border: 1px solid #d1d1d1; border-radius: 5px;
-            box-shadow: 0 2px 0 #e5e5e5; color: #555; padding: 2px 6px; font-size: 0.85em;
+            background: white; border: 1px solid #c6c6ce; border-radius: 5px;
+            box-shadow: 0 1px 0 #d5d5dd; color: #3a3a3c; padding: 2px 6px; font-size: 0.85em;
         }
 
-        .step-badge.orange { background: #ff9500; }
+        .step-badge.orange { background: var(--accent-blue); }
 
         .update-links {
             display: flex;
@@ -317,15 +342,15 @@
             border-radius: 12px;
             text-decoration: none;
             color: var(--text-primary);
-            box-shadow: 0 10px 26px -6px rgba(28, 28, 30, 0.16),
-                        0 3px 8px -2px rgba(28, 28, 30, 0.08);
+            box-shadow: 0 12px 28px -8px rgba(15, 18, 28, 0.20),
+                        0 3px 8px -2px rgba(15, 18, 28, 0.09);
             transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
         }
         .update-link-item:hover {
             border-color: var(--accent-blue);
             transform: translateY(-2px);
-            box-shadow: 0 14px 32px -6px rgba(28, 28, 30, 0.20),
-                        0 4px 10px -2px rgba(28, 28, 30, 0.10);
+            box-shadow: 0 16px 34px -8px rgba(15, 18, 28, 0.24),
+                        0 4px 10px -2px rgba(15, 18, 28, 0.11);
         }
         .update-link-meta {
             display: flex;
@@ -749,155 +774,100 @@
 
                 <div class="step-card">
                     <div class="step-header-row">
-                        <span class="step-badge green">Шаг 1</span>
-                        <h3 class="step-title">Поиск забытых пакетов (.msu и дистрибутивы Office)</h3>
+                        <span class="step-badge">Шаг 1</span>
+                        <h3 class="step-title">Интерактивный поиск и удаление пакетов (.msu и Office C2R)</h3>
                     </div>
-                    <p>Аудит диска <code>C:\</code> на наличие скачанных обновлений и локальных архивов Office C2R (<code>stream.*.dat</code>):</p>
+                    <p>Сканирует диск <code>C:\</code> (кроме <code>Windows</code>), группирует найденные <code>.msu</code> и <code>stream.x*.dat</code> по папкам, показывает общий размер в МБ и по каждой папке спрашивает — удалить пакеты (<code>y</code>/<code>д</code>) или пропустить (<code>Enter</code>):</p>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'dir /s /b /a:-d &quot;C:\\*.msu&quot; &quot;C:\\stream.x64.*.dat&quot; &quot;C:\\stream.x86.*.dat&quot; 2&gt;nul')" title="Копировать">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            dir /s /b /a:-d "C:\*.msu" "C:\stream.x64.*.dat" "C:\stream.x86.*.dat" 2&gt;nul
+                            powershell -NoProfile -Command "&amp; { $r = Get-ChildItem C:\ -Dir -Force -Attributes !ReparsePoint -EA 0 | Where-Object { $_.Name -notin 'Windows','$Recycle.Bin','System Volume Information','Recovery' }; $f = @(Get-ChildItem C:\ -File -Force -EA 0) + @($r | Get-ChildItem -File -Recurse -Force -EA 0) | Where-Object { $_.Name -like '*.msu' -or $_.Name -like 'stream.x*.dat' }; if (-not $f) { Write-Host 'Пакеты не найдены.' -ForegroundColor Yellow; return }; foreach ($g in ($f | Group-Object DirectoryName)) { $mb = [math]::Round(($g.Group | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $g.Name + ' | Файлов: ' + $g.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; $g.Group | ForEach-Object { Write-Host ('    ' + $_.Name + ' (' + [math]::Round($_.Length/1MB,1) + ' MB)') }; if ((Read-Host 'Удалить эти пакеты в папке? [y/N]') -match '^(y|д)$') { $g.Group | Remove-Item -Force -EA 0; Write-Host 'Удалено.' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } } }"
                         </div>
                     </div>
 
                     <div class="result-pane">
-                        <span class="result-icon">👁‍🗨</span>
-                        <div>Ожидаемый результат: Список полных путей (включая скрытые папки <code>AppData</code> и <code>ProgramData</code>). Найденные <code>.msu</code> и папки <code>Office\Data\...</code> после установки можно удалить вручную.</div>
+                        <div>Удаляются только найденные файлы пакетов внутри выбранной папки — остальные файлы в папке (например, в «Загрузках») остаются нетронутыми.</div>
                     </div>
                 </div>
 
                 <div class="step-card">
                     <div class="step-header-row">
-                        <span class="step-badge green">Шаг 2</span>
-                        <h3 class="step-title">Кэш обновлений Windows</h3>
+                        <span class="step-badge">Шаг 2</span>
+                        <h3 class="step-title">Интерактивная очистка кэша обновлений Windows</h3>
                     </div>
+                    <p>Подсчитывает размер папок <code>SoftwareDistribution\Download</code> и P2P-кэша <code>Delivery Optimization</code>, выводит объём в МБ и по каждому пункту запрашивает подтверждение (при согласии сам останавливает и запускает службы <code>wuauserv</code> и <code>bits</code>):</p>
 
-                    <p>1. Очистка <code>SoftwareDistribution\Download</code> (остановка служб, удаление кэша, запуск обратно):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'net stop wuauserv &amp; net stop bits &amp; rd /s /q &quot;%windir%\\SoftwareDistribution\\Download&quot; &amp; md &quot;%windir%\\SoftwareDistribution\\Download&quot; &amp; net start bits &amp; net start wuauserv')" title="Копировать">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            net stop wuauserv &amp; net stop bits &amp; rd /s /q "%windir%\SoftwareDistribution\Download" &amp; md "%windir%\SoftwareDistribution\Download" &amp; net start bits &amp; net start wuauserv
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">2. Сброс кэша оптимизации доставки (P2P-кэш обновлений):</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD → PowerShell (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Delete-DeliveryOptimizationCache -Force&quot;')" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            powershell -NoProfile -Command "Delete-DeliveryOptimizationCache -Force"
+                            powershell -NoProfile -Command "&amp; { $d = Join-Path $env:windir 'SoftwareDistribution\Download'; if (Test-Path $d) { $f = @(Get-ChildItem $d -Recurse -File -Force -EA 0); $mb = [math]::Round(($f | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $d + ' | Файлов: ' + $f.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; if ($f.Count -gt 0 -and (Read-Host 'Остановить службы и очистить кэш обновлений? [y/N]') -match '^(y|д)$') { Stop-Service wuauserv,bits -Force -EA 0; Get-ChildItem $d -Force -EA 0 | Remove-Item -Recurse -Force -EA 0; Start-Service bits,wuauserv -EA 0; Write-Host 'Очищено, службы запущены.' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }; $do = @((Join-Path $env:windir 'SoftwareDistribution\DeliveryOptimization'),(Join-Path $env:windir 'ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache')) | Where-Object { Test-Path $_ }; $df = @($do | Get-ChildItem -Recurse -File -Force -EA 0); $dmb = [math]::Round(($df | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Delivery Optimization (P2P-кэш) | Файлов: ' + $df.Count + ' | Размер: ' + $dmb + ' MB') -ForegroundColor Cyan; if ($df.Count -gt 0 -and (Read-Host 'Очистить P2P-кэш обновлений? [y/N]') -match '^(y|д)$') { Delete-DeliveryOptimizationCache -Force -EA 0; Write-Host 'Очищено.' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }"
                         </div>
                     </div>
 
                     <div class="result-pane">
-                        <span class="result-icon">👁‍🗨</span>
-                        <div>Ожидаемый результат: Службы обновлений перезапущены, загруженные архивы и P2P-кэш очищены.</div>
+                        <div>Ожидаемый результат: Показан реальный вес каждого кэша; после подтверждения архивы удалены, службы обновлений перезапущены.</div>
                     </div>
                 </div>
 
                 <div class="step-card">
                     <div class="step-header-row">
-                        <span class="step-badge green">Шаг 3</span>
-                        <h3 class="step-title">Очистка хранилища компонентов (WinSxS)</h3>
+                        <span class="step-badge">Шаг 3</span>
+                        <h3 class="step-title">Интерактивный анализ и очистка WinSxS (DISM)</h3>
                     </div>
+                    <p>Сначала показывает реальный размер резервных копий и рекомендацию DISM, затем предлагает выбрать режим: <code>1</code> — штатная очистка, <code>2</code> — максимальная (<code>/ResetBase</code>, без отката текущих обновлений), <code>Enter</code> — пропустить:</p>
 
-                    <p>1. Проверка объёма устаревших копий обновлений:</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore')" title="Копировать">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">Вариант 2А — штатная очистка устаревших версий пакетов (выберите <strong>2А</strong> или <strong>2Б</strong>, не запускайте оба подряд):</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'Dism.exe /Online /Cleanup-Image /StartComponentCleanup')" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            Dism.exe /Online /Cleanup-Image /StartComponentCleanup
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">Вариант 2Б — максимальная очистка (включает 2А и закрепляет текущие обновления как базу без возможности их отката):</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase')" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
+                            powershell -NoProfile -Command "&amp; { Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore; $c = Read-Host 'Выберите: [1] Штатная очистка  [2] Максимальная (/ResetBase)  [Enter] Пропустить'; if ($c -eq '1') { Dism.exe /Online /Cleanup-Image /StartComponentCleanup } elseif ($c -eq '2') { Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }"
                         </div>
                     </div>
 
                     <div class="result-pane">
-                        <span class="result-icon">👁‍🗨</span>
                         <div>Ожидаемый результат: <code>Операция успешно завершена</code> (обычно освобождает 2–6 ГБ на диске <code>C:</code>).</div>
                     </div>
                 </div>
 
                 <div class="step-card">
                     <div class="step-header-row">
-                        <span class="step-badge green">Шаг 4</span>
-                        <h3 class="step-title">Temp, кэш Office и штатная очистка диска</h3>
+                        <span class="step-badge">Шаг 4</span>
+                        <h3 class="step-title">Интерактивная очистка Temp и кэша Office</h3>
                     </div>
 
-                    <p>1. Очистка пользовательского и системного <code>Temp</code> (занятые файлы безопасно пропускаются):</p>
+                    <p>1. По очереди проверяет пользовательский <code>Temp</code>, системный <code>Windows\Temp</code> и кэш обновлений Office (x64/x86, папка <code>root</code> не затрагивается), выводит вес каждой папки в МБ и спрашивает подтверждение:</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD → PowerShell (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;if ($env:TEMP) { Remove-Item (Join-Path $env:TEMP \'*\') -Recurse -Force -EA SilentlyContinue }; if ($env:windir) { Remove-Item (Join-Path $env:windir \'Temp\\*\') -Recurse -Force -EA SilentlyContinue }&quot;')" title="Копировать">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "if ($env:TEMP) { Remove-Item (Join-Path $env:TEMP '*') -Recurse -Force -EA SilentlyContinue }; if ($env:windir) { Remove-Item (Join-Path $env:windir 'Temp\*') -Recurse -Force -EA SilentlyContinue }"
+                            powershell -NoProfile -Command "&amp; { $p = @(); if ($env:TEMP) { $p += $env:TEMP }; if ($env:windir) { $p += (Join-Path $env:windir 'Temp') }; if ($env:ProgramFiles) { $p += (Join-Path $env:ProgramFiles 'Microsoft Office\Updates\Download') }; if (${env:ProgramFiles(x86)}) { $p += (Join-Path ${env:ProgramFiles(x86)} 'Microsoft Office\Updates\Download') }; foreach ($dir in ($p | Select-Object -Unique | Where-Object { Test-Path $_ })) { $f = @(Get-ChildItem $dir -Recurse -File -Force -EA 0); $mb = [math]::Round(($f | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $dir + ' | Файлов: ' + $f.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; if ($f.Count -eq 0) { Write-Host '    Папка пуста.' -ForegroundColor DarkGray; continue }; if ((Read-Host 'Очистить содержимое папки? [y/N]') -match '^(y|д)$') { Get-ChildItem $dir -Force -EA 0 | Remove-Item -Recurse -Force -EA 0; Write-Host 'Очищено (занятые файлы пропущены).' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } } }"
                         </div>
                     </div>
 
-                    <p style="margin-top: 20px;">2. Удаление кэша обновлений Office x64/x86 (рабочая папка <code>root</code> не затрагивается):</p>
+                    <p style="margin-top: 20px;">2. Графическая проверка остатков (опционально — нажмите «Очистить системные файлы»):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'for %d in (&quot;%ProgramFiles%&quot; &quot;%ProgramFiles(x86)%&quot;) do if exist &quot;%~d\\Microsoft Office\\Updates\\Download&quot; rd /s /q &quot;%~d\\Microsoft Office\\Updates\\Download&quot;')" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            for %d in ("%ProgramFiles%" "%ProgramFiles(x86)%") do if exist "%~d\Microsoft Office\Updates\Download" rd /s /q "%~d\Microsoft Office\Updates\Download"
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">3. Графическая проверка остатков (опционально — нажмите «Очистить системные файлы»):</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'cleanmgr /d C:')" title="Копировать">
+                            <div class="term-title">CMD · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
@@ -907,8 +877,7 @@
                     </div>
 
                     <div class="result-pane">
-                        <span class="result-icon">👁‍🗨</span>
-                        <div>Ожидаемый результат: Временные файлы и остатки загрузок удалены.</div>
+                        <div>Ожидаемый результат: По каждой папке виден реальный объём; подтверждённые каталоги очищены без риска затронуть системные пути.</div>
                     </div>
                 </div>
             </div>
@@ -931,24 +900,26 @@
         }
 
         function copyText(btn, text) {
-            const tempInput = document.createElement('input');
-            tempInput.value = text;
+            const value = (typeof text === 'string')
+                ? text
+                : btn.closest('.terminal-wrapper').querySelector('.code-container').textContent.trim();
+            const tempInput = document.createElement('textarea');
+            tempInput.value = value;
+            tempInput.style.position = 'fixed';
+            tempInput.style.opacity = '0';
             document.body.appendChild(tempInput);
             tempInput.select();
-            
+
             try {
                 document.execCommand('copy');
                 const originalContent = btn.innerHTML;
-                
-                // SVG галочки
+
                 btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                btn.style.color = "#34C759";
-                btn.style.borderColor = "#34C759"; // для консистентности, хотя бордера нет
-                
+                btn.style.color = "#1c1c1e";
+
                 setTimeout(() => {
                     btn.innerHTML = originalContent;
                     btn.style.color = "";
-                    btn.style.borderColor = "";
                 }, 1500);
             } catch (err) {
                 alert('Ошибка копирования');
