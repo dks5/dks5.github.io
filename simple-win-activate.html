@@ -374,12 +374,163 @@
             align-items: center;
         }
 
+        .rdp-mode-switch {
+            display: inline-flex;
+            padding: 3px;
+            gap: 3px;
+            background: #d6d6de;
+            border: 1px solid #c4c5ce;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+        .rdp-mode-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 7px 14px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .rdp-mode-btn:hover { color: var(--text-primary); }
+        .rdp-mode-btn.active {
+            background: #ffffff;
+            color: var(--text-primary);
+            border-color: rgba(28, 28, 30, 0.10);
+            box-shadow: 0 2px 5px rgba(15, 18, 28, 0.10);
+        }
+
+        .rdp-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .rdp-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .rdp-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .rdp-input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            background: #ffffff;
+            border: 1px solid var(--term-border);
+            border-radius: 10px;
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .rdp-input-group input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.16);
+        }
+        .rdp-wan-only { display: none; }
+        .rdp-wan-only.visible { display: flex; }
+
+        .rdp-summary-card {
+            background: #ffffff;
+            border: 1px solid var(--term-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 14px 0;
+            box-shadow: 0 12px 28px -8px rgba(15, 18, 28, 0.20),
+                        0 3px 8px -2px rgba(15, 18, 28, 0.09);
+        }
+        .rdp-summary-header {
+            background: var(--term-header-bg);
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: #48484a;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+        }
+        .rdp-field-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 14px;
+            border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+        }
+        .rdp-field-row:last-child { border-bottom: none; }
+        .rdp-field-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .rdp-field-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .rdp-field-value {
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .rdp-steps-list {
+            margin: 10px 0 16px 0;
+            padding-left: 20px;
+            color: #3a3a3c;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .rdp-steps-list li { margin-bottom: 6px; }
+
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin: 12px 0 16px 0;
+        }
+        .arch-card {
+            background: var(--subcard-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .arch-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .arch-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #424245;
+            line-height: 1.5;
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 600px) {
             body { padding: 10px; }
+            .tabs-nav { margin: 14px 16px 0 16px; flex-wrap: wrap; }
             .tab-content { padding: 20px; }
+            .rdp-form-grid, .arch-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -394,6 +545,7 @@
             <button class="tab-btn active" onclick="openTab('windows')">Windows</button>
             <button class="tab-btn" onclick="openTab('office')">Microsoft Office</button>
             <button class="tab-btn" onclick="openTab('cleanup')">Очистка</button>
+            <button class="tab-btn" onclick="openTab('rdp')">RDP</button>
         </div>
 
         <div class="content-wrapper">
@@ -882,6 +1034,184 @@
                 </div>
             </div>
 
+
+            <!-- RDP TAB -->
+            <div id="rdp" class="tab-content">
+                <h1>Управление Windows через RDP</h1>
+                <p>Настройка удалённого рабочего стола на Windows 10 Enterprise и подключение с MacBook через <strong>Windows App</strong>.</p>
+
+                <div class="warning-card">
+                    <span>i</span>
+                    <div>Для входа по RDP у учётной записи Windows обязательно должен быть задан <strong>пароль</strong>. Команды на стороне Windows выполняются в <strong>CMD от имени администратора</strong>.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Шаг 1</span>
+                        <h3 class="step-title">Диагностика Windows: имя ПК, IPv4, пользователь и статус RDP</h3>
+                    </div>
+                    <p>Выполните на Windows — команда одной строкой покажет имя компьютера, текущего пользователя, локальный IPv4-адрес, профиль сети, статус RDP, NLA и порт:</p>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "&amp; { $rdp = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server').fDenyTSConnections; $nla = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').UserAuthentication; $port = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').PortNumber; $svc = (Get-Service TermService).Status; $ips = (Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway } | ForEach-Object { $_.IPv4Address.IPAddress }) -join ', '; if (-not $ips) { $ips = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' }).IPAddress -join ', ' }; $prof = (Get-NetConnectionProfile | ForEach-Object { $_.InterfaceAlias + ': ' + $_.NetworkCategory }) -join '; '; Write-Host ('Имя ПК:       ' + $env:COMPUTERNAME) -ForegroundColor Cyan; Write-Host ('Пользователь: ' + (whoami)) -ForegroundColor Cyan; Write-Host ('IPv4 (LAN):   ' + $ips) -ForegroundColor Cyan; Write-Host ('Профиль сети: ' + $prof); Write-Host ('Служба RDP:   ' + $svc); Write-Host ('RDP статус:   ' + $(if ($rdp -eq 0) {'ВКЛЮЧЕН'} else {'ВЫКЛЮЧЕН'})) -ForegroundColor $(if ($rdp -eq 0) {'Green'} else {'Red'}); Write-Host ('NLA защита:   ' + $(if ($nla -eq 1) {'ВКЛЮЧЕНА'} else {'ВЫКЛЮЧЕНА'})); Write-Host ('Порт RDP:     ' + $port) }"
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <div>Перенесите выведенные значения <code>Имя ПК</code>, <code>IPv4 (LAN)</code>, <code>Пользователь</code> и <code>Порт RDP</code> в поля Шага 3. Если строка <code>RDP статус</code> красная (<code>ВЫКЛЮЧЕН</code>), выполните Шаг 2.</div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Шаг 2</span>
+                        <h3 class="step-title">Включение RDP и открытие брандмауэра (если выключен)</h3>
+                    </div>
+                    <p>Включает RDP в реестре, активирует проверку подлинности на уровне сети (NLA), переводит службу <code>TermService</code> в автозапуск и открывает правила брандмауэра (работает на русской и английской Windows):</p>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "&amp; { Set-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name fDenyTSConnections -Value 0; Set-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 1; Set-Service TermService -StartupType Automatic; Start-Service TermService; Enable-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP'; Write-Host 'RDP включен, NLA активна, порт 3389 (TCP/UDP) открыт в брандмауэре.' -ForegroundColor Green }"
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <div>Администраторы получают доступ по RDP автоматически. Для обычного пользователя без прав администратора добавьте его в группу <code>Пользователи удаленного рабочего стола</code> и отключите автопереход ПК в режим сна.</div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Шаг 3</span>
+                        <h3 class="step-title">Переменные подключения и данные для Windows App (MacBook)</h3>
+                    </div>
+                    <p>Заполните поля данными из Шага 1 — значения автоматически сохраняются в браузере и формируют готовую карточку для копирования:</p>
+
+                    <div class="rdp-mode-switch">
+                        <button type="button" id="rdp-mode-lan" class="rdp-mode-btn active" onclick="setRdpMode('lan')">Локальная сеть (LAN)</button>
+                        <button type="button" id="rdp-mode-wan" class="rdp-mode-btn" onclick="setRdpMode('wan')">Извне (Белый IP / VPN)</button>
+                    </div>
+
+                    <div class="rdp-form-grid">
+                        <div class="rdp-input-group">
+                            <label for="rdp-host">Имя ПК (Hostname)</label>
+                            <input type="text" id="rdp-host" placeholder="DESKTOP-WORK" oninput="updateRdpFields()">
+                        </div>
+                        <div class="rdp-input-group">
+                            <label for="rdp-lan-ip">Локальный IPv4 (LAN)</label>
+                            <input type="text" id="rdp-lan-ip" placeholder="192.168.1.50" oninput="updateRdpFields()">
+                        </div>
+                        <div class="rdp-input-group">
+                            <label for="rdp-user">Имя пользователя Windows</label>
+                            <input type="text" id="rdp-user" placeholder="Admin или DOMAIN\Admin" oninput="updateRdpFields()">
+                        </div>
+                        <div class="rdp-input-group">
+                            <label for="rdp-port">Порт RDP на Windows</label>
+                            <input type="text" id="rdp-port" value="3389" placeholder="3389" oninput="updateRdpFields()">
+                        </div>
+                        <div class="rdp-input-group rdp-wan-only">
+                            <label for="rdp-wan-ip">Внешний (белый) IP или DDNS</label>
+                            <input type="text" id="rdp-wan-ip" placeholder="203.0.113.10" oninput="updateRdpFields()">
+                        </div>
+                        <div class="rdp-input-group rdp-wan-only">
+                            <label for="rdp-wan-port">Внешний порт на роутере (если проброс)</label>
+                            <input type="text" id="rdp-wan-port" placeholder="3389" oninput="updateRdpFields()">
+                        </div>
+                    </div>
+
+                    <div class="rdp-summary-card">
+                        <div class="rdp-summary-header">[ WINDOWS APP · MACBOOK → ADD PC ]</div>
+                        <div class="rdp-field-row">
+                            <div class="rdp-field-meta">
+                                <span class="rdp-field-label">PC name</span>
+                                <span class="rdp-field-value" id="rdp-out-pc">192.168.1.50</span>
+                            </div>
+                            <button class="btn-copy-icon" data-copy-target="rdp-out-pc" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="rdp-field-row">
+                            <div class="rdp-field-meta">
+                                <span class="rdp-field-label">User account → Username</span>
+                                <span class="rdp-field-value" id="rdp-out-user">.\Admin</span>
+                            </div>
+                            <button class="btn-copy-icon" data-copy-target="rdp-out-user" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="rdp-field-row">
+                            <div class="rdp-field-meta">
+                                <span class="rdp-field-label">Friendly name (опционально)</span>
+                                <span class="rdp-field-value" id="rdp-out-name">Win10-Corp (LAN)</span>
+                            </div>
+                            <button class="btn-copy-icon" data-copy-target="rdp-out-name" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <ol class="rdp-steps-list">
+                        <li>Откройте <strong>Windows App</strong> на MacBook → нажмите <strong>+</strong> (вверху справа) → <strong>Add PC</strong>.</li>
+                        <li>В поле <strong>PC name</strong> вставьте скопированный адрес (для LAN рекомендуется статический IP, закреплённый за Windows в DHCP роутера).</li>
+                        <li>В поле <strong>Credentials / User account</strong> выберите <strong>Add Credentials</strong>: вставьте <strong>Username</strong> (префикс <code>.\</code> гарантирует вход в локальную учётную запись Windows без конфликта с доменом) и введите пароль пользователя Windows.</li>
+                        <li>При желании задайте <strong>Friendly name</strong>, на вкладке <strong>Display</strong> включите <em>Optimize for Retina displays</em>, нажмите <strong>Add</strong> и откройте подключение двойным кликом. При первом входе подтвердите сертификат кнопкой <strong>Continue</strong>.</li>
+                    </ol>
+
+                    <p>Быстрая проверка доступности порта RDP с MacBook (до запуска Windows App):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title">macOS · Terminal</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container" id="rdp-out-nc">
+                            nc -vz 192.168.1.50 3389
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <div>Ожидаемый результат на macOS: <code>Connection to ... port [tcp/ms-wbt-server] succeeded!</code></div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge orange">Архитектура</span>
+                        <h3 class="step-title">Второй сценарий: подключение извне (Белый IP)</h3>
+                    </div>
+                    <p>Для прямого доступа из внешней сети действительно требуется <strong>белый (публичный) IP-адрес</strong> на роутере (статический либо динамический с DDNS). За провайдерским NAT («серый» IP) входящие пакеты до роутера не дойдут.</p>
+
+                    <div class="arch-grid">
+                        <div class="arch-card">
+                            <h4>Вариант А · Белый IP + VPN на роутере (рекомендуется)</h4>
+                            <p>На роутере с белым IP поднимается VPN-сервер (WireGuard / OpenVPN / IPSec). MacBook подключается к VPN, попадает во внутреннюю сеть и открывает Windows по <strong>локальному IP</strong>. Порт <code>3389</code> в интернет вообще не публикуется — максимальная безопасность.</p>
+                        </div>
+                        <div class="arch-card">
+                            <h4>Вариант Б · Проброс порта (только как временная мера)</h4>
+                            <p>Открытый наружу порт <code>3389</code> мгновенно атакуется ботами. Если нужен прямой проброс (Port Forwarding): закрепите статический LAN IP за Windows, выведите наружу нестандартный порт (например, <code>33890 → 3389</code>), ограничьте доступ на фаерволе роутера белым списком IP-источников и оставьте включённой NLA.</p>
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <div>Как только будет выделен белый IP, переключите режим в Шаге 3 на <strong>«Извне»</strong> (для Варианта Б) либо используйте профиль <strong>LAN</strong> поверх VPN-туннеля (для Варианта А).</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -900,9 +1230,13 @@
         }
 
         function copyText(btn, text) {
-            const value = (typeof text === 'string')
-                ? text
-                : btn.closest('.terminal-wrapper').querySelector('.code-container').textContent.trim();
+            let value = text;
+            if (typeof value !== 'string') {
+                const targetId = btn.getAttribute('data-copy-target');
+                value = targetId
+                    ? document.getElementById(targetId).textContent.trim()
+                    : btn.closest('.terminal-wrapper').querySelector('.code-container').textContent.trim();
+            }
             const tempInput = document.createElement('textarea');
             tempInput.value = value;
             tempInput.style.position = 'fixed';
@@ -926,6 +1260,81 @@
             }
             document.body.removeChild(tempInput);
         }
+
+        let rdpMode = 'lan';
+
+        function setRdpMode(mode) {
+            rdpMode = (mode === 'wan') ? 'wan' : 'lan';
+            document.getElementById('rdp-mode-lan').classList.toggle('active', rdpMode === 'lan');
+            document.getElementById('rdp-mode-wan').classList.toggle('active', rdpMode === 'wan');
+            document.querySelectorAll('.rdp-wan-only').forEach(el => {
+                el.classList.toggle('visible', rdpMode === 'wan');
+            });
+            updateRdpFields();
+        }
+
+        function updateRdpFields() {
+            const host = document.getElementById('rdp-host').value.trim();
+            const lanIp = document.getElementById('rdp-lan-ip').value.trim();
+            const user = document.getElementById('rdp-user').value.trim();
+            const port = document.getElementById('rdp-port').value.trim() || '3389';
+            const wanIp = document.getElementById('rdp-wan-ip').value.trim();
+            const wanPort = document.getElementById('rdp-wan-port').value.trim();
+
+            let targetHost = lanIp || (host ? host + '.local' : '192.168.1.50');
+            let targetPort = port;
+
+            if (rdpMode === 'wan') {
+                targetHost = wanIp || '203.0.113.10';
+                targetPort = wanPort || port;
+            }
+
+            const pcValue = (targetPort && targetPort !== '3389')
+                ? targetHost + ':' + targetPort
+                : targetHost;
+
+            let formattedUser = '.\\Admin';
+            if (user) {
+                formattedUser = (user.includes('\\') || user.includes('@'))
+                    ? user
+                    : '.\\' + user;
+            }
+
+            const friendlyName = (host || 'Win10-Corp') + (rdpMode === 'wan' ? ' (WAN)' : ' (LAN)');
+
+            document.getElementById('rdp-out-pc').textContent = pcValue;
+            document.getElementById('rdp-out-user').textContent = formattedUser;
+            document.getElementById('rdp-out-name').textContent = friendlyName;
+            document.getElementById('rdp-out-nc').textContent = 'nc -vz ' + targetHost + ' ' + targetPort;
+
+            try {
+                localStorage.setItem('rdp_suite_config_v1', JSON.stringify({
+                    mode: rdpMode, host, lanIp, user, port, wanIp, wanPort
+                }));
+            } catch (e) {}
+        }
+
+        function initRdpConfig() {
+            try {
+                const raw = localStorage.getItem('rdp_suite_config_v1');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data.host) document.getElementById('rdp-host').value = data.host;
+                    if (data.lanIp) document.getElementById('rdp-lan-ip').value = data.lanIp;
+                    if (data.user) document.getElementById('rdp-user').value = data.user;
+                    if (data.port) document.getElementById('rdp-port').value = data.port;
+                    if (data.wanIp) document.getElementById('rdp-wan-ip').value = data.wanIp;
+                    if (data.wanPort) document.getElementById('rdp-wan-port').value = data.wanPort;
+                    if (data.mode) {
+                        setRdpMode(data.mode);
+                        return;
+                    }
+                }
+            } catch (e) {}
+            updateRdpFields();
+        }
+
+        initRdpConfig();
     </script>
 </body>
 </html>
