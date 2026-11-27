@@ -154,6 +154,7 @@
             flex-shrink: 0;
         }
         .step-badge.purple { background: var(--accent-purple); }
+        .step-badge.green { background: var(--accent-green); }
 
         .step-title {
             margin: 0;
@@ -355,6 +356,7 @@
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="openTab('windows')">Windows</button>
             <button class="tab-btn" onclick="openTab('office')">Microsoft Office</button>
+            <button class="tab-btn" onclick="openTab('cleanup')">Очистка</button>
         </div>
 
         <div class="content-wrapper">
@@ -718,6 +720,183 @@
                     <div class="result-pane">
                         <span class="result-icon">👁‍🗨</span>
                         <div>Ожидаемый результат: <code>&lt;Product key uninstall successful&gt;</code></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- CLEANUP TAB -->
+            <div id="cleanup" class="tab-content">
+                <h1>Очистка обновлений и кэша</h1>
+                <p>Поиск и удаление накопительных пакетов Windows, устаревших компонентов WinSxS, временных файлов и остатков установки Office.</p>
+
+                <div class="warning-card">
+                    <span>⚠️</span>
+                    <div>Все команды адаптированы для одного окна <strong>CMD (Командная строка) от имени администратора</strong>. Запускайте очистку только после установки <code>KB5136493</code>, перезагрузки и проверки активации.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge green">Шаг 1</span>
+                        <h3 class="step-title">Поиск забытых пакетов (.msu и дистрибутивы Office)</h3>
+                    </div>
+                    <p>Аудит диска <code>C:\</code> на наличие скачанных обновлений и локальных архивов Office C2R (<code>stream.*.dat</code>):</p>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Get-ChildItem -Path C:\\ -Include *.msu, stream.x64.*.dat, stream.x86.*.dat -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, @{N=\'MB\';E={[math]::Round($_.Length/1MB,1)}} | Format-Table -AutoSize&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "Get-ChildItem -Path C:\ -Include *.msu, stream.x64.*.dat, stream.x86.*.dat -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, @{N='MB';E={[math]::Round($_.Length/1MB,1)}} | Format-Table -AutoSize"
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Таблица путей и размеров в МБ. Найденные <code>.msu</code> и папки <code>Office\Data\...</code> после установки можно удалить вручную.</div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge green">Шаг 2</span>
+                        <h3 class="step-title">Кэш обновлений Windows</h3>
+                    </div>
+
+                    <p>1. Очистка <code>SoftwareDistribution\Download</code> (остановка служб, удаление кэша, запуск обратно):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'net stop wuauserv &amp; net stop bits &amp; rd /s /q C:\\Windows\\SoftwareDistribution\\Download &amp; md C:\\Windows\\SoftwareDistribution\\Download &amp; net start bits &amp; net start wuauserv')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            net stop wuauserv &amp; net stop bits &amp; rd /s /q C:\Windows\SoftwareDistribution\Download &amp; md C:\Windows\SoftwareDistribution\Download &amp; net start bits &amp; net start wuauserv
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">2. Сброс кэша оптимизации доставки (P2P-кэш обновлений):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Delete-DeliveryOptimizationCache -Force&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "Delete-DeliveryOptimizationCache -Force"
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Службы обновлений перезапущены, загруженные архивы и P2P-кэш очищены.</div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge green">Шаг 3</span>
+                        <h3 class="step-title">Очистка хранилища компонентов (WinSxS)</h3>
+                    </div>
+
+                    <p>1. Проверка объёма устаревших копий обновлений:</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">2. Штатная очистка устаревших версий пакетов:</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'Dism.exe /Online /Cleanup-Image /StartComponentCleanup')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            Dism.exe /Online /Cleanup-Image /StartComponentCleanup
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">3. Максимальная очистка (опционально — закрепляет текущие обновления как базу без возможности их отката):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: <code>Операция успешно завершена</code> (обычно освобождает 2–6 ГБ на диске <code>C:</code>).</div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge green">Шаг 4</span>
+                        <h3 class="step-title">Temp, кэш Office и штатная очистка диска</h3>
+                    </div>
+
+                    <p>1. Очистка пользовательского и системного <code>Temp</code> (занятые файлы безопасно пропускаются):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Remove-Item -Path ($env:TEMP + \'\\*\'), \'C:\\Windows\\Temp\\*\' -Recurse -Force -ErrorAction SilentlyContinue&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "Remove-Item -Path ($env:TEMP + '\*'), 'C:\Windows\Temp\*' -Recurse -Force -ErrorAction SilentlyContinue"
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">2. Удаление кэша обновлений Office (рабочая папка <code>root</code> не затрагивается):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'rd /s /q &quot;%ProgramFiles%\\Microsoft Office\\Updates\\Download&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            rd /s /q "%ProgramFiles%\Microsoft Office\Updates\Download"
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">3. Графическая проверка остатков (опционально — нажмите «Очистить системные файлы»):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cleanmgr /d C:')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cleanmgr /d C:
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: Временные файлы и остатки загрузок удалены.</div>
                     </div>
                 </div>
             </div>
