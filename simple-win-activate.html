@@ -745,18 +745,18 @@
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Get-ChildItem -Path C:\\ -Include *.msu, stream.x64.*.dat, stream.x86.*.dat -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, @{N=\'MB\';E={[math]::Round($_.Length/1MB,1)}} | Format-Table -AutoSize&quot;')" title="Копировать">
+                            <button class="btn-copy-icon" onclick="copyText(this, 'dir /s /b /a:-d &quot;C:\\*.msu&quot; &quot;C:\\stream.x64.*.dat&quot; &quot;C:\\stream.x86.*.dat&quot; 2&gt;nul')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "Get-ChildItem -Path C:\ -Include *.msu, stream.x64.*.dat, stream.x86.*.dat -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, @{N='MB';E={[math]::Round($_.Length/1MB,1)}} | Format-Table -AutoSize"
+                            dir /s /b /a:-d "C:\*.msu" "C:\stream.x64.*.dat" "C:\stream.x86.*.dat" 2&gt;nul
                         </div>
                     </div>
 
                     <div class="result-pane">
                         <span class="result-icon">👁‍🗨</span>
-                        <div>Ожидаемый результат: Таблица путей и размеров в МБ. Найденные <code>.msu</code> и папки <code>Office\Data\...</code> после установки можно удалить вручную.</div>
+                        <div>Ожидаемый результат: Список полных путей (включая скрытые папки <code>AppData</code> и <code>ProgramData</code>). Найденные <code>.msu</code> и папки <code>Office\Data\...</code> после установки можно удалить вручную.</div>
                     </div>
                 </div>
 
@@ -770,19 +770,19 @@
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'net stop wuauserv &amp; net stop bits &amp; rd /s /q C:\\Windows\\SoftwareDistribution\\Download &amp; md C:\\Windows\\SoftwareDistribution\\Download &amp; net start bits &amp; net start wuauserv')" title="Копировать">
+                            <button class="btn-copy-icon" onclick="copyText(this, 'net stop wuauserv &amp; net stop bits &amp; rd /s /q &quot;%windir%\\SoftwareDistribution\\Download&quot; &amp; md &quot;%windir%\\SoftwareDistribution\\Download&quot; &amp; net start bits &amp; net start wuauserv')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            net stop wuauserv &amp; net stop bits &amp; rd /s /q C:\Windows\SoftwareDistribution\Download &amp; md C:\Windows\SoftwareDistribution\Download &amp; net start bits &amp; net start wuauserv
+                            net stop wuauserv &amp; net stop bits &amp; rd /s /q "%windir%\SoftwareDistribution\Download" &amp; md "%windir%\SoftwareDistribution\Download" &amp; net start bits &amp; net start wuauserv
                         </div>
                     </div>
 
                     <p style="margin-top: 20px;">2. Сброс кэша оптимизации доставки (P2P-кэш обновлений):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD → PowerShell (Администратор)</div>
                             <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Delete-DeliveryOptimizationCache -Force&quot;')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
@@ -817,7 +817,7 @@
                         </div>
                     </div>
 
-                    <p style="margin-top: 20px;">2. Штатная очистка устаревших версий пакетов:</p>
+                    <p style="margin-top: 20px;">Вариант 2А — штатная очистка устаревших версий пакетов (выберите <strong>2А</strong> или <strong>2Б</strong>, не запускайте оба подряд):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
@@ -830,7 +830,7 @@
                         </div>
                     </div>
 
-                    <p style="margin-top: 20px;">3. Максимальная очистка (опционально — закрепляет текущие обновления как базу без возможности их отката):</p>
+                    <p style="margin-top: 20px;">Вариант 2Б — максимальная очистка (включает 2А и закрепляет текущие обновления как базу без возможности их отката):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
@@ -858,26 +858,26 @@
                     <p>1. Очистка пользовательского и системного <code>Temp</code> (занятые файлы безопасно пропускаются):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;Remove-Item -Path ($env:TEMP + \'\\*\'), \'C:\\Windows\\Temp\\*\' -Recurse -Force -ErrorAction SilentlyContinue&quot;')" title="Копировать">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD → PowerShell (Администратор)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'powershell -NoProfile -Command &quot;if ($env:TEMP) { Remove-Item (Join-Path $env:TEMP \'*\') -Recurse -Force -EA SilentlyContinue }; if ($env:windir) { Remove-Item (Join-Path $env:windir \'Temp\\*\') -Recurse -Force -EA SilentlyContinue }&quot;')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "Remove-Item -Path ($env:TEMP + '\*'), 'C:\Windows\Temp\*' -Recurse -Force -ErrorAction SilentlyContinue"
+                            powershell -NoProfile -Command "if ($env:TEMP) { Remove-Item (Join-Path $env:TEMP '*') -Recurse -Force -EA SilentlyContinue }; if ($env:windir) { Remove-Item (Join-Path $env:windir 'Temp\*') -Recurse -Force -EA SilentlyContinue }"
                         </div>
                     </div>
 
-                    <p style="margin-top: 20px;">2. Удаление кэша обновлений Office (рабочая папка <code>root</code> не затрагивается):</p>
+                    <p style="margin-top: 20px;">2. Удаление кэша обновлений Office x64/x86 (рабочая папка <code>root</code> не затрагивается):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Администратор)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'rd /s /q &quot;%ProgramFiles%\\Microsoft Office\\Updates\\Download&quot;')" title="Копировать">
+                            <button class="btn-copy-icon" onclick="copyText(this, 'for %d in (&quot;%ProgramFiles%&quot; &quot;%ProgramFiles(x86)%&quot;) do if exist &quot;%~d\\Microsoft Office\\Updates\\Download&quot; rd /s /q &quot;%~d\\Microsoft Office\\Updates\\Download&quot;')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            rd /s /q "%ProgramFiles%\Microsoft Office\Updates\Download"
+                            for %d in ("%ProgramFiles%" "%ProgramFiles(x86)%") do if exist "%~d\Microsoft Office\Updates\Download" rd /s /q "%~d\Microsoft Office\Updates\Download"
                         </div>
                     </div>
 
