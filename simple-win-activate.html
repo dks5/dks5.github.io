@@ -554,6 +554,13 @@
             border-color: var(--accent-blue);
             color: #ffffff;
         }
+        .rdp-action-btn.danger {
+            color: #c82333;
+        }
+        .rdp-action-btn.danger:hover {
+            border-color: #c82333;
+            background: #fdecef;
+        }
         .rdp-json-status {
             font-size: 12px;
             color: var(--text-secondary);
@@ -1227,6 +1234,7 @@
                         <button type="button" class="rdp-action-btn primary" onclick="document.getElementById('rdp-json-file').click()">Загрузить rdp-profile.json</button>
                         <button type="button" class="rdp-action-btn" onclick="exportRdpFile()">Скачать .rdp для Windows App</button>
                         <button type="button" class="rdp-action-btn" onclick="exportRdpJson()">Скачать текущий JSON</button>
+                        <button type="button" class="rdp-action-btn danger" onclick="resetRdpConfig()">Сбросить</button>
                         <span class="rdp-json-status" id="rdp-json-status">Файл не загружен (можно ввести вручную)</span>
                     </div>
 
@@ -1648,6 +1656,27 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        function resetRdpConfig() {
+            document.getElementById('rdp-host').value = '';
+            document.getElementById('rdp-lan-ip').value = '';
+            document.getElementById('rdp-user').value = '';
+            document.getElementById('rdp-port').value = '3389';
+            document.getElementById('rdp-wan-ip').value = '';
+            document.getElementById('rdp-wan-port').value = '';
+            document.getElementById('rdp-json-file').value = '';
+
+            rdpDiagnostics = [];
+            rdpGeneratedAt = '';
+            renderRdpDiagnostics([]);
+            setRdpMode('lan');
+
+            try {
+                localStorage.removeItem('rdp_suite_config_v1');
+            } catch (e) {}
+
+            document.getElementById('rdp-json-status').textContent = 'Конфигурация сброшена';
         }
 
         function initRdpConfig() {
