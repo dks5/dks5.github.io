@@ -521,6 +521,130 @@
             line-height: 1.5;
         }
 
+        .rdp-json-bar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0 16px 0;
+        }
+        .rdp-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #ffffff;
+            border: 1px solid var(--term-border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(15, 18, 28, 0.08);
+            transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+        .rdp-action-btn:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(15, 18, 28, 0.12);
+        }
+        .rdp-action-btn.primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #ffffff;
+        }
+        .rdp-json-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .diag-panel {
+            display: none;
+            background: #ffffff;
+            border: 1px solid var(--term-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 0 18px 0;
+            box-shadow: 0 10px 24px -8px rgba(15, 18, 28, 0.16),
+                        0 2px 6px -2px rgba(15, 18, 28, 0.08);
+        }
+        .diag-panel.visible { display: block; }
+        .diag-panel-header {
+            background: var(--term-header-bg);
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: #48484a;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+        }
+        .diag-verdict-ok { color: #1e7e34; }
+        .diag-verdict-fix { color: #c82333; }
+        .diag-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .diag-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 9px 14px;
+            border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+            font-size: 13px;
+        }
+        .diag-row:last-child { border-bottom: none; }
+        .diag-row-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .diag-pill {
+            flex-shrink: 0;
+            min-width: 44px;
+            text-align: center;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .diag-pill.ok {
+            background: #e8f6ec;
+            color: #1e7e34;
+            border: 1px solid #b7e4c2;
+        }
+        .diag-pill.fix {
+            background: #fdecef;
+            color: #c82333;
+            border: 1px solid #f5c2c7;
+        }
+        .diag-pill.warn {
+            background: #fff6e0;
+            color: #9a6700;
+            border: 1px solid #f0d58c;
+        }
+        .diag-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        .diag-val {
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: right;
+            word-break: break-word;
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -1046,9 +1170,9 @@
                 <div class="step-card">
                     <div class="step-header-row">
                         <span class="step-badge">Шаг 1</span>
-                        <h3 class="step-title">Диагностика Windows: имя ПК, IPv4, пользователь и статус RDP</h3>
+                        <h3 class="step-title">Полная диагностика Windows (Read-Only) + экспорт JSON</h3>
                     </div>
-                    <p>Выполните на Windows — команда одной строкой покажет имя компьютера, текущего пользователя, локальный IPv4-адрес, профиль сети, статус RDP, NLA и порт:</p>
+                    <p>Ничего не изменяет в системе. Проверяет RDP, NLA, службу <code>TermService</code>, слушающий сокет, профиль сети, общую политику и правила брандмауэра, наличие стороннего фаервола — подсвечивает каждый пункт (<strong style="color:#1e7e34">зелёный [OK]</strong> / <strong style="color:#c82333">красный [FIX]</strong>) и сохраняет файл <code>rdp-profile.json</code> на рабочий стол:</p>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
@@ -1058,21 +1182,21 @@
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { $rdp = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server').fDenyTSConnections; $nla = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').UserAuthentication; $port = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').PortNumber; $svc = (Get-Service TermService).Status; $ips = (Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway } | ForEach-Object { $_.IPv4Address.IPAddress }) -join ', '; if (-not $ips) { $ips = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' }).IPAddress -join ', ' }; $prof = (Get-NetConnectionProfile | ForEach-Object { $_.InterfaceAlias + ': ' + $_.NetworkCategory }) -join '; '; Write-Host ('Имя ПК:       ' + $env:COMPUTERNAME) -ForegroundColor Cyan; Write-Host ('Пользователь: ' + (whoami)) -ForegroundColor Cyan; Write-Host ('IPv4 (LAN):   ' + $ips) -ForegroundColor Cyan; Write-Host ('Профиль сети: ' + $prof); Write-Host ('Служба RDP:   ' + $svc); Write-Host ('RDP статус:   ' + $(if ($rdp -eq 0) {'ВКЛЮЧЕН'} else {'ВЫКЛЮЧЕН'})) -ForegroundColor $(if ($rdp -eq 0) {'Green'} else {'Red'}); Write-Host ('NLA защита:   ' + $(if ($nla -eq 1) {'ВКЛЮЧЕНА'} else {'ВЫКЛЮЧЕНА'})); Write-Host ('Порт RDP:     ' + $port) }"
+                            powershell -NoProfile -Command "&amp; { function row($k,$v,$s){ $c=if($s -eq 'OK'){'Green'}elseif($s -eq 'WARN'){'Yellow'}else{'Red'}; Write-Host ('['+$s.PadRight(4)+'] '+$k.PadRight(22)+': '+$v) -ForegroundColor $c }; $hostN=$env:COMPUTERNAME; $who=(whoami).Trim(); $lanIp=@(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway } | ForEach-Object { $_.IPv4Address.IPAddress } | Select-Object -First 1) -join ''; if(-not $lanIp){ $lanIp=@(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } | Select-Object -First 1 -ExpandProperty IPAddress) -join '' }; $port=(Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').PortNumber; $rdp=(Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server').fDenyTSConnections; $gpo=(Get-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -EA 0).fDenyTSConnections; $okRdp=($rdp -eq 0) -and ($gpo -ne 1); $rdpVal=if($gpo -eq 1){'ЗАБЛОКИРОВАН GPO'}elseif($rdp -eq 0){'ВКЛЮЧЕН'}else{'ВЫКЛЮЧЕН'}; $nla=(Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').UserAuthentication; $okNla=($nla -eq 1); $nlaVal=if($okNla){'ВКЛЮЧЕНА'}else{'ВЫКЛЮЧЕНА'}; $svc=(Get-Service TermService).Status.ToString(); $okSvc=($svc -eq 'Running'); $lst=@(Get-NetTCPConnection -LocalPort $port -State Listen -EA 0); $okLst=($lst.Count -gt 0); $lstVal=if($okLst){'Слушает порт '+$port}else{'Порт '+$port+' НЕ прослушивается'}; $profs=@(Get-NetConnectionProfile); $pub=@($profs | Where-Object { $_.NetworkCategory -eq 'Public' }); $okProf=($profs.Count -gt 0 -and $pub.Count -eq 0); $profVal=if($profs.Count -gt 0){ ($profs | ForEach-Object { $_.InterfaceAlias+': '+$_.NetworkCategory }) -join '; ' }else{'Нет активных сетей'}; $actP=@($profs | ForEach-Object { if($_.NetworkCategory -eq 'DomainAuthenticated'){'Domain'}else{$_.NetworkCategory.ToString()} } | Select-Object -Unique); $fwProfs=@(Get-NetFirewallProfile); $blk=@($fwProfs | Where-Object { $_.Enabled.ToString() -eq 'True' -and $_.AllowInboundRules.ToString() -eq 'False' }); $okFwPol=($blk.Count -eq 0); $fwPolVal=if($okFwPol){'Входящие правила разрешены'}else{'БЛОКИРОВКА всех входящих ('+(($blk.Name) -join ', ')+')'}; $rTcp=Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP' -EA 0; $rUdp=Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-UDP' -EA 0; $tcpP=if($rTcp){$rTcp.Profile.ToString()}else{''}; $udpP=if($rUdp){$rUdp.Profile.ToString()}else{''}; $covTcp=($tcpP -match 'Any') -or (@($actP | Where-Object { $tcpP -notmatch $_ }).Count -eq 0); $covUdp=($udpP -match 'Any') -or (@($actP | Where-Object { $udpP -notmatch $_ }).Count -eq 0); $okTcp=$rTcp -and ($rTcp.Enabled.ToString() -eq 'True') -and ($rTcp.Action.ToString() -eq 'Allow') -and $covTcp; $okUdp=$rUdp -and ($rUdp.Enabled.ToString() -eq 'True') -and ($rUdp.Action.ToString() -eq 'Allow') -and $covUdp; $okFwRule=$okTcp -and $okUdp; $fwRuleVal='TCP='+$(if($rTcp){$rTcp.Enabled.ToString()+'/'+$tcpP}else{'нет'})+', UDP='+$(if($rUdp){$rUdp.Enabled.ToString()+'/'+$udpP}else{'нет'}); $av=@(Get-CimInstance -Namespace root/SecurityCenter2 -ClassName FirewallProduct -EA 0 | ForEach-Object { $_.displayName } | Select-Object -Unique); $okAv=($av.Count -eq 0); $avVal=if($okAv){'Не обнаружен (Windows Defender)'}else{($av -join ', ')+' (проверьте порт '+$port+')'}; Write-Host '=== РЕКВИЗИТЫ ПК ===' -ForegroundColor Cyan; Write-Host ('Имя ПК                : '+$hostN); Write-Host ('Пользователь          : '+$who); Write-Host ('IPv4 (LAN)            : '+$lanIp); Write-Host ('Порт RDP              : '+$port); Write-Host '=== ДИАГНОСТИКА RDP И СЕТИ ===' -ForegroundColor Cyan; $diag=@([ordered]@{key='rdp';label='RDP в реестре';value=$rdpVal;status=$(if($okRdp){'OK'}else{'FIX'})},[ordered]@{key='nla';label='NLA защита';value=$nlaVal;status=$(if($okNla){'OK'}else{'FIX'})},[ordered]@{key='svc';label='Служба TermService';value=$svc;status=$(if($okSvc){'OK'}else{'FIX'})},[ordered]@{key='listen';label='Сокет RDP';value=$lstVal;status=$(if($okLst){'OK'}else{'FIX'})},[ordered]@{key='profile';label='Профиль сети';value=$profVal;status=$(if($okProf){'OK'}else{'FIX'})},[ordered]@{key='fwpol';label='Политика брандмауэра';value=$fwPolVal;status=$(if($okFwPol){'OK'}else{'FIX'})},[ordered]@{key='fwrule';label='Правила RDP (TCP/UDP)';value=$fwRuleVal;status=$(if($okFwRule){'OK'}else{'FIX'})},[ordered]@{key='av';label='Сторонний фаервол';value=$avVal;status=$(if($okAv){'OK'}else{'WARN'})}); foreach($d in $diag){ row $d.label $d.value $d.status }; $fails=@($diag | Where-Object { $_.status -eq 'FIX' }).Count; if($fails -eq 0){ Write-Host '=== ИТОГ: ВСЁ ГОТОВО К ПОДКЛЮЧЕНИЮ (Шаг 2 не требуется) ===' -ForegroundColor Green }else{ Write-Host ('=== ИТОГ: НАЙДЕНЫ ПРОБЛЕМЫ ('+$fails+') — ВЫПОЛНИТЕ ШАГ 2 ===') -ForegroundColor Red }; $desk=[Environment]::GetFolderPath('Desktop'); if(-not $desk -or -not (Test-Path -LiteralPath $desk)){ $desk=$env:USERPROFILE }; $out=Join-Path $desk 'rdp-profile.json'; $obj=[ordered]@{schema='rdp-profile-v1';generatedAt=(Get-Date).ToString('yyyy-MM-dd HH:mm:ss');mode='lan';host=$hostN;lanIp=$lanIp;user=$who;port=[string]$port;wanIp='';wanPort=[string]$port;diagnostics=$diag}; [IO.File]::WriteAllText($out,($obj | ConvertTo-Json -Depth 4),(New-Object Text.UTF8Encoding($false))); Write-Host ('JSON сохранен: '+$out) -ForegroundColor Cyan }"
                         </div>
                     </div>
 
                     <div class="result-pane">
-                        <div>Перенесите выведенные значения <code>Имя ПК</code>, <code>IPv4 (LAN)</code>, <code>Пользователь</code> и <code>Порт RDP</code> в поля Шага 3. Если строка <code>RDP статус</code> красная (<code>ВЫКЛЮЧЕН</code>), выполните Шаг 2.</div>
+                        <div><strong>Ожидаемый результат:</strong> Все строки <code>[OK  ]</code> — зелёные, итог зелёный (<code>Шаг 2 не требуется</code>), внизу показан путь к файлу <code>rdp-profile.json</code>. Если хотя бы одна строка красная <code>[FIX ]</code> — выполните <strong>Шаг 2</strong>. Если жёлтая <code>[WARN]</code> на стороннем фаерволе — разрешите входящий порт RDP в самом антивирусе.</div>
                     </div>
                 </div>
 
                 <div class="step-card">
                     <div class="step-header-row">
                         <span class="step-badge">Шаг 2</span>
-                        <h3 class="step-title">Включение RDP и открытие брандмауэра (если выключен)</h3>
+                        <h3 class="step-title">Исправление найденных проблем (только если в Шаге 1 есть [FIX])</h3>
                     </div>
-                    <p>Включает RDP в реестре, активирует проверку подлинности на уровне сети (NLA), переводит службу <code>TermService</code> в автозапуск и открывает правила брандмауэра (работает на русской и английской Windows):</p>
+                    <p>Выполняйте <strong>только по результатам Шага 1</strong>. Включает RDP и NLA, запускает <code>TermService</code>, переводит доверенную сеть из <code>Public</code> в <code>Private</code> (в профиле <code>Public</code> брандмауэр Windows блокирует входящий RDP по соображениям безопасности), снимает полную блокировку входящих правил на <code>Domain,Private</code> и включает правила <code>3389</code> TCP/UDP:</p>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
@@ -1082,21 +1206,36 @@
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { Set-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name fDenyTSConnections -Value 0; Set-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 1; Set-Service TermService -StartupType Automatic; Start-Service TermService; Enable-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP'; Write-Host 'RDP включен, NLA активна, порт 3389 (TCP/UDP) открыт в брандмауэре.' -ForegroundColor Green }"
+                            powershell -NoProfile -Command "&amp; { Set-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name fDenyTSConnections -Value 0 -EA 0; Set-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 1 -EA 0; Set-Service TermService -StartupType Automatic -EA 0; Start-Service TermService -EA 0; Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq 'Public' } | Set-NetConnectionProfile -NetworkCategory Private -EA 0; Get-NetFirewallProfile -Profile Domain,Private | Where-Object { $_.AllowInboundRules.ToString() -eq 'False' } | Set-NetFirewallProfile -AllowInboundRules NotConfigured -EA 0; Set-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' -Enabled True -Profile Domain,Private -EA 0; Start-Sleep -Seconds 1; $ok1=((Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server').fDenyTSConnections -eq 0) -and ((Get-Service TermService).Status -eq 'Running'); $ok2=(@(Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq 'Public' }).Count -eq 0); $rT=Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP' -EA 0; $ok3=$rT -and ($rT.Enabled.ToString() -eq 'True') -and ($rT.Profile.ToString() -match 'Private|Any'); Write-Host ($(if($ok1){'[OK  ]'}else{'[FIX ]'})+' RDP и TermService') -ForegroundColor $(if($ok1){'Green'}else{'Red'}); Write-Host ($(if($ok2){'[OK  ]'}else{'[FIX ]'})+' Профиль сети (не Public)') -ForegroundColor $(if($ok2){'Green'}else{'Red'}); Write-Host ($(if($ok3){'[OK  ]'}else{'[FIX ]'})+' Правило брандмауэра RDP') -ForegroundColor $(if($ok3){'Green'}else{'Red'}); Write-Host 'Повторите Шаг 1 для контрольной проверки и обновления rdp-profile.json.' -ForegroundColor Cyan }"
                         </div>
                     </div>
 
                     <div class="result-pane">
-                        <div>Администраторы получают доступ по RDP автоматически. Для обычного пользователя без прав администратора добавьте его в группу <code>Пользователи удаленного рабочего стола</code> и отключите автопереход ПК в режим сна.</div>
+                        <div><strong>Ожидаемый результат:</strong> Все три проверочные строки зелёные <code>[OK  ]</code>. После этого повторно запустите <strong>Шаг 1</strong>, чтобы убедиться, что вся таблица зелёная, и обновить <code>rdp-profile.json</code>.</div>
                     </div>
                 </div>
 
                 <div class="step-card">
                     <div class="step-header-row">
                         <span class="step-badge">Шаг 3</span>
-                        <h3 class="step-title">Переменные подключения и данные для Windows App (MacBook)</h3>
+                        <h3 class="step-title">Импорт rdp-profile.json и данные для Windows App (MacBook)</h3>
                     </div>
-                    <p>Заполните поля данными из Шага 1 — значения автоматически сохраняются в браузере и формируют готовую карточку для копирования:</p>
+                    <p>Загрузите <code>rdp-profile.json</code>, созданный на Шаге 1 — все переменные (имя ПК, IP, пользователь, порт) и результаты диагностики заполнятся автоматически без риска перепутать <code>O</code> и <code>0</code>. Один и тот же JSON подходит для Windows и macOS:</p>
+
+                    <div class="rdp-json-bar">
+                        <input type="file" id="rdp-json-file" accept=".json,application/json" style="display:none" onchange="importRdpJson(this)">
+                        <button type="button" class="rdp-action-btn primary" onclick="document.getElementById('rdp-json-file').click()">Загрузить rdp-profile.json</button>
+                        <button type="button" class="rdp-action-btn" onclick="exportRdpJson()">Скачать текущий JSON</button>
+                        <span class="rdp-json-status" id="rdp-json-status">Файл не загружен (можно ввести вручную)</span>
+                    </div>
+
+                    <div class="diag-panel" id="rdp-diag-panel">
+                        <div class="diag-panel-header">
+                            <span>[ СТАТУС ДИАГНОСТИКИ WINDOWS ]</span>
+                            <span id="rdp-diag-verdict"></span>
+                        </div>
+                        <div class="diag-list" id="rdp-diag-list"></div>
+                    </div>
 
                     <div class="rdp-mode-switch">
                         <button type="button" id="rdp-mode-lan" class="rdp-mode-btn active" onclick="setRdpMode('lan')">Локальная сеть (LAN)</button>
@@ -1168,7 +1307,15 @@
                         <li>При желании задайте <strong>Friendly name</strong>, на вкладке <strong>Display</strong> включите <em>Optimize for Retina displays</em>, нажмите <strong>Add</strong> и откройте подключение двойным кликом. При первом входе подтвердите сертификат кнопкой <strong>Continue</strong>.</li>
                     </ol>
 
-                    <p>Быстрая проверка доступности порта RDP с MacBook (до запуска Windows App):</p>
+                    </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Шаг 4</span>
+                        <h3 class="step-title">Проверка подключения с MacBook (по переменным из JSON)</h3>
+                    </div>
+
+                    <p>1. Быстрая проверка доступности порта RDP (таймаут 3 секунды):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title">macOS · Terminal</div>
@@ -1180,45 +1327,11 @@
                             nc -vz -G 3 192.168.1.50 3389
                         </div>
                     </div>
-
                     <div class="result-pane">
-                        <div>Ожидаемый результат на macOS: <code>Connection to ... port [tcp/ms-wbt-server] succeeded!</code></div>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-header-row">
-                        <span class="step-badge">Тест и фикс</span>
-                        <h3 class="step-title">Если таймаут: фикс сети/брандмауэра и глубокая диагностика</h3>
+                        <div><strong>Ожидаемый результат:</strong> <code>Connection to ... port 3389 [tcp/ms-wbt-server] succeeded!</code> — порт открыт, можно подключаться через Windows App. Если <code>Operation timed out</code> или <code>Connection refused</code> — выполните диагностику ниже.</div>
                     </div>
 
-                    <p>1. Windows — перевести все сети <code>Public</code> в <code>Private</code>, активировать правила RDP (<code>Domain,Private</code>) и сразу вывести актуальный статус:</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title">CMD → PowerShell · Администратор</div>
-                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq 'Public' } | Set-NetConnectionProfile -NetworkCategory Private; Set-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' -Enabled True -Profile Domain,Private; Get-NetConnectionProfile | Select-Object InterfaceAlias,NetworkCategory | Format-Table -AutoSize | Out-Host; Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' | Select-Object Name,Enabled,Profile,Action | Format-Table -AutoSize | Out-Host }"
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">2. Windows — полная диагностика (профиль сети, слушающий сокет RDP, общие политики брандмауэра, правила 3389 и сторонние антивирусы/фаерволы):</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title">CMD → PowerShell · Администратор</div>
-                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { $p = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').PortNumber; Get-NetConnectionProfile | Select-Object InterfaceAlias,NetworkCategory | Format-Table -AutoSize | Out-Host; Get-NetTCPConnection -LocalPort $p -State Listen -EA 0 | Select-Object LocalAddress,LocalPort,OwningProcess | Format-Table -AutoSize | Out-Host; Get-NetFirewallProfile | Select-Object Name,Enabled,DefaultInboundAction,AllowInboundRules | Format-Table -AutoSize | Out-Host; Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' | Select-Object Name,Enabled,Profile,Action | Format-Table -AutoSize | Out-Host; Get-CimInstance -Namespace root/SecurityCenter2 -ClassName FirewallProduct -EA 0 | Select-Object displayName,productState | Format-Table -AutoSize | Out-Host }"
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">3. macOS — комплексная проверка маршрута, ARP (L2) и порта RDP с таймаутом 3 сек (подставляет IP и порт из Шага 3):</p>
+                    <p style="margin-top: 20px;">2. Полная сетевая диагностика (маршрут, ARP на уровне L2 и порт — запускать только при ошибке выше):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title">macOS · Terminal</div>
@@ -1230,9 +1343,8 @@
                             route -n get 192.168.1.50 | grep -E "interface|gateway"; ping -c 2 -W 1000 192.168.1.50; arp -n 192.168.1.50; nc -vz -G 3 192.168.1.50 3389
                         </div>
                     </div>
-
                     <div class="result-pane">
-                        <div>Если после п.1 порт всё ещё отдаёт таймаут, выполните п.2 и проверьте <code>AllowInboundRules</code> (не включена ли блокировка всех входящих) и раздел <code>FirewallProduct</code> (сторонний фаервол/антивирус).</div>
+                        <div><strong>Интерпретация вывода:</strong> <code>interface: utun*</code> → трафик уводит VPN на MacBook; <code>arp</code> без MAC (<code>incomplete</code>) → ПК в сне, сменился IP или на роутере включена изоляция Wi-Fi; <code>arp</code> вернул MAC-адрес, но <code>nc</code> дал <code>timed out</code> → пакеты режет брандмауэр или антивирус Windows (см. красные/жёлтые строки Шага 1); <code>Connection refused</code> → служба RDP не слушает порт.</div>
                     </div>
                 </div>
 
@@ -1358,9 +1470,135 @@
 
             try {
                 localStorage.setItem('rdp_suite_config_v1', JSON.stringify({
-                    mode: rdpMode, host, lanIp, user, port, wanIp, wanPort
+                    schema: 'rdp-profile-v1',
+                    generatedAt: rdpGeneratedAt,
+                    mode: rdpMode,
+                    host,
+                    lanIp,
+                    user,
+                    port,
+                    wanIp,
+                    wanPort,
+                    diagnostics: rdpDiagnostics
                 }));
             } catch (e) {}
+        }
+
+        let rdpDiagnostics = [];
+        let rdpGeneratedAt = '';
+
+        function renderRdpDiagnostics(diagList) {
+            const panel = document.getElementById('rdp-diag-panel');
+            const list = document.getElementById('rdp-diag-list');
+            const verdict = document.getElementById('rdp-diag-verdict');
+            list.innerHTML = '';
+
+            if (!Array.isArray(diagList) || diagList.length === 0) {
+                panel.classList.remove('visible');
+                return;
+            }
+
+            let fixCount = 0;
+            let warnCount = 0;
+
+            diagList.forEach(item => {
+                const st = (item.status || 'FIX').toUpperCase();
+                if (st === 'FIX') fixCount++;
+                else if (st === 'WARN') warnCount++;
+
+                const row = document.createElement('div');
+                row.className = 'diag-row';
+
+                const left = document.createElement('div');
+                left.className = 'diag-row-left';
+
+                const pill = document.createElement('span');
+                pill.className = 'diag-pill ' + (st === 'OK' ? 'ok' : (st === 'WARN' ? 'warn' : 'fix'));
+                pill.textContent = st;
+
+                const label = document.createElement('span');
+                label.className = 'diag-label';
+                label.textContent = item.label || item.key || '';
+
+                const val = document.createElement('span');
+                val.className = 'diag-val';
+                val.textContent = item.value || '';
+
+                left.appendChild(pill);
+                left.appendChild(label);
+                row.appendChild(left);
+                row.appendChild(val);
+                list.appendChild(row);
+            });
+
+            if (fixCount === 0) {
+                verdict.className = 'diag-verdict-ok';
+                verdict.textContent = warnCount > 0
+                    ? 'ГОТОВО (есть предупреждение: ' + warnCount + ')'
+                    : 'ВСЕ ПРОВЕРКИ OK';
+            } else {
+                verdict.className = 'diag-verdict-fix';
+                verdict.textContent = 'ТРЕБУЕТСЯ ШАГ 2 (проблем: ' + fixCount + ')';
+            }
+
+            panel.classList.add('visible');
+        }
+
+        function importRdpJson(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data || typeof data !== 'object') throw new Error('Некорректный JSON');
+
+                    if (typeof data.host === 'string') document.getElementById('rdp-host').value = data.host;
+                    if (typeof data.lanIp === 'string') document.getElementById('rdp-lan-ip').value = data.lanIp;
+                    if (typeof data.user === 'string') document.getElementById('rdp-user').value = data.user;
+                    if (typeof data.port === 'string' && data.port) document.getElementById('rdp-port').value = data.port;
+                    if (typeof data.wanIp === 'string' && data.wanIp) document.getElementById('rdp-wan-ip').value = data.wanIp;
+                    if (typeof data.wanPort === 'string' && data.wanPort) document.getElementById('rdp-wan-port').value = data.wanPort;
+
+                    rdpDiagnostics = Array.isArray(data.diagnostics) ? data.diagnostics : [];
+                    rdpGeneratedAt = typeof data.generatedAt === 'string' ? data.generatedAt : '';
+                    renderRdpDiagnostics(rdpDiagnostics);
+
+                    const statusEl = document.getElementById('rdp-json-status');
+                    statusEl.textContent = 'Загружен: ' + file.name + (rdpGeneratedAt ? ' · ' + rdpGeneratedAt : '');
+
+                    setRdpMode(data.mode || rdpMode);
+                } catch (err) {
+                    alert('Не удалось прочитать JSON: ' + err.message);
+                } finally {
+                    input.value = '';
+                }
+            };
+            reader.readAsText(file, 'utf-8');
+        }
+
+        function exportRdpJson() {
+            const payload = {
+                schema: 'rdp-profile-v1',
+                generatedAt: rdpGeneratedAt || new Date().toISOString().slice(0, 19).replace('T', ' '),
+                mode: rdpMode,
+                host: document.getElementById('rdp-host').value.trim(),
+                lanIp: document.getElementById('rdp-lan-ip').value.trim(),
+                user: document.getElementById('rdp-user').value.trim(),
+                port: document.getElementById('rdp-port').value.trim() || '3389',
+                wanIp: document.getElementById('rdp-wan-ip').value.trim(),
+                wanPort: document.getElementById('rdp-wan-port').value.trim() || '3389',
+                diagnostics: rdpDiagnostics
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'rdp-profile.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function initRdpConfig() {
@@ -1374,6 +1612,14 @@
                     if (data.port) document.getElementById('rdp-port').value = data.port;
                     if (data.wanIp) document.getElementById('rdp-wan-ip').value = data.wanIp;
                     if (data.wanPort) document.getElementById('rdp-wan-port').value = data.wanPort;
+                    if (Array.isArray(data.diagnostics)) {
+                        rdpDiagnostics = data.diagnostics;
+                        renderRdpDiagnostics(rdpDiagnostics);
+                    }
+                    if (data.generatedAt) {
+                        rdpGeneratedAt = data.generatedAt;
+                        document.getElementById('rdp-json-status').textContent = 'Восстановлен из кэша · ' + rdpGeneratedAt;
+                    }
                     if (data.mode) {
                         setRdpMode(data.mode);
                         return;
