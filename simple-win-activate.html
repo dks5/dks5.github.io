@@ -1177,12 +1177,62 @@
                             </button>
                         </div>
                         <div class="code-container" id="rdp-out-nc">
-                            nc -vz 192.168.1.50 3389
+                            nc -vz -G 3 192.168.1.50 3389
                         </div>
                     </div>
 
                     <div class="result-pane">
                         <div>Ожидаемый результат на macOS: <code>Connection to ... port [tcp/ms-wbt-server] succeeded!</code></div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Тест и фикс</span>
+                        <h3 class="step-title">Если таймаут: фикс сети/брандмауэра и глубокая диагностика</h3>
+                    </div>
+
+                    <p>1. Windows — перевести все сети <code>Public</code> в <code>Private</code>, активировать правила RDP (<code>Domain,Private</code>) и сразу вывести актуальный статус:</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "&amp; { Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq 'Public' } | Set-NetConnectionProfile -NetworkCategory Private; Set-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' -Enabled True -Profile Domain,Private; Get-NetConnectionProfile | Select-Object InterfaceAlias,NetworkCategory | Format-Table -AutoSize | Out-Host; Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' | Select-Object Name,Enabled,Profile,Action | Format-Table -AutoSize | Out-Host }"
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">2. Windows — полная диагностика (профиль сети, слушающий сокет RDP, общие политики брандмауэра, правила 3389 и сторонние антивирусы/фаерволы):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title">CMD → PowerShell · Администратор</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            powershell -NoProfile -Command "&amp; { $p = (Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp').PortNumber; Get-NetConnectionProfile | Select-Object InterfaceAlias,NetworkCategory | Format-Table -AutoSize | Out-Host; Get-NetTCPConnection -LocalPort $p -State Listen -EA 0 | Select-Object LocalAddress,LocalPort,OwningProcess | Format-Table -AutoSize | Out-Host; Get-NetFirewallProfile | Select-Object Name,Enabled,DefaultInboundAction,AllowInboundRules | Format-Table -AutoSize | Out-Host; Get-NetFirewallRule -Name 'RemoteDesktop-UserMode-In-TCP','RemoteDesktop-UserMode-In-UDP' | Select-Object Name,Enabled,Profile,Action | Format-Table -AutoSize | Out-Host; Get-CimInstance -Namespace root/SecurityCenter2 -ClassName FirewallProduct -EA 0 | Select-Object displayName,productState | Format-Table -AutoSize | Out-Host }"
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">3. macOS — комплексная проверка маршрута, ARP (L2) и порта RDP с таймаутом 3 сек (подставляет IP и порт из Шага 3):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title">macOS · Terminal</div>
+                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container" id="rdp-out-diag">
+                            route -n get 192.168.1.50 | grep -E "interface|gateway"; ping -c 2 -W 1000 192.168.1.50; arp -n 192.168.1.50; nc -vz -G 3 192.168.1.50 3389
+                        </div>
+                    </div>
+
+                    <div class="result-pane">
+                        <div>Если после п.1 порт всё ещё отдаёт таймаут, выполните п.2 и проверьте <code>AllowInboundRules</code> (не включена ли блокировка всех входящих) и раздел <code>FirewallProduct</code> (сторонний фаервол/антивирус).</div>
                     </div>
                 </div>
 
@@ -1303,7 +1353,8 @@
             document.getElementById('rdp-out-pc').textContent = pcValue;
             document.getElementById('rdp-out-user').textContent = formattedUser;
             document.getElementById('rdp-out-name').textContent = friendlyName;
-            document.getElementById('rdp-out-nc').textContent = 'nc -vz ' + targetHost + ' ' + targetPort;
+            document.getElementById('rdp-out-nc').textContent = 'nc -vz -G 3 ' + targetHost + ' ' + targetPort;
+            document.getElementById('rdp-out-diag').textContent = 'route -n get ' + targetHost + ' | grep -E "interface|gateway"; ping -c 2 -W 1000 ' + targetHost + '; arp -n ' + targetHost + '; nc -vz -G 3 ' + targetHost + ' ' + targetPort;
 
             try {
                 localStorage.setItem('rdp_suite_config_v1', JSON.stringify({
