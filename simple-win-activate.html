@@ -275,10 +275,60 @@
         }
         .version-block.home { border-color: rgba(52, 199, 89, 0.3); }
         .version-block.pro { border-color: rgba(88, 86, 214, 0.3); }
+        .version-block.ltsc { border-color: rgba(0, 122, 255, 0.3); }
+        .version-block.ent { border-color: rgba(255, 149, 0, 0.3); }
 
         kbd {
             background: white; border: 1px solid #d1d1d1; border-radius: 5px;
             box-shadow: 0 2px 0 #e5e5e5; color: #555; padding: 2px 6px; font-size: 0.85em;
+        }
+
+        .step-badge.orange { background: #ff9500; }
+
+        .update-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0 16px 0;
+        }
+        .update-link-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--term-body-bg);
+            border: 1px solid var(--term-border);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: border-color 0.2s, background-color 0.2s, transform 0.15s;
+        }
+        .update-link-item:hover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.04);
+            transform: translateY(-1px);
+        }
+        .update-link-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .update-link-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+        .update-link-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        .update-link-icon {
+            color: var(--accent-blue);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
@@ -316,13 +366,70 @@
 
                 <div class="warning-card">
                     <span>💡</span>
-                    <div>Запускайте терминал только от имени администратора.</div>
+                    <div>Запускайте терминал только от имени администратора. Если на Windows 10 (сборка 19044.7846) возникает ошибка <code>0x80041008</code>, предварительно установите внеплановое обновление <strong>KB5136493</strong> (сборка 19044.7850) и перезагрузите ПК.</div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge orange">Фикс 0x80041008</span>
+                        <h3 class="step-title">Внеплановое обновление KB5136493 (сборка 19044.7850)</h3>
+                    </div>
+                    <p>Исправляет сбой подсистемы лицензирования WMI (<code>SWbemObjectEx</code>) на сборке <code>19044.7846</code> для команд <code>slmgr</code> и <code>ospp.vbs</code>:</p>
+
+                    <div class="update-links">
+                        <a class="update-link-item" href="https://www.catalog.update.microsoft.com/Search.aspx?q=KB5136493" target="_blank" rel="noopener noreferrer">
+                            <div class="update-link-meta">
+                                <span class="update-link-title">Каталог Центра обновления Microsoft (поиск KB5136493)</span>
+                                <span class="update-link-desc">Выберите «2026-11 Cumulative Update for Windows 10 Version 21H2 for x64-based Systems (KB5136493)» (Windows 10 LTSB, 1190.7 MB) и нажмите Download</span>
+                            </div>
+                            <span class="update-link-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </span>
+                        </a>
+
+                        <a class="update-link-item" href="https://www.catalog.update.microsoft.com/ScopedViewInline.aspx?updateid=0f74a7f2-f0c7-4210-9f88-c6f7e2018315" target="_blank" rel="noopener noreferrer">
+                            <div class="update-link-meta">
+                                <span class="update-link-title">Карточка пакета Windows 10 21H2 / LTSC 2021 x64</span>
+                                <span class="update-link-desc">UpdateID: 0f74a7f2-f0c7-4210-9f88-c6f7e2018315</span>
+                            </div>
+                            <span class="update-link-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </span>
+                        </a>
+
+                        <a class="update-link-item" href="https://support.microsoft.com/ru-ru/servicing/os/windows-10/2026/11/kb5136493-windows-10-21h2-22h2-update" target="_blank" rel="noopener noreferrer">
+                            <div class="update-link-meta">
+                                <span class="update-link-title">Официальное описание обновления (Microsoft Support, RU)</span>
+                                <span class="update-link-desc">Сведения о внеплановом выпуске KB5136493</span>
+                            </div>
+                            <span class="update-link-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="result-pane">
+                        <span class="result-icon">👁‍🗨</span>
+                        <div>Ожидаемый результат: После установки <code>.msu</code> и перезагрузки в заголовке CMD отобразится версия <code>10.0.19044.7850</code>.</div>
+                    </div>
                 </div>
 
                 <div class="step-card">
                     <div class="step-header-row">
                         <span class="step-badge">Шаг 1</span>
                         <h3 class="step-title">Установка ключа продукта</h3>
+                    </div>
+                    <p>При необходимости уточните точную редакцию (<code>Current Edition</code>):</p>
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'dism /online /get-currentedition')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            dism /online /get-currentedition
+                        </div>
                     </div>
                     <p>Выберите вашу версию Windows:</p>
 
@@ -353,6 +460,51 @@
                                 </div>
                                 <div class="code-container">
                                     slmgr /ipk W269N-WFGWX-YVC9B-4J6C9-T83GX
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="version-block ltsc">
+                            <strong style="color: #007aff; display: block; margin-bottom: 5px;">Enterprise LTSC 2021 (EnterpriseS)</strong>
+                            <div class="terminal-wrapper">
+                                <div class="terminal-header-bar">
+                                    <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                                    <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /ipk M7XTQ-FN8P6-TTKYV-9D4CC-J462D')" title="Копировать">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="code-container">
+                                    slmgr /ipk M7XTQ-FN8P6-TTKYV-9D4CC-J462D
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="version-block ltsc">
+                            <strong style="color: #007aff; display: block; margin-bottom: 5px;">IoT Enterprise LTSC 2021 (IoTEnterpriseS)</strong>
+                            <div class="terminal-wrapper">
+                                <div class="terminal-header-bar">
+                                    <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                                    <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /ipk KBN8V-HFGQ4-MGXVD-347P6-PDQGT')" title="Копировать">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="code-container">
+                                    slmgr /ipk KBN8V-HFGQ4-MGXVD-347P6-PDQGT
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="version-block ent">
+                            <strong style="color: #b35900; display: block; margin-bottom: 5px;">Enterprise (обычная)</strong>
+                            <div class="terminal-wrapper">
+                                <div class="terminal-header-bar">
+                                    <div class="term-title"><span class="term-icon">⬛</span> CMD / PowerShell</div>
+                                    <button class="btn-copy-icon" onclick="copyText(this, 'slmgr /ipk NPPR9-FWDCX-D2C8J-H872K-2YT43')" title="Копировать">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="code-container">
+                                    slmgr /ipk NPPR9-FWDCX-D2C8J-H872K-2YT43
                                 </div>
                             </div>
                         </div>
@@ -456,43 +608,43 @@
                 <div class="step-card">
                     <div class="step-header-row">
                         <span class="step-badge purple">Шаг 2</span>
-                        <h3 class="step-title">Ручная установка лицензий</h3>
+                        <h3 class="step-title">Ручная установка лицензий Office 2021 (опционально)</h3>
                     </div>
-                    <p>Выполните все три команды по очереди:</p>
+                    <p>Если <code>ProPlus 2021 Volume</code> ставился напрямую через C2R и уже виден в <code>/dstatus</code>, этот шаг можно пропустить. Иначе выполните все три команды по очереди:</p>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlusVL_KMS_Client-ppd.xrm-ms&quot;')" title="Копировать">
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlus2021VL_KMS_Client_AE-ppd.xrm-ms&quot;')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlusVL_KMS_Client-ppd.xrm-ms"
-                        </div>
-                    </div>
-
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlusVL_KMS_Client-ul.xrm-ms&quot;')" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container">
-                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlusVL_KMS_Client-ul.xrm-ms"
+                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlus2021VL_KMS_Client_AE-ppd.xrm-ms"
                         </div>
                     </div>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlusVL_KMS_Client-ul-oob.xrm-ms&quot;')" title="Копировать">
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlus2021VL_KMS_Client_AE-ul.xrm-ms&quot;')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlusVL_KMS_Client-ul-oob.xrm-ms"
+                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlus2021VL_KMS_Client_AE-ul.xrm-ms"
+                        </div>
+                    </div>
+
+                    <div class="terminal-wrapper">
+                        <div class="terminal-header-bar">
+                            <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inslic:&quot;..\\root\\Licenses16\\ProPlus2021VL_KMS_Client_AE-ul-oob.xrm-ms&quot;')" title="Копировать">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="code-container">
+                            cscript ospp.vbs /inslic:"..\root\Licenses16\ProPlus2021VL_KMS_Client_AE-ul-oob.xrm-ms"
                         </div>
                     </div>
                     
@@ -508,16 +660,16 @@
                         <h3 class="step-title">Установка ключа и Активация</h3>
                     </div>
                     
-                    <p>1. Установка ключа:</p>
+                    <p>1. Установка ключа (Office LTSC Professional Plus 2021):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title"><span class="term-icon">⬛</span> CMD (Черное окно)</div>
-                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99')" title="Копировать">
+                            <button class="btn-copy-icon" onclick="copyText(this, 'cscript ospp.vbs /inpkey:FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH')" title="Копировать">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
                         <div class="code-container">
-                            cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99
+                            cscript ospp.vbs /inpkey:FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH
                         </div>
                     </div>
                     <div class="result-pane">
