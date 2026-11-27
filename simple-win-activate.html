@@ -1225,6 +1225,7 @@
                     <div class="rdp-json-bar">
                         <input type="file" id="rdp-json-file" accept=".json,application/json" style="display:none" onchange="importRdpJson(this)">
                         <button type="button" class="rdp-action-btn primary" onclick="document.getElementById('rdp-json-file').click()">Загрузить rdp-profile.json</button>
+                        <button type="button" class="rdp-action-btn" onclick="exportRdpFile()">Скачать .rdp для Windows App</button>
                         <button type="button" class="rdp-action-btn" onclick="exportRdpJson()">Скачать текущий JSON</button>
                         <span class="rdp-json-status" id="rdp-json-status">Файл не загружен (можно ввести вручную)</span>
                     </div>
@@ -1301,10 +1302,9 @@
                     </div>
 
                     <ol class="rdp-steps-list">
-                        <li>Откройте <strong>Windows App</strong> на MacBook → нажмите <strong>+</strong> (вверху справа) → <strong>Add PC</strong>.</li>
-                        <li>В поле <strong>PC name</strong> вставьте скопированный адрес (для LAN рекомендуется статический IP, закреплённый за Windows в DHCP роутера).</li>
-                        <li>В поле <strong>Credentials / User account</strong> выберите <strong>Add Credentials</strong>: вставьте <strong>Username</strong> (префикс <code>.\</code> гарантирует вход в локальную учётную запись Windows без конфликта с доменом) и введите пароль пользователя Windows.</li>
-                        <li>При желании задайте <strong>Friendly name</strong>, на вкладке <strong>Display</strong> включите <em>Optimize for Retina displays</em>, нажмите <strong>Add</strong> и откройте подключение двойным кликом. При первом входе подтвердите сертификат кнопкой <strong>Continue</strong>.</li>
+                        <li><strong>Быстрый способ (через импорт файла):</strong> нажмите <strong>«Скачать .rdp для Windows App»</strong> выше → в <strong>Windows App</strong> откройте меню <strong>Connections → Import from RDP file…</strong> (или просто кликните по файлу дважды) → выберите скачанный <code>.rdp</code>. Адрес, порт, логин, буфер обмена, звук и динамическое разрешение подставятся сами.</li>
+                        <li><strong>Пароль:</strong> формат <code>.rdp</code> на macOS по соображениям безопасности не хранит пароль — введите его при первом подключении (или через <strong>Configure PC… / ⌘E → Credentials</strong>), чтобы сохранить в связке ключей macOS. При первом входе подтвердите сертификат кнопкой <strong>Continue</strong>.</li>
+                        <li><strong>Ручной способ (если нужен без файла):</strong> нажмите <strong>+ → Add PC</strong>, скопируйте значения из карточки выше (для LAN рекомендуется закрепить IP за Windows в DHCP роутера).</li>
                     </ol>
 
                     </div>
@@ -1312,26 +1312,10 @@
                 <div class="step-card">
                     <div class="step-header-row">
                         <span class="step-badge">Шаг 4</span>
-                        <h3 class="step-title">Проверка подключения с MacBook (по переменным из JSON)</h3>
+                        <h3 class="step-title">Диагностика подключения с MacBook (построчный отчёт)</h3>
                     </div>
 
-                    <p>1. Быстрая проверка доступности порта RDP (таймаут 3 секунды):</p>
-                    <div class="terminal-wrapper">
-                        <div class="terminal-header-bar">
-                            <div class="term-title">macOS · Terminal</div>
-                            <button class="btn-copy-icon" onclick="copyText(this)" title="Копировать">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="code-container" id="rdp-out-nc">
-                            nc -vz -G 3 192.168.1.50 3389
-                        </div>
-                    </div>
-                    <div class="result-pane">
-                        <div><strong>Ожидаемый результат:</strong> <code>Connection to ... port 3389 [tcp/ms-wbt-server] succeeded!</code> — порт открыт, можно подключаться через Windows App. Если <code>Operation timed out</code> или <code>Connection refused</code> — выполните диагностику ниже.</div>
-                    </div>
-
-                    <p style="margin-top: 20px;">2. Полная сетевая диагностика (маршрут, ARP на уровне L2 и порт — запускать только при ошибке выше):</p>
+                    <p>Подставляет IP и порт из Шага 3. Проверяет маршрут/VPN, видимость ПК в локальной сети (ARP), ответ на ping и доступность порта RDP — выдаёт цветной построчный статус и итоговый вердикт (<code>УСПЕХ</code> / <code>ОШИБКА</code>):</p>
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
                             <div class="term-title">macOS · Terminal</div>
@@ -1340,11 +1324,11 @@
                             </button>
                         </div>
                         <div class="code-container" id="rdp-out-diag">
-                            route -n get 192.168.1.50 | grep -E "interface|gateway"; ping -c 2 -W 1000 192.168.1.50; arp -n 192.168.1.50; nc -vz -G 3 192.168.1.50 3389
+                            H="192.168.1.50"; P="3389"
                         </div>
                     </div>
                     <div class="result-pane">
-                        <div><strong>Интерпретация вывода:</strong> <code>interface: utun*</code> → трафик уводит VPN на MacBook; <code>arp</code> без MAC (<code>incomplete</code>) → ПК в сне, сменился IP или на роутере включена изоляция Wi-Fi; <code>arp</code> вернул MAC-адрес, но <code>nc</code> дал <code>timed out</code> → пакеты режет брандмауэр или антивирус Windows (см. красные/жёлтые строки Шага 1); <code>Connection refused</code> → служба RDP не слушает порт.</div>
+                        <div><strong>Ожидаемый результат:</strong> Зелёная итоговая строка <code>=== ИТОГ: УСПЕХ — ПОРТ RDP ДОСТУПЕН ===</code>. Строка <code>[INFO] Ping (ICMP): Нет ответа — ЭТО НОРМА</code> не является ошибкой: брандмауэр Windows по умолчанию скрывает ICMP-пинг, и при открытом TCP-порте RDP всё работает штатно.</div>
                     </div>
                 </div>
 
@@ -1465,8 +1449,7 @@
             document.getElementById('rdp-out-pc').textContent = pcValue;
             document.getElementById('rdp-out-user').textContent = formattedUser;
             document.getElementById('rdp-out-name').textContent = friendlyName;
-            document.getElementById('rdp-out-nc').textContent = 'nc -vz -G 3 ' + targetHost + ' ' + targetPort;
-            document.getElementById('rdp-out-diag').textContent = 'route -n get ' + targetHost + ' | grep -E "interface|gateway"; ping -c 2 -W 1000 ' + targetHost + '; arp -n ' + targetHost + '; nc -vz -G 3 ' + targetHost + ' ' + targetPort;
+            document.getElementById('rdp-out-diag').textContent = buildMacDiagCmd(targetHost, targetPort);
 
             try {
                 localStorage.setItem('rdp_suite_config_v1', JSON.stringify({
@@ -1595,6 +1578,72 @@
             const a = document.createElement('a');
             a.href = url;
             a.download = 'rdp-profile.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function buildMacDiagCmd(host, port) {
+            const safeHost = host.replace(/[^a-zA-Z0-9._:-]/g, '');
+            const safePort = port.replace(/[^0-9]/g, '') || '3389';
+            return 'H="' + safeHost + '"; P="' + safePort + '"; ' +
+                "G='\\033[32m'; R='\\033[31m'; Y='\\033[33m'; C='\\033[36m'; N='\\033[0m'; " +
+                'printf "${C}=== ДИАГНОСТИКА RDP НА MACOS (%s:%s) ===${N}\\n" "$H" "$P"; ' +
+                'RT=$(route -n get "$H" 2>&1); ' +
+                'IF=$(printf "%s\\n" "$RT" | awk \'/interface:/{print $2; exit}\'); ' +
+                'GW=$(printf "%s\\n" "$RT" | awk \'/gateway:/{print $2; exit}\'); ' +
+                'if [ -n "$GW" ]; then VIA="через шлюз $GW"; else VIA="напрямую в LAN"; fi; ' +
+                'if [ -z "$IF" ]; then printf "${R}[FIX ] Маршрут        : Нет маршрута до %s${N}\\n" "$H"; ' +
+                'else case "$IF" in utun*|ppp*|ipsec*) printf "${Y}[WARN] Маршрут        : Интерфейс %s (VPN-туннель; для LAN проверьте исключения)${N}\\n" "$IF";; ' +
+                '*) printf "${G}[OK  ] Маршрут        : Интерфейс %s (%s)${N}\\n" "$IF" "$VIA";; esac; fi; ' +
+                'ping -c 1 -W 1000 "$H" >/dev/null 2>&1; PING_RC=$?; ' +
+                'MAC=$(arp -n "$H" 2>/dev/null | awk \'$3=="at" && $4 ~ /:/ {print $4; exit}\'); ' +
+                'NC_OUT=$(nc -vz -G 3 "$H" "$P" 2>&1); NC_RC=$?; NC_OUT=$(printf "%s" "$NC_OUT" | tr \'\\n\' \' \'); ' +
+                'if [ -n "$MAC" ]; then printf "${G}[OK  ] Сеть L2 (ARP)  : Найден MAC %s (ПК включен и виден в LAN)${N}\\n" "$MAC"; ' +
+                'elif [ -n "$GW" ]; then printf "${C}[INFO] Сеть L2 (ARP)  : Удаленная подсеть / WAN (через шлюз %s)${N}\\n" "$GW"; ' +
+                'else printf "${R}[FIX ] Сеть L2 (ARP)  : MAC не найден — ПК в сне, сменился IP или изоляция Wi-Fi${N}\\n"; fi; ' +
+                'if [ "$PING_RC" -eq 0 ]; then printf "${G}[OK  ] Ping (ICMP)    : Отвечает (ICMP открыт)${N}\\n"; ' +
+                'elif [ "$NC_RC" -eq 0 ]; then printf "${C}[INFO] Ping (ICMP)    : Нет ответа — ЭТО НОРМА (Windows скрывает ICMP, на RDP не влияет)${N}\\n"; ' +
+                'else printf "${Y}[INFO] Ping (ICMP)    : Нет ответа (обычно скрыт брандмауэром Windows; сам по себе не ошибка)${N}\\n"; fi; ' +
+                'if [ "$NC_RC" -eq 0 ]; then printf "${G}[OK  ] Порт RDP (TCP) : Порт %s ОТКРЫТ и принимает подключения${N}\\n" "$P"; ' +
+                'printf "${G}=== ИТОГ: УСПЕХ — ПОРТ RDP ДОСТУПЕН, МОЖНО ПОДКЛЮЧАТЬСЯ В WINDOWS APP ===${N}\\n"; ' +
+                'else printf "${R}[FIX ] Порт RDP (TCP) : Недоступен (%s)${N}\\n" "$NC_OUT"; ' +
+                'printf "${R}=== ИТОГ: ОШИБКА — НЕТ ДОСТУПА К ПОРТУ RDP (см. строки [FIX] выше) ===${N}\\n"; fi';
+        }
+
+        function exportRdpFile() {
+            const pcValue = document.getElementById('rdp-out-pc').textContent.trim();
+            const userValue = document.getElementById('rdp-out-user').textContent.trim();
+            const host = document.getElementById('rdp-host').value.trim() || 'Win10-Corp';
+            const suffix = (rdpMode === 'wan') ? 'WAN' : 'LAN';
+            const fileName = host.replace(/[^a-zA-Z0-9._-]/g, '_') + '-' + suffix + '.rdp';
+
+            const lines = [
+                'full address:s:' + pcValue,
+                'username:s:' + userValue,
+                'prompt for credentials on client:i:1',
+                'authentication level:i:2',
+                'screen mode id:i:2',
+                'use multimon:i:0',
+                'session bpp:i:32',
+                'dynamic resolution:i:1',
+                'smart sizing:i:1',
+                'allow font smoothing:i:1',
+                'bandwidthautodetect:i:1',
+                'networkautodetect:i:1',
+                'compression:i:1',
+                'videoplaybackmode:i:1',
+                'audiomode:i:0',
+                'redirectclipboard:i:1',
+                'autoreconnection enabled:i:1'
+            ];
+
+            const blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'application/x-rdp;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
