@@ -251,7 +251,6 @@
             align-items: flex-start;
             gap: 10px;
             border: 1px solid var(--border-subtle);
-            border-left: 3px solid #636366;
         }
         .result-icon { display: none; }
 
@@ -276,7 +275,6 @@
         .warning-card {
             background: #e2e2ea;
             border: 1px solid var(--border-subtle);
-            border-left: 3px solid var(--accent-blue);
             border-radius: 12px;
             padding: 14px 16px;
             margin-bottom: 24px;
@@ -929,7 +927,7 @@
                         <span class="step-badge">Шаг 1</span>
                         <h3 class="step-title">Интерактивный поиск и удаление пакетов (.msu и Office C2R)</h3>
                     </div>
-                    <p>Сканирует диск <code>C:\</code> (кроме <code>Windows</code>), группирует найденные <code>.msu</code> и <code>stream.x*.dat</code> по папкам, показывает общий размер в МБ и по каждой папке спрашивает — удалить пакеты (<code>y</code>/<code>д</code>) или пропустить (<code>Enter</code>):</p>
+                    <p>Сканирует весь диск <code>C:\</code> (включая <code>Windows</code>, скрытые и системные каталоги; исключены только защищённые <code>WinSxS</code> и <code>System Volume Information</code>), группирует найденные <code>.msu</code> и <code>stream.x*.dat</code> по папкам, показывает вес и после удаления проверяет реальный результат:</p>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
@@ -939,12 +937,12 @@
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { $r = Get-ChildItem C:\ -Dir -Force -Attributes !ReparsePoint -EA 0 | Where-Object { $_.Name -notin 'Windows','$Recycle.Bin','System Volume Information','Recovery' }; $f = @(Get-ChildItem C:\ -File -Force -EA 0) + @($r | Get-ChildItem -File -Recurse -Force -EA 0) | Where-Object { $_.Name -like '*.msu' -or $_.Name -like 'stream.x*.dat' }; if (-not $f) { Write-Host 'Пакеты не найдены.' -ForegroundColor Yellow; return }; foreach ($g in ($f | Group-Object DirectoryName)) { $mb = [math]::Round(($g.Group | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $g.Name + ' | Файлов: ' + $g.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; $g.Group | ForEach-Object { Write-Host ('    ' + $_.Name + ' (' + [math]::Round($_.Length/1MB,1) + ' MB)') }; if ((Read-Host 'Удалить эти пакеты в папке? [y/N]') -match '^(y|д)$') { $g.Group | Remove-Item -Force -EA 0; Write-Host 'Удалено.' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } } }"
+                            powershell -NoProfile -Command "&amp; { $rp = [IO.FileAttributes]::ReparsePoint; $dirs = @(Get-ChildItem C:\ -Dir -Force -EA 0 | Where-Object { ($_.Attributes -band $rp) -eq 0 -and $_.Name -notin 'Windows','System Volume Information' }); $dirs += @(Get-ChildItem $env:windir -Dir -Force -EA 0 | Where-Object { ($_.Attributes -band $rp) -eq 0 -and $_.Name -ne 'WinSxS' }); $f = @(Get-ChildItem C:\ -File -Force -EA 0) + @(Get-ChildItem $env:windir -File -Force -EA 0) + @($dirs | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse -Force -EA 0 }) | Where-Object { $_.Name -like '*.msu' -or $_.Name -like 'stream.x*.dat' }; if (-not $f) { Write-Host 'Пакеты не найдены.' -ForegroundColor Yellow; return }; foreach ($g in ($f | Group-Object DirectoryName)) { $mb = [math]::Round(($g.Group | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $g.Name + ' | Файлов: ' + $g.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; $g.Group | ForEach-Object { Write-Host ('    ' + $_.Name + ' (' + [math]::Round($_.Length/1MB,1) + ' MB)') }; if ((Read-Host 'Удалить эти пакеты в папке? [y/N]').Trim() -match '^(y|yes|\u0434|\u0434\u0430)$') { $ok = 0; $fail = 0; foreach ($it in $g.Group) { $err = $null; try { [IO.File]::SetAttributes($it.FullName, 'Normal') } catch {}; Remove-Item -LiteralPath $it.FullName -Force -ErrorVariable err -EA SilentlyContinue; if (Test-Path -LiteralPath $it.FullName) { $fail++; $m = if ($err) { $err[0].Exception.Message } else { 'файл остался на диске' }; Write-Host ('    [НЕ УДАЛЕН] ' + $it.Name + ' -&gt; ' + $m) -ForegroundColor Red } else { $ok++ } }; Write-Host ('Итого: удалено ' + $ok + ', не удалось ' + $fail) -ForegroundColor $(if ($fail -eq 0) {'Green'} else {'Yellow'}) } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } } }"
                         </div>
                     </div>
 
                     <div class="result-pane">
-                        <div>Удаляются только найденные файлы пакетов внутри выбранной папки — остальные файлы в папке (например, в «Загрузках») остаются нетронутыми.</div>
+                        <div>Удаляются только найденные пакеты внутри выбранной папки. Если файл защищён или занят процессом, скрипт выведет <code>[НЕ УДАЛЕН]</code> с точной причиной ошибки вместо ложного «Удалено».</div>
                     </div>
                 </div>
 
@@ -953,7 +951,7 @@
                         <span class="step-badge">Шаг 2</span>
                         <h3 class="step-title">Интерактивная очистка кэша обновлений Windows</h3>
                     </div>
-                    <p>Подсчитывает размер папок <code>SoftwareDistribution\Download</code> и P2P-кэша <code>Delivery Optimization</code>, выводит объём в МБ и по каждому пункту запрашивает подтверждение (при согласии сам останавливает и запускает службы <code>wuauserv</code> и <code>bits</code>):</p>
+                    <p>Подсчитывает размер <code>SoftwareDistribution\Download</code> и P2P-кэша <code>Delivery Optimization</code>, останавливает связанные службы (<code>wuauserv</code>, <code>bits</code>, <code>UsoSvc</code>, <code>DoSvc</code>), выполняет очистку, возвращает службы в исходное состояние и показывает реальный остаток ДО/ПОСЛЕ:</p>
 
                     <div class="terminal-wrapper">
                         <div class="terminal-header-bar">
@@ -963,7 +961,7 @@
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { $d = Join-Path $env:windir 'SoftwareDistribution\Download'; if (Test-Path $d) { $f = @(Get-ChildItem $d -Recurse -File -Force -EA 0); $mb = [math]::Round(($f | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $d + ' | Файлов: ' + $f.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; if ($f.Count -gt 0 -and (Read-Host 'Остановить службы и очистить кэш обновлений? [y/N]') -match '^(y|д)$') { Stop-Service wuauserv,bits -Force -EA 0; Get-ChildItem $d -Force -EA 0 | Remove-Item -Recurse -Force -EA 0; Start-Service bits,wuauserv -EA 0; Write-Host 'Очищено, службы запущены.' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }; $do = @((Join-Path $env:windir 'SoftwareDistribution\DeliveryOptimization'),(Join-Path $env:windir 'ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache')) | Where-Object { Test-Path $_ }; $df = @($do | Get-ChildItem -Recurse -File -Force -EA 0); $dmb = [math]::Round(($df | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Delivery Optimization (P2P-кэш) | Файлов: ' + $df.Count + ' | Размер: ' + $dmb + ' MB') -ForegroundColor Cyan; if ($df.Count -gt 0 -and (Read-Host 'Очистить P2P-кэш обновлений? [y/N]') -match '^(y|д)$') { Delete-DeliveryOptimizationCache -Force -EA 0; Write-Host 'Очищено.' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }"
+                            powershell -NoProfile -Command "&amp; { $d = Join-Path $env:windir 'SoftwareDistribution\Download'; if (Test-Path -LiteralPath $d) { $f = @(Get-ChildItem -LiteralPath $d -Recurse -File -Force -EA 0); $mb = [math]::Round(($f | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $d + ' | Файлов: ' + $f.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; if ($f.Count -gt 0 -and (Read-Host 'Остановить службы и очистить кэш обновлений? [y/N]').Trim() -match '^(y|yes|\u0434|\u0434\u0430)$') { $svcs = @('wuauserv','bits','UsoSvc','DoSvc'); $run = @(Get-Service $svcs -EA 0 | Where-Object { $_.Status -eq 'Running' }); try { Stop-Service $svcs -Force -EA 0; Start-Sleep -Seconds 1; Get-ChildItem -LiteralPath $d -Force -EA 0 | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -EA SilentlyContinue } } finally { $run | Start-Service -EA 0 }; $af = @(Get-ChildItem -LiteralPath $d -Recurse -File -Force -EA 0); $amb = [math]::Round(($af | Measure-Object Length -Sum).Sum / 1MB, 1); $freed = [math]::Round([math]::Max(0, $mb - $amb), 1); Write-Host ('Освобождено: ' + $freed + ' MB | Осталось: ' + $af.Count + ' файлов (' + $amb + ' MB)') -ForegroundColor $(if ($af.Count -eq 0) {'Green'} else {'Yellow'}) } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }; $do = @((Join-Path $env:windir 'SoftwareDistribution\DeliveryOptimization'),(Join-Path $env:windir 'ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache')) | Where-Object { Test-Path -LiteralPath $_ }; $df = @($do | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -Force -EA 0 }); $dmb = [math]::Round(($df | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Delivery Optimization (P2P-кэш) | Файлов: ' + $df.Count + ' | Размер: ' + $dmb + ' MB') -ForegroundColor Cyan; if ($df.Count -gt 0 -and (Read-Host 'Очистить P2P-кэш обновлений? [y/N]').Trim() -match '^(y|yes|\u0434|\u0434\u0430)$') { Delete-DeliveryOptimizationCache -Force -EA 0; $rem = @($do | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -Force -EA 0 }); if ($rem.Count -gt 0) { $doRun = @(Get-Service DoSvc -EA 0 | Where-Object { $_.Status -eq 'Running' }); try { Stop-Service DoSvc -Force -EA 0; Start-Sleep -Seconds 1; $do | ForEach-Object { Get-ChildItem -LiteralPath $_ -Force -EA 0 | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -EA SilentlyContinue } } } finally { $doRun | Start-Service -EA 0 } }; $adf = @($do | ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -Force -EA 0 }); $admb = [math]::Round(($adf | Measure-Object Length -Sum).Sum / 1MB, 1); $dfreed = [math]::Round([math]::Max(0, $dmb - $admb), 1); Write-Host ('Освобождено: ' + $dfreed + ' MB | Осталось: ' + $adf.Count + ' файлов (' + $admb + ' MB)') -ForegroundColor $(if ($adf.Count -eq 0) {'Green'} else {'Yellow'}) } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }"
                         </div>
                     </div>
 
@@ -987,7 +985,7 @@
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore; $c = Read-Host 'Выберите: [1] Штатная очистка  [2] Максимальная (/ResetBase)  [Enter] Пропустить'; if ($c -eq '1') { Dism.exe /Online /Cleanup-Image /StartComponentCleanup } elseif ($c -eq '2') { Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }"
+                            powershell -NoProfile -Command "&amp; { Dism.exe /Online /Cleanup-Image /AnalyzeComponentStore; $c = (Read-Host 'Выберите: [1] Штатная очистка  [2] Максимальная (/ResetBase)  [Enter] Пропустить').Trim(); if ($c -eq '1') { Dism.exe /Online /Cleanup-Image /StartComponentCleanup } elseif ($c -eq '2') { Dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } }"
                         </div>
                     </div>
 
@@ -1011,7 +1009,7 @@
                             </button>
                         </div>
                         <div class="code-container">
-                            powershell -NoProfile -Command "&amp; { $p = @(); if ($env:TEMP) { $p += $env:TEMP }; if ($env:windir) { $p += (Join-Path $env:windir 'Temp') }; if ($env:ProgramFiles) { $p += (Join-Path $env:ProgramFiles 'Microsoft Office\Updates\Download') }; if (${env:ProgramFiles(x86)}) { $p += (Join-Path ${env:ProgramFiles(x86)} 'Microsoft Office\Updates\Download') }; foreach ($dir in ($p | Select-Object -Unique | Where-Object { Test-Path $_ })) { $f = @(Get-ChildItem $dir -Recurse -File -Force -EA 0); $mb = [math]::Round(($f | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $dir + ' | Файлов: ' + $f.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; if ($f.Count -eq 0) { Write-Host '    Папка пуста.' -ForegroundColor DarkGray; continue }; if ((Read-Host 'Очистить содержимое папки? [y/N]') -match '^(y|д)$') { Get-ChildItem $dir -Force -EA 0 | Remove-Item -Recurse -Force -EA 0; Write-Host 'Очищено (занятые файлы пропущены).' -ForegroundColor Green } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } } }"
+                            powershell -NoProfile -Command "&amp; { $p = @(); if ($env:TEMP) { $p += $env:TEMP }; if ($env:windir) { $p += (Join-Path $env:windir 'Temp') }; if ($env:ProgramFiles) { $p += (Join-Path $env:ProgramFiles 'Microsoft Office\Updates\Download') }; if (${env:ProgramFiles(x86)}) { $p += (Join-Path ${env:ProgramFiles(x86)} 'Microsoft Office\Updates\Download') }; foreach ($dir in ($p | Select-Object -Unique | Where-Object { Test-Path -LiteralPath $_ })) { $f = @(Get-ChildItem -LiteralPath $dir -Recurse -File -Force -EA 0); $mb = [math]::Round(($f | Measure-Object Length -Sum).Sum / 1MB, 1); Write-Host ('--- Папка: ' + $dir + ' | Файлов: ' + $f.Count + ' | Размер: ' + $mb + ' MB') -ForegroundColor Cyan; if ($f.Count -eq 0) { Write-Host '    Папка пуста.' -ForegroundColor DarkGray; continue }; if ((Read-Host 'Очистить содержимое папки? [y/N]').Trim() -match '^(y|yes|\u0434|\u0434\u0430)$') { Get-ChildItem -LiteralPath $dir -Force -EA 0 | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -EA SilentlyContinue }; $af = @(Get-ChildItem -LiteralPath $dir -Recurse -File -Force -EA 0); $amb = [math]::Round(($af | Measure-Object Length -Sum).Sum / 1MB, 1); $freed = [math]::Round([math]::Max(0, $mb - $amb), 1); Write-Host ('Освобождено: ' + $freed + ' MB | Осталось (занято/нет прав): ' + $af.Count + ' файлов (' + $amb + ' MB)') -ForegroundColor $(if ($af.Count -eq 0) {'Green'} else {'Yellow'}) } else { Write-Host 'Пропущено.' -ForegroundColor DarkGray } } }"
                         </div>
                     </div>
 
