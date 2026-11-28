@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activation Suite | iOS Style</title>
+    <title>Windows Setup Kit</title>
     <style>
         :root {
             --bg-page: #d5d6dc;
@@ -57,7 +57,7 @@
             height: 50px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             padding: 0 24px;
             border-bottom: 1px solid var(--border-subtle);
             background: var(--header-bg);
@@ -69,7 +69,18 @@
             font-size: 14px;
             letter-spacing: -0.15px;
             color: var(--text-primary);
-            text-align: center;
+        }
+
+        .version-pill {
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: #e1e1e8;
+            border: 1px solid var(--border-subtle);
+            border-radius: 999px;
+            padding: 3px 10px;
+            letter-spacing: 0.2px;
         }
 
         .tabs-nav {
@@ -652,6 +663,117 @@
             word-break: break-word;
         }
 
+        .overview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0 4px 0;
+        }
+        .overview-item {
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--term-body-bg);
+            border: 1px solid var(--term-border);
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-primary);
+            box-shadow: 0 10px 24px -8px rgba(15, 18, 28, 0.16),
+                        0 2px 6px -2px rgba(15, 18, 28, 0.08);
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .overview-item:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px -8px rgba(15, 18, 28, 0.22),
+                        0 4px 10px -2px rgba(15, 18, 28, 0.10);
+        }
+        .overview-item-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 0;
+        }
+        .overview-num {
+            flex-shrink: 0;
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            background: var(--badge-bg);
+            border-radius: 7px;
+            padding: 3px 8px;
+            margin-top: 1px;
+        }
+        .overview-body {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .overview-head {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .overview-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .overview-env {
+            font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: #ededf2;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 1px 7px;
+        }
+        .overview-desc {
+            font-size: 13px;
+            color: #424245;
+            line-height: 1.45;
+        }
+        .overview-arrow {
+            flex-shrink: 0;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+        }
+
+        .overview-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .overview-meta-card {
+            background: var(--subcard-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 13px 15px;
+        }
+        .overview-meta-card h4 {
+            margin: 0 0 6px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .overview-meta-card p {
+            margin: 0;
+            font-size: 12.5px;
+            color: #424245;
+            line-height: 1.5;
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -659,7 +781,7 @@
             body { padding: 10px; }
             .tabs-nav { margin: 14px 16px 0 16px; flex-wrap: wrap; }
             .tab-content { padding: 20px; }
-            .rdp-form-grid, .arch-grid { grid-template-columns: 1fr; }
+            .rdp-form-grid, .arch-grid, .overview-meta-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -667,20 +789,129 @@
 
     <div class="mac-window">
         <div class="window-header">
-            <div class="window-title">Terminal — Activation Assistant Suite</div>
+            <div class="window-title">Windows Setup Kit</div>
+            <span class="version-pill">v2.0 · 2026-11-28</span>
         </div>
 
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="openTab('windows')">Windows</button>
-            <button class="tab-btn" onclick="openTab('office')">Microsoft Office</button>
+            <button class="tab-btn active" onclick="openTab('overview')">Обзор</button>
+            <button class="tab-btn" onclick="openTab('windows')">Windows</button>
+            <button class="tab-btn" onclick="openTab('office')">Office</button>
             <button class="tab-btn" onclick="openTab('cleanup')">Очистка</button>
             <button class="tab-btn" onclick="openTab('rdp')">RDP</button>
         </div>
 
         <div class="content-wrapper">
             
+            <!-- OVERVIEW TAB -->
+            <div id="overview" class="tab-content active">
+                <h1>Windows Setup Kit</h1>
+                <p>Интерактивный регламент послеустановочной подготовки Windows 10 (LTSC / Enterprise / Pro / Home) и удалённого управления рабочей станцией в связке с macOS через GitHub Pages.</p>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Маршрут</span>
+                        <h3 class="step-title">Порядок этапов и карта модулей</h3>
+                    </div>
+                    <p>Проходите вкладки последовательно — нажмите на любой этап, чтобы перейти к его командам:</p>
+
+                    <div class="overview-list">
+                        <button type="button" class="overview-item" onclick="openTab('windows')">
+                            <div class="overview-item-left">
+                                <span class="overview-num">01</span>
+                                <div class="overview-body">
+                                    <div class="overview-head">
+                                        <span class="overview-name">Windows — фикс обновлений и активация</span>
+                                        <span class="overview-env">Windows · CMD / PS</span>
+                                    </div>
+                                    <span class="overview-desc">Установка внепланового патча <code>KB5136493</code> (сборка <code>19044.7850</code>, исправляет ошибку <code>0x80041008</code>), проверка редакции и KMS-активация ОС.</span>
+                                </div>
+                            </div>
+                            <span class="overview-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </span>
+                        </button>
+
+                        <button type="button" class="overview-item" onclick="openTab('office')">
+                            <div class="overview-item-left">
+                                <span class="overview-num">02</span>
+                                <div class="overview-body">
+                                    <div class="overview-head">
+                                        <span class="overview-name">Office — лицензирование и активация</span>
+                                        <span class="overview-env">Windows · CMD</span>
+                                    </div>
+                                    <span class="overview-desc">Активация Microsoft Office LTSC ProPlus 2021 (x64/x86), ручная установка Volume-сертификатов при необходимости и удаление лишних Grace-ключей.</span>
+                                </div>
+                            </div>
+                            <span class="overview-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </span>
+                        </button>
+
+                        <button type="button" class="overview-item" onclick="openTab('cleanup')">
+                            <div class="overview-item-left">
+                                <span class="overview-num">03</span>
+                                <div class="overview-body">
+                                    <div class="overview-head">
+                                        <span class="overview-name">Очистка — гигиена диска после настройки</span>
+                                        <span class="overview-env">Windows · CMD → PS</span>
+                                    </div>
+                                    <span class="overview-desc">Интерактивный поиск и удаление <code>.msu</code> и дистрибутивов Office C2R, очистка кэша обновлений (<code>SoftwareDistribution</code>, P2P), <code>WinSxS</code> (DISM) и <code>Temp</code> с проверкой остатка.</span>
+                                </div>
+                            </div>
+                            <span class="overview-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </span>
+                        </button>
+
+                        <button type="button" class="overview-item" onclick="openTab('rdp')">
+                            <div class="overview-item-left">
+                                <span class="overview-num">04</span>
+                                <div class="overview-body">
+                                    <div class="overview-head">
+                                        <span class="overview-name">RDP — удалённый доступ с MacBook</span>
+                                        <span class="overview-env">Windows → macOS</span>
+                                    </div>
+                                    <span class="overview-desc">Read-Only аудит RDP и брандмауэра с экспортом <code>rdp-profile.json</code>, условный фикс сети, генерация готового <code>.rdp</code> для Windows App и построчный тест с macOS.</span>
+                                </div>
+                            </div>
+                            <span class="overview-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header-row">
+                        <span class="step-badge">Регламент</span>
+                        <h3 class="step-title">Правила работы и границы комплекта</h3>
+                    </div>
+
+                    <div class="overview-meta-grid">
+                        <div class="overview-meta-card">
+                            <h4>Единый терминал</h4>
+                            <p>На Windows все команды копируются в одно окно <strong>CMD от имени администратора</strong> (вызовы PowerShell уже обёрнуты). На MacBook используются стандартный <strong>Terminal</strong> и <strong>Windows App</strong>.</p>
+                        </div>
+                        <div class="overview-meta-card">
+                            <h4>Перенос без опечаток</h4>
+                            <p>Реквизиты ПК не переписываются вручную: Шаг 1 во вкладке <strong>RDP</strong> сохраняет <code>rdp-profile.json</code>, который загружается на MacBook и формирует готовый файл <code>.rdp</code> и команды теста.</p>
+                        </div>
+                        <div class="overview-meta-card">
+                            <h4>Контроль кэша GitHub Pages</h4>
+                            <p>После пуша изменений сверяйте метку версии в правом верхнем углу окна. Если браузер на Windows показывает старую версию, обновите страницу с очисткой кэша (<code>Ctrl+F5</code> / <code>Cmd+Shift+R</code>).</p>
+                        </div>
+                        <div class="overview-meta-card">
+                            <h4>Модульная граница</h4>
+                            <p>Этот файл закрывает только базовый фундамент ОС (активация, Office, очистка, RDP). Узкоспециализированные задачи (криптография, корпоративные маршруты, стороннее ПО) выносятся в отдельные HTML-модули репозитория.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- WINDOWS TAB -->
-            <div id="windows" class="tab-content active">
+            <div id="windows" class="tab-content">
                 <h1>Активация Windows</h1>
                 <p>Команды выполняются в стандартной командной строке или PowerShell.</p>
 
